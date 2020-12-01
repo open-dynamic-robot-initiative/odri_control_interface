@@ -27,17 +27,20 @@ public:
     IMU(
         std::shared_ptr<MasterBoardInterface> robot_if,
         std::array<double, 3>& rotate_vector,
-        std::array<double, 3>& orientation_vector
+        std::array<double, 4>& orientation_vector
     )
+    {
+
+    };
 
     // If needed, add some error handling for the IMU as well.
     // For instance, check for bounds on the maximum linear acceleration
     // or the maximum angular velocity that should be detected as an error.
     bool has_error() { return false; }
 
-    std::array<double, COUNT> get_angular_velocity();
-    std::array<double, COUNT> get_orientation();
-    std::array<double, COUNT> get_linear_acceleration();
+    std::array<double, 3> get_angular_velocity();
+    std::array<double, 4> get_orientation();
+    std::array<double, 3> get_linear_acceleration();
 };
 
 }  // namespace odri_control_interface

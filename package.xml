@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-model
+   href="http://download.ros.org/schema/package_format3.xsd"
+   schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+
+<package format="3">
+
+    <name>odri_control_interface</name>
+    <version>1.0.0</version>
+    
+    <description>
+	Common interface for controlling robots build with the odri master board.
+    </description>
+
+    <maintainer email="jviereck@tuebingen.mpg.de">Julian Viereck</maintainer>
+
+    <license>BSD 3-clause</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+    <!-- CMake module containing helper to find the OS, boost, python, etc. -->
+    <depend>mpi_cmake_modules</depend>
+    <depend>pybind11_vendor</depend>
+    <depend>pybind11</depend>
+    <depend>Threads</depend>
+    <depend>master_board_sdk</depend>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+
+</package>
