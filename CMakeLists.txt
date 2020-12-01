@@ -32,43 +32,33 @@ find_package(mpi_cmake_modules REQUIRED)
 find_package(pybind11_vendor REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Threads REQUIRED)
-find_package(master_board_sdk REQUIRED CONFIG)
-
-# export de dependencies
-ament_export_dependencies(master_board_sdk Threads pybind11)
+find_package(master_board_sdk REQUIRED)
 
 #
-# Setup the environment from dependencies
+# Setup the environment for dependencies
 #
-
-# This macro sets the C++ preprocessor flags "XENOMAI", "RT_PREEMPT", or
-# "UBUNTU" according to the current operating system.
-define_os()
+ament_export_dependencies(mpi_cmake_modules master_board_sdk Threads pybind11)
+ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 set(all_targets)
-set(all_target_exports)
 
 #
 # Add the main library
 #
 
 # Create the CMake target
-add_library(
-  ${PROJECT_NAME} SHARED
-  include/odri_control_interface/joint_modules.hpp)
+add_library(${PROJECT_NAME} INTERFACE)
 # Add the include dependencies
 target_include_directories(
-  ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                         $<INSTALL_INTERFACE:include>)
+  ${PROJECT_NAME}
+  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>)
 # Link the dependencies
-ament_target_dependencies(${PROJECT_NAME} Threads)
-target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-
-# Export the target.
-ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+target_link_libraries(${PROJECT_NAME} INTERFACE Threads::Threads)
+target_link_libraries(${PROJECT_NAME}
+                      INTERFACE master_board_sdk::master_board_sdk)
+target_link_libraries(${PROJECT_NAME} ${master_board_sdk_LIBRARIES})
 # For the installation
 list(APPEND all_targets ${PROJECT_NAME})
-list(APPEND all_target_exports export_${PROJECT_NAME})
 
 #
 # Demos.
@@ -79,7 +69,7 @@ macro(add_odri_control_interface_demo demo_name)
   # add the executable.
   add_executable(${demo_target_name} demos/${demo_name}.cpp)
   # save the name for installation
-  set(all_targets ${all_targets} ${demo_target_name})
+  list(APPEND all_targets ${demo_target_name})
   # dependencies
   target_include_directories(
     ${demo_target_name}
@@ -90,8 +80,7 @@ endmacro(add_odri_control_interface_demo target_name)
 
 add_odri_control_interface_demo(solo12)
 # add_real_time_tools_demo(demo_realtime_strict_check)
-# add_real_time_tools_demo(demo_spinner)
-# add_real_time_tools_demo(demo_timing)
+# add_real_time_tools_demo(demo_spinner) add_real_time_tools_demo(demo_timing)
 # add_real_time_tools_demo(demo_thread)
 # add_real_time_tools_demo(demo_usb_stream_imu_3DM_GX3_25)
 # add_real_time_tools_demo(demo_checkpoint_timer)
@@ -112,19 +101,16 @@ add_odri_control_interface_demo(solo12)
 #
 # add_library(${PROJECT_NAME}_cpp_bindings MODULE srcpy/real_time_tools.cpp)
 # target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE pybind11::module)
-# target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE ${PYTHON_LIBRARIES})
-# target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE ${PROJECT_NAME})
-# set_target_properties(${PROJECT_NAME}_cpp_bindings
-#                       PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
-# target_include_directories(
-#   ${PROJECT_NAME}_cpp_bindings
-#   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#          $<INSTALL_INTERFACE:include> SYSTEM
-#   PUBLIC ${PYTHON_INCLUDE_DIRS})
-# _ament_cmake_python_get_python_install_dir()
-# install(TARGETS ${PROJECT_NAME}_cpp_bindings DESTINATION ${PYTHON_INSTALL_DIR})
-# install(FILES srcpy/__init__.py
-#         DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME})
+# target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE
+# ${PYTHON_LIBRARIES}) target_link_libraries(${PROJECT_NAME}_cpp_bindings
+# PRIVATE ${PROJECT_NAME}) set_target_properties(${PROJECT_NAME}_cpp_bindings
+# PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
+# target_include_directories( ${PROJECT_NAME}_cpp_bindings PUBLIC
+# $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+# $<INSTALL_INTERFACE:include> SYSTEM PUBLIC ${PYTHON_INCLUDE_DIRS})
+# _ament_cmake_python_get_python_install_dir() install(TARGETS
+# ${PROJECT_NAME}_cpp_bindings DESTINATION ${PYTHON_INSTALL_DIR}) install(FILES
+# srcpy/__init__.py DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME})
 
 #
 # Install the package
@@ -133,7 +119,7 @@ install(DIRECTORY include/ DESTINATION include)
 
 install(
   TARGETS ${all_targets}
-  EXPORT ${all_target_exports}
+  EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
