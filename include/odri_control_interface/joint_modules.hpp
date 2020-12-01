@@ -73,7 +73,11 @@ public:
         set_maximum_currents(max_currents);
     };
 
- 
+    std::array<double, COUNT> get_gear_ratios()
+    {
+        return gear_ratios_;
+    }
+
     void enable()
     {
         std::array<double, COUNT> zeros;
@@ -197,6 +201,8 @@ public:
             motors_[i]->SetPositionOffset(position_offsets[i] * 
                 polarities_[i] * gear_ratios_[i]);
         }
+        // Need to trigger a sensor parsing to update the joint positions.
+        robot_if_->ParseSensorData();
     };
 
     // During calibration, the joint limit check should be disabled.
@@ -223,9 +229,20 @@ public:
         std::array<bool, COUNT> index_detected;
         for (int i = 0; i < COUNT; i++)
         {
-            index_detected = motors_[i]->get_has_index_been_detected();
+            index_detected[i] = motors_[i]->get_has_index_been_detected();
         }
         return index_detected;
+    }
+
+    bool saw_all_indecies()
+    {
+        for (int i = 0; i < COUNT; i++)
+        {
+            if (!motors_[i]->get_has_index_been_detected()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -252,7 +269,7 @@ public:
         for (int i = 0; i < COUNT; i++)
         {   
             positions[i] = (motors_[i]->get_position() * 
-                polarities_[i] * gear_ratios_[i]);
+                polarities_[i] / gear_ratios_[i]);
         }
         return positions;
     };
@@ -263,7 +280,7 @@ public:
         for (int i = 0; i < COUNT; i++)
         {   
             velocities[i] = (motors_[i]->get_velocity() * 
-                polarities_[i] * gear_ratios_[i]);
+                polarities_[i] / gear_ratios_[i]);
         }
         return velocities;
     };
@@ -306,8 +323,8 @@ public:
                 has_error = true;
                 if (upper_joint_limits_counter_++ % 2000 == 0) {
                     msg_out_ << "ERROR: Above joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; print_array_(pos); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; print_array_(upper_joint_limits_); msg_out_ << std::endl;
+                    msg_out_ << "  Joints: "; print_array(pos); msg_out_ << std::endl;
+                    msg_out_ << "  Limits: "; print_array(upper_joint_limits_); msg_out_ << std::endl;
                 }
                 break;
             }
@@ -315,32 +332,36 @@ public:
 
         for (int i = 0; i < COUNT; i++)
         {
-            if (pos[i] > upper_joint_limits_[i])
+            if (pos[i] < lower_joint_limits_[i])
             {
                 has_error = true;
                 if (lower_joint_limits_counter_++ % 2000 == 0) {
                     msg_out_ << "ERROR: Below joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; print_array_(pos); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; print_array_(upper_joint_limits_); msg_out_ << std::endl;
+                    msg_out_ << "  Joints: "; print_array(pos); msg_out_ << std::endl;
+                    msg_out_ << "  Limits: "; print_array(lower_joint_limits_); msg_out_ << std::endl;
                 }
                 break;
             }
         }
 
         // Check for joint velocities limtis.
-        auto vel = get_velocities();
-        for (int i = 0; i < COUNT; i++)
-        {
-            if (vel[i] > max_joint_velocities_ || vel[i] < -max_joint_velocities_)
+        // Check the velocity only after the motors report ready to avoid
+        // fast motions during the initialization phase detected as error.
+        if (is_ready()) {
+            auto vel = get_velocities();
+            for (int i = 0; i < COUNT; i++)
             {
-                has_error = true;
-                if (velocity_joint_limits_counter_++ % 2000 == 0)
+                if (vel[i] > max_joint_velocities_ || vel[i] < -max_joint_velocities_)
                 {
-                    msg_out_ << "ERROR: Above joint velocity limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; print_array_(vel); msg_out_ << std::endl;
-                    msg_out_ << "  Limit: " << max_joint_velocities_ << std::endl;
+                    has_error = true;
+                    if (velocity_joint_limits_counter_++ % 2000 == 0)
+                    {
+                        msg_out_ << "ERROR: Above joint velocity limits at joint #" << (i) << std::endl;
+                        msg_out_ << "  Joints: "; print_array(vel); msg_out_ << std::endl;
+                        msg_out_ << "  Limit: " << max_joint_velocities_ << std::endl;
+                    }
+                    break;
                 }
-                break;
             }
         }
 
@@ -386,13 +407,7 @@ public:
         return has_error;
     }
 
-protected:
-    int upper_joint_limits_counter_;
-    int lower_joint_limits_counter_;
-    int velocity_joint_limits_counter_;
-    int motor_drivers_error_counter;
-
-    void print_array_(std::array<double, COUNT> arr)
+    void print_array(std::array<double, COUNT> arr)
     {
         for (int i = 0; i < COUNT; i++)
         {
@@ -400,6 +415,12 @@ protected:
             msg_out_ << std::string(buf);
         }
     }
+
+protected:
+    int upper_joint_limits_counter_;
+    int lower_joint_limits_counter_;
+    int velocity_joint_limits_counter_;
+    int motor_drivers_error_counter;
 };
 
 }  // namespace odri_control_interface

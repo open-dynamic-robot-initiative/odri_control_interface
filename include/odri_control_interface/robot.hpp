@@ -79,7 +79,7 @@ public:
             joints->run_safety_controller();
         }
         robot_if->SendCommand();
-        return saw_error_;
+        return !saw_error_;
     }
 
     /**
@@ -99,7 +99,15 @@ public:
     /**
      * @brief Returns true if all connected devices report ready.
      */
-    bool is_ready();
+    bool is_ready()
+    {
+        return joints->is_ready();
+    }
+
+    bool is_timeout()
+    {
+        return robot_if->IsTimeout();
+    }
 
     /**
      * @brief Checks all connected devices for errors. Also checks
