@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <unistd.h>
 
 #include "master_board_sdk/defines.h"
@@ -38,6 +39,8 @@ protected:
     double safety_damping_;
 
     bool check_joint_limits_;
+
+    std::ostream& msg_out_ = std::cout;
 
 public:
     JointModules(
@@ -144,7 +147,7 @@ public:
     {
         for (int i = 0; i < COUNT; i++)
         {
-            motors_[i]->SetSaturationCurrent(max_currents);
+            motors_[i]->set_current_sat(max_currents);
         }
     };
 
@@ -292,7 +295,110 @@ public:
      */
     bool has_error()
     {
-        return false;
+        bool has_error = false;
+        auto pos = get_positions();
+
+        // Check for lower and upper joint limits.
+        for (int i = 0; i < COUNT; i++)
+        {
+            if (pos[i] > upper_joint_limits_[i])
+            {
+                has_error = true;
+                if (upper_joint_limits_counter_++ % 2000 == 0) {
+                    msg_out_ << "ERROR: Above joint limits at joint #" << (i) << std::endl;
+                    msg_out_ << "  Joints: "; print_array_(pos); msg_out_ << std::endl;
+                    msg_out_ << "  Limits: "; print_array_(upper_joint_limits_); msg_out_ << std::endl;
+                }
+                break;
+            }
+        }
+
+        for (int i = 0; i < COUNT; i++)
+        {
+            if (pos[i] > upper_joint_limits_[i])
+            {
+                has_error = true;
+                if (lower_joint_limits_counter_++ % 2000 == 0) {
+                    msg_out_ << "ERROR: Below joint limits at joint #" << (i) << std::endl;
+                    msg_out_ << "  Joints: "; print_array_(pos); msg_out_ << std::endl;
+                    msg_out_ << "  Limits: "; print_array_(upper_joint_limits_); msg_out_ << std::endl;
+                }
+                break;
+            }
+        }
+
+        // Check for joint velocities limtis.
+        auto vel = get_velocities();
+        for (int i = 0; i < COUNT; i++)
+        {
+            if (vel[i] > max_joint_velocities_ || vel[i] < -max_joint_velocities_)
+            {
+                has_error = true;
+                if (velocity_joint_limits_counter_++ % 2000 == 0)
+                {
+                    msg_out_ << "ERROR: Above joint velocity limits at joint #" << (i) << std::endl;
+                    msg_out_ << "  Joints: "; print_array_(vel); msg_out_ << std::endl;
+                    msg_out_ << "  Limit: " << max_joint_velocities_ << std::endl;
+                }
+                break;
+            }
+        }
+
+        // Check the status of the cards.
+        bool print_error = false;
+        for (int i = 0; i < (COUNT + 1) / 2; i++)
+        {
+            if (robot_if_->motor_drivers[i].error_code != 0)
+            {
+                if (print_error || motor_drivers_error_counter++ % 2000 == 0)
+                {
+                    print_error = true;
+                    msg_out_ << "ERROR at motor drivers #" << (i) << ": ";
+                    switch(robot_if_->motor_drivers[i].error_code)
+                    {
+                        case UD_SENSOR_STATUS_ERROR_ENCODER1:
+                            msg_out_ << "Encoder1 error";
+                            break;
+                        case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
+                            msg_out_ << "SPI Receiver timeout";
+                            break;
+                        case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
+                            msg_out_ << "Critical temperature";
+                            break;
+                        case UD_SENSOR_STATUS_ERROR_POSCONV:
+                            msg_out_ << "SpinTAC Positon module";
+                            break;
+                        case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
+                            msg_out_ << "Position rollover occured";
+                            break;
+                        case UD_SENSOR_STATUS_ERROR_ENCODER2:
+                            msg_out_ << "Encoder2 error";
+                            break;
+                        default:
+                            msg_out_ << "Other error";
+                            break;
+                    }
+                    msg_out_ << std::endl;
+                }
+                has_error = true;
+            }
+        }
+        return has_error;
+    }
+
+protected:
+    int upper_joint_limits_counter_;
+    int lower_joint_limits_counter_;
+    int velocity_joint_limits_counter_;
+    int motor_drivers_error_counter;
+
+    void print_array_(std::array<double, COUNT> arr)
+    {
+        for (int i = 0; i < COUNT; i++)
+        {
+            char buf[1024]; sprintf(buf, "%0.3f ", arr[i]);
+            msg_out_ << std::string(buf);
+        }
     }
 };
 

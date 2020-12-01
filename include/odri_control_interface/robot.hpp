@@ -38,7 +38,8 @@ public:
         std::shared_ptr<MasterBoardInterface> robot_if,
         std::shared_ptr<JointModules<COUNT> > joint_modules,
         std::shared_ptr<IMU> imu
-    ): robot_if(robot_if), joints(joint_modules), imu(imu)
+    ): robot_if(robot_if), joints(joint_modules), imu(imu),
+        saw_error_(false)
     {
     }
 
@@ -72,9 +73,13 @@ public:
      */
     bool send_command()
     {
-        // TODO: Add error handling here.
+        has_error();
+        if (saw_error_)
+        {
+            joints->run_safety_controller();
+        }
         robot_if->SendCommand();
-        return has_error();
+        return saw_error_;
     }
 
     /**
@@ -102,8 +107,26 @@ public:
      */
     bool has_error()
     {
-        return robot_if->IsTimeout();
+        saw_error_ |= joints->has_error();
+        if (imu) {
+            saw_error_ |= imu->has_error();
+        }
+
+        if (robot_if->IsTimeout())
+        {
+            if (timeout_counter_++ % 2000 == 0)
+            {
+                msg_out_ << "ERROR: Robot communicaton timedout." << std::endl;
+            }
+            saw_error_ = true;
+        }
+
+        return saw_error_;
     }
+protected:
+    int timeout_counter_;
+    bool saw_error_;
+    std::ostream& msg_out_ = std::cout;
 };
 
 }  // namespace odri_control_interface

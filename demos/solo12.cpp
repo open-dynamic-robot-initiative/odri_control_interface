@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     auto joints = std::make_shared<JointModules<12> >(
         main_board_ptr_,
         motor_numbers,
-        0.025, 9., 9.,
+        0.025, 9., 4.,
         motor_reversed,
         joint_lower_limits, joint_upper_limits, 80., 0.5
     );
