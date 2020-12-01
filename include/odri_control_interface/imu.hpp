@@ -6,7 +6,7 @@
  * Gesellschaft.
  * @date 2020-11-27
  *
- * @brief 
+ * @brief
  */
 
 #pragma once
@@ -36,11 +36,11 @@ public:
     // If needed, add some error handling for the IMU as well.
     // For instance, check for bounds on the maximum linear acceleration
     // or the maximum angular velocity that should be detected as an error.
-    bool has_error() { return false; }
+    bool HasError() { return false; }
 
-    std::array<double, 3> get_angular_velocity();
-    std::array<double, 4> get_orientation();
-    std::array<double, 3> get_linear_acceleration();
+    std::array<double, 3> GetAngularVelocity();
+    std::array<double, 4> GetOrientation();
+    std::array<double, 3> GetLinearAcceleration();
 };
 
 }  // namespace odri_control_interface

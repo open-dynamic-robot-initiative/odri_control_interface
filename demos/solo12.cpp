@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     );
 
     // Start the robot.
-    robot->start();
+    robot->Start();
 
     // Define controller to calibrate the joints.
     std::array<CalibrationMethod, 12> directions = {
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
         AUTO, AUTO, AUTO, AUTO, AUTO, AUTO
     };
     std::array<double, 12> position_offsets = {
-        0.184, -0.370, 0.027, -.131,
+        0.184, -0.370, -0.005, -.150,
         0., 0.310, 0., 0,
         0., 0., 0., 0
     };
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         joints,
         directions,
         position_offsets,
-        2., 0.05, 0.001
+        5., 0.05, 0.001
     );
 
     double kp = 5.;
@@ -72,42 +72,42 @@ int main(int argc, char **argv)
     int c = 0;
     std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
     bool is_calibrated = false;
-    while (!robot->is_timeout())
+    while (!robot->IsTimeout())
     {
         if (((std::chrono::duration<double>)(std::chrono::system_clock::now() - last)).count() > 0.001)
 		{
             last = std::chrono::system_clock::now(); //last+dt would be better
-            robot->parse_sensor_data();
+            robot->ParseSensorData();
 
-            if (robot->is_ready()) {
+            if (robot->IsReady()) {
                 if (!is_calibrated) {
-                    is_calibrated = calib_ctrl->run();
+                    is_calibrated = calib_ctrl->Run();
                     if (is_calibrated) {
                         std::cout << "Calibration is done." << std::endl;
                     }
                 } else {
                     // Run the main controller.
 
-                    auto pos = robot->joints->get_positions();
-                    auto vel = robot->joints->get_velocities();
+                    auto pos = robot->joints->GetPositions();
+                    auto vel = robot->joints->GetVelocities();
                     std::array<double, 12> torques;
                     // Reverse the positions;
                     for(int i = 0; i < 12; i++) {
                         torques[i] = -kp * pos[i] - kd * vel[i];
                     }
-                    robot->joints->set_torques(torques);
+                    robot->joints->SetTorques(torques);
                 }
             }
 
             // Checks if the robot is in error state (that is, if any component
             // returns an error). If there is an error, the commands to send
             // are changed to send the safety control.
-            robot->send_command();
+            robot->SendCommand();
 
             c++;
             if (c % 1000 == 0) {
                 std::cout << "Joints: ";
-                joints->print_array(joints->get_positions());
+                joints->PrintArray(joints->GetPositions());
                 std::cout << std::endl;
             }
 

@@ -19,7 +19,7 @@
 
 namespace odri_control_interface
 {
-enum CalibrationMethod { 
+enum CalibrationMethod {
     AUTO,
     POSITIVE,
     NEGATIVE,
@@ -27,7 +27,7 @@ enum CalibrationMethod {
 };
 
 /**
- * @brief 
+ * @brief
  */
 template <int COUNT>
 class JointCalibrator
@@ -41,6 +41,7 @@ protected:
     double Kp_;
     double dt_;
     double t_;
+    bool go_to_zero_position_;
 
 public:
     JointCalibrator(
@@ -50,9 +51,9 @@ public:
         double Kp, double Kd, double dt
     ): joints_(joints), search_methods_(search_methods),
         position_offsets_(position_offsets), Kp_(Kp), Kd_(Kd),
-        dt_(dt), t_(0.)
+        dt_(dt), t_(0.), go_to_zero_position_(false)
     {
-        std::array<double, COUNT> gear_ratios = joints->get_gear_ratios();
+        std::array<double, COUNT> gear_ratios = joints->GetGearRatios();
         for (int i = 0; i < COUNT; i++)
         {
             if (search_methods_[i] == AUTO) {
@@ -70,57 +71,69 @@ public:
     /**
      * @brief Runs the calibration procedure. Returns true if the calibration is done.
      */
-    bool run()
+    bool Run()
     {
-        bool all_motors_done = true;
-        if (t_ == 0.) 
+        double T = 2.;
+        if (t_ == 0.)
         {
-            joints_->disable_joint_limit_check();
-            joints_->enable_index_offset_compensation();
-            joints_->set_zero_gains();
-            joints_->set_position_offsets(position_offsets_);
-            initial_positions_ = joints_->get_positions();
+            joints_->EnableIndexOffsetCompensation();
+            joints_->SetZeroGains();
+            joints_->SetPositionOffsets(position_offsets_);
+            initial_positions_ = joints_->GetPositions();
+
+            // If all the indices are already detected, then assume there
+            // is nothing that needs to be done.
+            if (joints_->SawAllIndices()) {
+                return true;
+            }
         }
 
         std::array<double, COUNT> command;
-        auto gear_ratios = joints_->get_gear_ratios();
-        auto has_index_been_detected = joints_->has_index_been_detected();
-        auto positions = joints_->get_positions();
-        auto velocities = joints_->get_velocities();
-        double T = 2.;
+        auto gear_ratios = joints_->GetGearRatios();
+        auto has_index_been_detected = joints_->HasIndexBeenDetected();
+        auto positions = joints_->GetPositions();
+        auto velocities = joints_->GetVelocities();
         double des_pos = 0.;
         for (int i = 0; i < COUNT; i++)
         {
-            if (has_index_been_detected[i]) 
-            {
-                command[i] = 0.;
-            } else {
-                if (search_methods_[i] == ALTERNATIVE)
+            // First half: Find the index.
+            // Running till 1.5 T to give the ALTERNATIVE some more time to
+            // go back to the other direction.
+            if (t_ < 1.5 * T) {
+                if (has_index_been_detected[i])
                 {
-                    if (t_ < T / 2.)
-                    {
-                        des_pos = 1.2 * M_PI * 0.5 * (1. - cos(2. * M_PI * (1. / T) * t_));
-                    } else {
-                        des_pos = 1.2 * M_PI * cos(2. * M_PI * (0.5 / T)*(t_-T/2.0));
-                    }
-                } else if (search_methods_[i] == POSITIVE) {
-                    des_pos = 2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T) * t_));
+                    command[i] = 0.;
+                    initial_positions_[i] = positions[i];
                 } else {
-                    des_pos = 2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T) * t_));
+                    if (search_methods_[i] == ALTERNATIVE)
+                    {
+                        if (t_ < T / 2.)
+                        {
+                            des_pos = 1.2 * M_PI * 0.5 * (1. - cos(2. * M_PI * (1. / T) * t_));
+                        } else {
+                            des_pos = 1.2 * M_PI * cos(2. * M_PI * (0.5 / T)*(t_-T/2.0));
+                        }
+                    } else if (search_methods_[i] == POSITIVE) {
+                        des_pos = 2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T) * t_));
+                    } else {
+                        des_pos = -2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T) * t_));
+                    }
+                    command[i] = Kp_ * (des_pos/gear_ratios[i] + initial_positions_[i] - positions[i]) - Kd_ * velocities[i];
                 }
-                // Compute desired gains using PD controller.
-                command[i] = Kp_ * (des_pos/gear_ratios[i] + initial_positions_[i] - positions[i]) - Kd_ * velocities[i];
+            // Second half move the motors to zero position.
+            } else {
+                command[i] = Kp_ * (initial_positions_[i] * (2.5-t_/T) - positions[i]) - Kd_ * velocities[i];
             }
         }
-        joints_->set_torques(command);
+        joints_->SetTorques(command);
 
         t_ += dt_;
-        return is_calibration_done();
+        return t_ >= 2.5 * T;
     }
 
-    bool is_calibration_done()
+    bool IsCalibrationDone()
     {
-        return joints_->saw_all_indecies();
+        return joints_->SawAllIndices();
     }
 };
 

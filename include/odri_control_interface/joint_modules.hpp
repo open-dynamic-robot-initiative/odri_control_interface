@@ -6,7 +6,7 @@
  * Gesellschaft.
  * @date 2020-11-27
  *
- * @brief Joint module abstraction for 
+ * @brief Joint module abstraction for
  */
 
 #pragma once
@@ -70,25 +70,25 @@ public:
             gear_ratios_[i] = gear_ratios;
             motor_constants_[i] = motor_constants;
         }
-        set_maximum_currents(max_currents);
+        SetMaximumCurrents(max_currents);
     };
 
-    std::array<double, COUNT> get_gear_ratios()
+    std::array<double, COUNT> GetGearRatios()
     {
         return gear_ratios_;
     }
 
-    void enable()
+    void Enable()
     {
         std::array<double, COUNT> zeros;
         for (int i = 0; i < COUNT; i++) {
-            zeros[i] = 0.; 
+            zeros[i] = 0.;
         }
 
-        set_torques(zeros);
-        set_desired_positions(zeros);
-        set_desired_velocities(zeros);
-        set_zero_gains();
+        SetTorques(zeros);
+        SetDesiredPositions(zeros);
+        SetDesiredVelocities(zeros);
+        SetZeroGains();
 
         // Enable all motors and cards.
         for (int i = 0; i < (COUNT + 1) / 2; i++)
@@ -101,17 +101,17 @@ public:
         }
     };
 
-    void set_torques(const std::array<double, COUNT>& desired_torques)
+    void SetTorques(const std::array<double, COUNT>& desired_torques)
     {
         for (int i = 0; i < COUNT; i++)
         {
             motors_[i]->SetCurrentReference(
-                polarities_[i] * desired_torques[i] / 
+                polarities_[i] * desired_torques[i] /
                     (gear_ratios_[i] * motor_constants_[i]));
         }
     };
 
-    void set_desired_positions(const std::array<double, COUNT>& desired_positions)
+    void SetDesiredPositions(const std::array<double, COUNT>& desired_positions)
     {
         for (int i = 0; i < COUNT; i++)
         {
@@ -120,7 +120,7 @@ public:
         }
     };
 
-    void set_desired_velocities(const std::array<double, COUNT>& desired_velocities)
+    void SetDesiredVelocities(const std::array<double, COUNT>& desired_velocities)
     {
         for (int i = 0; i < COUNT; i++)
         {
@@ -129,7 +129,7 @@ public:
         }
     };
 
-    void set_position_gains(const std::array<double, COUNT>& desired_gains)
+    void SetPositionGains(const std::array<double, COUNT>& desired_gains)
     {
        for (int i = 0; i < COUNT; i++)
         {
@@ -138,7 +138,7 @@ public:
         }
     };
 
-    void set_velocity_gains(const std::array<double, COUNT>& desired_gains)
+    void SetVelocityGains(const std::array<double, COUNT>& desired_gains)
     {
         for (int i = 0; i < COUNT; i++)
         {
@@ -147,7 +147,7 @@ public:
         }
     };
 
-   void set_maximum_currents(double max_currents)
+   void SetMaximumCurrents(double max_currents)
     {
         for (int i = 0; i < COUNT; i++)
         {
@@ -158,14 +158,14 @@ public:
     /**
      * @brief Disables the position and velocity gains by setting them to zero.
      */
-    void set_zero_gains()
+    void SetZeroGains()
     {
         std::array<double, COUNT> zeros;
         for (int i = 0; i < COUNT; i++) {
-            zeros[i] = 0.; 
+            zeros[i] = 0.;
         }
-        set_position_gains(zeros);
-        set_velocity_gains(zeros);
+        SetPositionGains(zeros);
+        SetVelocityGains(zeros);
     };
 
     /**
@@ -173,50 +173,39 @@ public:
      * The safety controller applies a D control to all the joints based
      * on the provided `safety_damping`.
      */
-    virtual void run_safety_controller()
+    virtual void RunSafetyController()
     {
         std::array<double, COUNT> zeros;
         for (int i = 0; i < COUNT; i++) {
-            zeros[i] = 0.; 
+            zeros[i] = 0.;
         }
 
-        set_torques(zeros);
-        set_desired_positions(zeros);
-        set_desired_velocities(zeros);
-        set_zero_gains();
+        SetTorques(zeros);
+        SetDesiredPositions(zeros);
+        SetDesiredVelocities(zeros);
+        SetZeroGains();
 
         std::array<double, COUNT> kd_safety;
         for (int i = 0; i < COUNT; i++) {
             kd_safety[i] = safety_damping_;
         }
-        set_velocity_gains(kd_safety);
+        SetVelocityGains(kd_safety);
     };
 
     // Used for calibration.
-    void set_position_offsets(const std::array<double, COUNT>& position_offsets)
+    void SetPositionOffsets(const std::array<double, COUNT>& position_offsets)
     {
         for (int i = 0; i < COUNT; i++)
         {
             // REVIEW: Is the following correct?
-            motors_[i]->SetPositionOffset(position_offsets[i] * 
+            motors_[i]->SetPositionOffset(position_offsets[i] *
                 polarities_[i] * gear_ratios_[i]);
         }
         // Need to trigger a sensor parsing to update the joint positions.
         robot_if_->ParseSensorData();
     };
 
-    // During calibration, the joint limit check should be disabled.
-    void disable_joint_limit_check()
-    {
-        check_joint_limits_ = false;
-    };
-
-    void enable_joint_limit_check()
-    {
-        check_joint_limits_ = true;
-    }
-
-    void enable_index_offset_compensation()
+    void EnableIndexOffsetCompensation()
     {
         for (int i = 0; i < COUNT; i++)
         {
@@ -224,17 +213,17 @@ public:
         }
     };
 
-    std::array<bool, COUNT> has_index_been_detected()
+    std::array<bool, COUNT> HasIndexBeenDetected()
     {
         std::array<bool, COUNT> index_detected;
         for (int i = 0; i < COUNT; i++)
         {
-            index_detected[i] = motors_[i]->get_has_index_been_detected();
+            index_detected[i] = motors_[i]->HasIndexBeenDetected();
         }
         return index_detected;
     }
 
-    bool saw_all_indecies()
+    bool SawAllIndices()
     {
         for (int i = 0; i < COUNT; i++)
         {
@@ -248,7 +237,7 @@ public:
     /**
      * @brief Returns true once all motors are enabled and report ready.
      */
-    bool is_ready()
+    bool IsReady()
     {
         bool is_ready_ = true;
 
@@ -263,45 +252,45 @@ public:
         return is_ready_;
     }
 
-    std::array<double, COUNT> get_positions()
+    std::array<double, COUNT> GetPositions()
     {
         std::array<double, COUNT> positions;
         for (int i = 0; i < COUNT; i++)
-        {   
-            positions[i] = (motors_[i]->get_position() * 
+        {
+            positions[i] = (motors_[i]->get_position() *
                 polarities_[i] / gear_ratios_[i]);
         }
         return positions;
     };
 
-    std::array<double, COUNT> get_velocities()
+    std::array<double, COUNT> GetVelocities()
     {
         std::array<double, COUNT> velocities;
         for (int i = 0; i < COUNT; i++)
-        {   
-            velocities[i] = (motors_[i]->get_velocity() * 
+        {
+            velocities[i] = (motors_[i]->get_velocity() *
                 polarities_[i] / gear_ratios_[i]);
         }
         return velocities;
     };
 
-    std::array<double, COUNT> get_sent_torques()
+    std::array<double, COUNT> GetSentTorques()
     {
         std::array<double, COUNT> torques;
         for (int i = 0; i < COUNT; i++)
-        {   
-            torques[i] = (motors_[i]->get_current_ref() * 
+        {
+            torques[i] = (motors_[i]->get_current_ref() *
                 polarities_[i] * gear_ratios_[i] * motor_constants_[i]);
         }
         return torques;
     };
 
-    std::array<double, COUNT> get_measured_torques()
+    std::array<double, COUNT> GetMeasuredTorques()
     {
         std::array<double, COUNT> torques;
         for (int i = 0; i < COUNT; i++)
-        {   
-            torques[i] = (motors_[i]->get_current() * 
+        {
+            torques[i] = (motors_[i]->get_current() *
                 polarities_[i] * gear_ratios_[i] * motor_constants_[i]);
         }
         return torques;
@@ -310,10 +299,10 @@ public:
     /**
      * @brief Checks for errors and prints them
      */
-    bool has_error()
+    bool HasError()
     {
         bool has_error = false;
-        auto pos = get_positions();
+        auto pos = GetPositions();
 
         // Check for lower and upper joint limits.
         for (int i = 0; i < COUNT; i++)
@@ -323,8 +312,8 @@ public:
                 has_error = true;
                 if (upper_joint_limits_counter_++ % 2000 == 0) {
                     msg_out_ << "ERROR: Above joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; print_array(pos); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; print_array(upper_joint_limits_); msg_out_ << std::endl;
+                    msg_out_ << "  Joints: "; PrintArray(pos); msg_out_ << std::endl;
+                    msg_out_ << "  Limits: "; PrintArray(upper_joint_limits_); msg_out_ << std::endl;
                 }
                 break;
             }
@@ -337,8 +326,8 @@ public:
                 has_error = true;
                 if (lower_joint_limits_counter_++ % 2000 == 0) {
                     msg_out_ << "ERROR: Below joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; print_array(pos); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; print_array(lower_joint_limits_); msg_out_ << std::endl;
+                    msg_out_ << "  Joints: "; PrintArray(pos); msg_out_ << std::endl;
+                    msg_out_ << "  Limits: "; PrintArray(lower_joint_limits_); msg_out_ << std::endl;
                 }
                 break;
             }
@@ -347,8 +336,8 @@ public:
         // Check for joint velocities limtis.
         // Check the velocity only after the motors report ready to avoid
         // fast motions during the initialization phase detected as error.
-        if (is_ready()) {
-            auto vel = get_velocities();
+        if (IsReady()) {
+            auto vel = GetVelocities();
             for (int i = 0; i < COUNT; i++)
             {
                 if (vel[i] > max_joint_velocities_ || vel[i] < -max_joint_velocities_)
@@ -357,7 +346,7 @@ public:
                     if (velocity_joint_limits_counter_++ % 2000 == 0)
                     {
                         msg_out_ << "ERROR: Above joint velocity limits at joint #" << (i) << std::endl;
-                        msg_out_ << "  Joints: "; print_array(vel); msg_out_ << std::endl;
+                        msg_out_ << "  Joints: "; PrintArray(vel); msg_out_ << std::endl;
                         msg_out_ << "  Limit: " << max_joint_velocities_ << std::endl;
                     }
                     break;
@@ -407,7 +396,7 @@ public:
         return has_error;
     }
 
-    void print_array(std::array<double, COUNT> arr)
+    void PrintArray(std::array<double, COUNT> arr)
     {
         for (int i = 0; i < COUNT; i++)
         {

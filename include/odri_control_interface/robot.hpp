@@ -47,13 +47,13 @@ public:
      * @brief Initializes the session and blocks until either the package
      *   got acknowledged or the communication timed out.
      */
-    void start()
+    void Start()
     {
         // Init the robot.
         robot_if->Init();
 
         // Enable the joints.
-        joints->enable();
+        joints->Enable();
 
         // Initiate the communication session.
         std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
@@ -71,21 +71,21 @@ public:
      *   to the robot. If an error was detected, go into safety mode
      *   and apply the safety control from the joint_module.
      */
-    bool send_command()
+    bool SendCommand()
     {
-        has_error();
+        HasError();
         if (saw_error_)
         {
-            joints->run_safety_controller();
+            joints->RunSafetyController();
         }
         robot_if->SendCommand();
         return !saw_error_;
     }
 
     /**
-     * 
+     *
      */
-    void parse_sensor_data()
+    void ParseSensorData()
     {
         robot_if->ParseSensorData();
     };
@@ -94,17 +94,17 @@ public:
      * @brief Way to report an external error. Causes the robot to go into
      *   safety mode.
      */
-    void report_error(std::string error);
+    void ReportError(std::string error);
 
     /**
      * @brief Returns true if all connected devices report ready.
      */
-    bool is_ready()
+    bool IsReady()
     {
-        return joints->is_ready();
+        return joints->IsReady();
     }
 
-    bool is_timeout()
+    bool IsTimeout()
     {
         return robot_if->IsTimeout();
     }
@@ -113,11 +113,11 @@ public:
      * @brief Checks all connected devices for errors. Also checks
      *  if there is a timeout.
      */
-    bool has_error()
+    bool HasError()
     {
-        saw_error_ |= joints->has_error();
+        saw_error_ |= joints->HasError();
         if (imu) {
-            saw_error_ |= imu->has_error();
+            saw_error_ |= imu->HasError();
         }
 
         if (robot_if->IsTimeout())

@@ -24,7 +24,7 @@ namespace odri_control_interface
 class Device
 {
     public:
-        virtual bool has_error() = 0;
+        virtual bool HasError() = 0;
 };
 
 }
