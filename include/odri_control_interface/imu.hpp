@@ -60,7 +60,7 @@ public:
         for (int i = 0; i < 3; i++) {
             int index = rotate_vector_[i];
             if (index < 0) {
-                angular_velocity[i] = -robot_if_->imu_data_gyroscope(-index + 1);
+                angular_velocity[i] = -robot_if_->imu_data_gyroscope(-index - 1);
             } else {
                 angular_velocity[i] = robot_if_->imu_data_gyroscope(index - 1);
             }
@@ -75,7 +75,7 @@ public:
         for (int i = 0; i < 3; i++) {
             int index = rotate_vector_[i];
             if (index < 0) {
-                accelerometer[i] = -robot_if_->imu_data_accelerometer(-index + 1);
+                accelerometer[i] = -robot_if_->imu_data_accelerometer(-index - 1);
             } else {
                 accelerometer[i] = robot_if_->imu_data_accelerometer(index - 1);
             }
@@ -90,7 +90,7 @@ public:
         for (int i = 0; i < 3; i++) {
             int index = rotate_vector_[i];
             if (index < 0) {
-                linear_acceleration[i] = -robot_if_->imu_data_linear_acceleration(-index + 1);
+                linear_acceleration[i] = -robot_if_->imu_data_linear_acceleration(-index - 1);
             } else {
                 linear_acceleration[i] = robot_if_->imu_data_linear_acceleration(index - 1);
             }
@@ -122,7 +122,7 @@ public:
         for (int i = 0; i < 4; i++) {
             int index = orientation_vector_[i];
             if (index < 0) {
-                attitude_rotated[i] = -attitude[-index + 1];
+                attitude_rotated[i] = -attitude[-index - 1];
             } else {
                 attitude_rotated[i] = attitude[index - 1];
             }
