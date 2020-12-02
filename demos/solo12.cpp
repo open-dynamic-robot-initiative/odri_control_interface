@@ -37,10 +37,10 @@ int main(int argc, char **argv)
     );
 
     // Define the IMU.
-    // auto imu = std:make_shared<IMU>(main_board_ptr_,
-    //     {0., 1., 2.}, {0., 1., 2., 3.});
-    // Not defining an IMU for now.
-    std::shared_ptr<IMU> imu = nullptr;
+    std::array<int, 3> rotate_vector = {1, 2, 3};
+    std::array<int, 4> orientation_vector = {1, 2, 3, 4};
+    auto imu = std::make_shared<IMU>(main_board_ptr_,
+        rotate_vector, orientation_vector);
 
     // Define the robot.
     auto robot = std::make_shared<Robot<12> >(
