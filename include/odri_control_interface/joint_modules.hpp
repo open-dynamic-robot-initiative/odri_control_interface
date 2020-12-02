@@ -223,6 +223,44 @@ public:
         return index_detected;
     }
 
+    std::array<bool, COUNT> GetReady()
+    {
+        std::array<bool, COUNT> is_ready;
+        for (int i = 0; i < COUNT; i++) {
+            is_ready[i] = motors_[i]->get_is_ready();
+        }
+        return is_ready;
+    }
+
+    std::array<bool, COUNT> GetEnabled()
+    {
+        std::array<bool, COUNT> is_enabled;
+        for (int i = 0; i < COUNT; i++) {
+            is_enabled[i] = motors_[i]->get_is_enabled();
+        }
+        return is_enabled;
+    }
+
+    std::array<bool, (COUNT + 1)/2> GetMotorDriverEnabled()
+    {
+        std::array<bool, (COUNT + 1)/2> is_enabled;
+        for (int i = 0; i < (COUNT + 1)/2; i++)
+        {
+            is_enabled[i] = robot_if_->motor_drivers[i].IsEnabled();
+        }
+        return is_enabled;
+    }
+
+    std::array<int, (COUNT + 1)/2> GetMotorDriverErrors()
+    {
+        std::array<int, (COUNT + 1)/2> errors;
+        for (int i = 0; i < (COUNT + 1)/2; i++)
+        {
+            errors[i] = robot_if_->motor_drivers[i].GetErrorCode();
+        }
+        return errors;
+    }
+
     bool SawAllIndices()
     {
         for (int i = 0; i < COUNT; i++)

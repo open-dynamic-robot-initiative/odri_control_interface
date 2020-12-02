@@ -98,7 +98,22 @@ public:
         return linear_acceleration;
     }
 
-    std::array<double, 4> GetAttitude()
+    std::array<double, 3> GetAttitudeEuler()
+    {
+        std::array<double, 3> attitude;
+
+        for (int i = 0; i < 3; i++) {
+            int index = rotate_vector_[i];
+            if (index < 0) {
+                attitude[i] = -robot_if_->imu_data_attitude(-index - 1);
+            } else {
+                attitude[i] = robot_if_->imu_data_attitude(index - 1);
+            }
+        }
+        return attitude;
+    }
+
+    std::array<double, 4> GetAttitudeQuaternion()
     {
         std::array<double, 4> attitude;
         std::array<double, 4> attitude_rotated;

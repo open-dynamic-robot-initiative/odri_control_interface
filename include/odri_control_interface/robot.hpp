@@ -104,6 +104,22 @@ public:
         return joints->IsReady();
     }
 
+    void WaitUntilReady()
+    {
+        std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
+        while (!IsReady() && !HasError())
+        {
+            if (((std::chrono::duration<double>)(std::chrono::system_clock::now() - last)).count() > 0.001)
+            {
+                last += std::chrono::milliseconds(1);
+                ParseSensorData();
+                SendCommand();
+            } else {
+                std::this_thread::yield();
+            }
+        }
+    }
+
     bool IsTimeout()
     {
         return robot_if->IsTimeout();
