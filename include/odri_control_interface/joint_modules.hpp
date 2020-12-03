@@ -342,7 +342,7 @@ public:
 
     void EnableJointLimitCheck()
     {
-        check_joint_limits_ = false;
+        check_joint_limits_ = true;
     };
 
     /**
@@ -352,7 +352,7 @@ public:
     {
         bool has_error = false;
 
-        if (check_joint_limits_) 
+        if (check_joint_limits_)
         {
             auto pos = GetPositions();
 

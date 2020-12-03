@@ -44,6 +44,7 @@ protected:
     double Kd_;
     double Kp_;
     double dt_;
+    double T_;
     double t_;
     bool go_to_zero_position_;
 
@@ -52,10 +53,10 @@ public:
         std::shared_ptr<JointModules<COUNT> > joints,
         std::array<CalibrationMethod, COUNT>& search_methods,
         std::array<double, COUNT>& position_offsets,
-        double Kp, double Kd, double dt
+        double Kp, double Kd, double T, double dt
     ): joints_(joints), search_methods_(search_methods),
         position_offsets_(position_offsets), Kp_(Kp), Kd_(Kd),
-        dt_(dt), t_(0.), go_to_zero_position_(false)
+        T_(T), dt_(dt), t_(0.), go_to_zero_position_(false)
     {
         std::array<double, COUNT> gear_ratios = joints->GetGearRatios();
         for (int i = 0; i < COUNT; i++)
@@ -69,6 +70,8 @@ public:
                     search_methods_[i] = ALTERNATIVE;
                 }
             }
+
+            found_index_[i] = false;
         }
     }
 
@@ -82,7 +85,6 @@ public:
      */
     bool Run()
     {
-        double T = 2.;
         if (t_ == 0.)
         {
             joints_->EnableIndexOffsetCompensation();
@@ -115,20 +117,20 @@ public:
                 {
                     found_index_[i] = true;
                     initial_positions_[i] = positions[i];
-                    t_end_[i] = t_ + T;
+                    t_end_[i] = t_ + T_;
                 } else {
                     if (search_methods_[i] == ALTERNATIVE)
                     {
-                        if (t_ < T / 2.)
+                        if (t_ < T_ / 2.)
                         {
-                            des_pos = 1.2 * M_PI * 0.5 * (1. - cos(2. * M_PI * (1. / T) * t_));
+                            des_pos = 1.2 * M_PI * 0.5 * (1. - cos(2. * M_PI * (1. / T_) * t_));
                         } else {
-                            des_pos = 1.2 * M_PI * cos(2. * M_PI * (0.5 / T)*(t_-T/2.0));
+                            des_pos = 1.2 * M_PI * cos(2. * M_PI * (0.5 / T_)*(t_-T_/2.0));
                         }
                     } else if (search_methods_[i] == POSITIVE) {
-                        des_pos = 2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T) * t_));
+                        des_pos = 2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
                     } else {
-                        des_pos = -2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T) * t_));
+                        des_pos = -2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
                     }
                     command[i] = Kp_ * (des_pos/gear_ratios[i] + initial_positions_[i] - positions[i]) - Kd_ * velocities[i];
                 }
@@ -136,7 +138,7 @@ public:
             // After the index was found, move to the initial zero position.
             } else {
                 if (t_end_[i] > t_) {
-                    des_pos = initial_positions_[i] * (t_end_[i] - t_)/T;
+                    des_pos = initial_positions_[i] * (t_end_[i] - t_)/T_;
                     finished = false;
                 } else {
                     des_pos = 0;
@@ -147,7 +149,6 @@ public:
         joints_->SetTorques(command);
 
         t_ += dt_;
-
 
         if (finished)
         {
