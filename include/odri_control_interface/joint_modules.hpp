@@ -335,40 +335,54 @@ public:
         return torques;
     };
 
+    void DisableJointLimitCheck()
+    {
+        check_joint_limits_ = false;
+    };
+
+    void EnableJointLimitCheck()
+    {
+        check_joint_limits_ = false;
+    };
+
     /**
      * @brief Checks for errors and prints them
      */
     bool HasError()
     {
         bool has_error = false;
-        auto pos = GetPositions();
 
-        // Check for lower and upper joint limits.
-        for (int i = 0; i < COUNT; i++)
+        if (check_joint_limits_) 
         {
-            if (pos[i] > upper_joint_limits_[i])
+            auto pos = GetPositions();
+
+            // Check for lower and upper joint limits.
+            for (int i = 0; i < COUNT; i++)
             {
-                has_error = true;
-                if (upper_joint_limits_counter_++ % 2000 == 0) {
-                    msg_out_ << "ERROR: Above joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; PrintArray(pos); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; PrintArray(upper_joint_limits_); msg_out_ << std::endl;
+                if (pos[i] > upper_joint_limits_[i])
+                {
+                    has_error = true;
+                    if (upper_joint_limits_counter_++ % 2000 == 0) {
+                        msg_out_ << "ERROR: Above joint limits at joint #" << (i) << std::endl;
+                        msg_out_ << "  Joints: "; PrintArray(pos); msg_out_ << std::endl;
+                        msg_out_ << "  Limits: "; PrintArray(upper_joint_limits_); msg_out_ << std::endl;
+                    }
+                    break;
                 }
-                break;
             }
-        }
 
-        for (int i = 0; i < COUNT; i++)
-        {
-            if (pos[i] < lower_joint_limits_[i])
+            for (int i = 0; i < COUNT; i++)
             {
-                has_error = true;
-                if (lower_joint_limits_counter_++ % 2000 == 0) {
-                    msg_out_ << "ERROR: Below joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; PrintArray(pos); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; PrintArray(lower_joint_limits_); msg_out_ << std::endl;
+                if (pos[i] < lower_joint_limits_[i])
+                {
+                    has_error = true;
+                    if (lower_joint_limits_counter_++ % 2000 == 0) {
+                        msg_out_ << "ERROR: Below joint limits at joint #" << (i) << std::endl;
+                        msg_out_ << "  Joints: "; PrintArray(pos); msg_out_ << std::endl;
+                        msg_out_ << "  Limits: "; PrintArray(lower_joint_limits_); msg_out_ << std::endl;
+                    }
+                    break;
                 }
-                break;
             }
         }
 

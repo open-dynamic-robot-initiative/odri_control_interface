@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <math.h>
 #include <unistd.h>
 
@@ -19,7 +20,8 @@
 
 namespace odri_control_interface
 {
-enum CalibrationMethod {
+enum CalibrationMethod
+{
     AUTO,
     POSITIVE,
     NEGATIVE,
@@ -37,6 +39,8 @@ protected:
     std::array<CalibrationMethod, COUNT> search_methods_;
     std::array<double, COUNT> position_offsets_;
     std::array<double, COUNT> initial_positions_;
+    std::array<bool, COUNT> found_index_;
+    std::array<double, COUNT> t_end_;
     double Kd_;
     double Kp_;
     double dt_;
@@ -92,6 +96,8 @@ public:
                 joints_->SetZeroCommand();
                 return true;
             }
+
+            joints_->DisableJointLimitCheck();
         }
 
         std::array<double, COUNT> command;
@@ -100,16 +106,16 @@ public:
         auto positions = joints_->GetPositions();
         auto velocities = joints_->GetVelocities();
         double des_pos = 0.;
+        bool finished = true;
         for (int i = 0; i < COUNT; i++)
         {
-            // First half: Find the index.
-            // Running till 1.5 T to give the ALTERNATIVE some more time to
-            // go back to the other direction.
-            if (t_ < 1.5 * T) {
+            // As long as the index was not found, search for it.
+            if (!found_index_[i]) {
                 if (has_index_been_detected[i])
                 {
-                    command[i] = 0.;
+                    found_index_[i] = true;
                     initial_positions_[i] = positions[i];
+                    t_end_[i] = t_ + T;
                 } else {
                     if (search_methods_[i] == ALTERNATIVE)
                     {
@@ -126,15 +132,28 @@ public:
                     }
                     command[i] = Kp_ * (des_pos/gear_ratios[i] + initial_positions_[i] - positions[i]) - Kd_ * velocities[i];
                 }
-            // Second half move the motors to zero position.
+                finished = false;
+            // After the index was found, move to the initial zero position.
             } else {
-                command[i] = Kp_ * (initial_positions_[i] * (2.5-t_/T) - positions[i]) - Kd_ * velocities[i];
+                if (t_end_[i] > t_) {
+                    des_pos = initial_positions_[i] * (t_end_[i] - t_)/T;
+                    finished = false;
+                } else {
+                    des_pos = 0;
+                }
+                command[i] = Kp_ * (des_pos - positions[i]) - Kd_ * velocities[i];
             }
         }
         joints_->SetTorques(command);
 
         t_ += dt_;
-        return t_ >= 2.5 * T;
+
+
+        if (finished)
+        {
+            joints_->EnableJointLimitCheck();
+        }
+        return finished;
     }
 
     bool IsCalibrationDone()
