@@ -43,17 +43,27 @@ public:
     {
     }
 
-    /**
-     * @brief Initializes the session and blocks until either the package
-     *   got acknowledged or the communication timed out.
-     */
-    void Start()
+    void Init()
     {
         // Init the robot.
         robot_if->Init();
 
         // Enable the joints.
         joints->Enable();
+    }
+
+    void SendInit()
+    {
+        robot_if->SendInit();
+    }
+
+    /**
+     * @brief Initializes the session and blocks until either the package
+     *   got acknowledged or the communication timed out.
+     */
+    void Start()
+    {
+        Init();
 
         // Initiate the communication session.
         std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
@@ -64,6 +74,11 @@ public:
                 robot_if->SendInit();
             }
         }
+    }
+
+    bool IsAckMsgReceived()
+    {
+        return robot_if->IsAckMsgReceived();
     }
 
     /**
@@ -94,7 +109,11 @@ public:
      * @brief Way to report an external error. Causes the robot to go into
      *   safety mode.
      */
-    void ReportError(std::string error);
+    void ReportError(std::string error)
+    {
+        msg_out_ << "ERROR: " << error << std::endl;
+        saw_error_ = true;
+    }
 
     /**
      * @brief Returns true if all connected devices report ready.

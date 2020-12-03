@@ -85,10 +85,7 @@ public:
             zeros[i] = 0.;
         }
 
-        SetTorques(zeros);
-        SetDesiredPositions(zeros);
-        SetDesiredVelocities(zeros);
-        SetZeroGains();
+        SetZeroCommand();
 
         // Enable all motors and cards.
         for (int i = 0; i < (COUNT + 1) / 2; i++)
@@ -168,6 +165,18 @@ public:
         SetVelocityGains(zeros);
     };
 
+    void SetZeroCommand()
+    {
+        std::array<double, COUNT> zeros;
+        for (int i = 0; i < COUNT; i++) {
+            zeros[i] = 0.;
+        }
+        SetTorques(zeros);
+        SetDesiredPositions(zeros);
+        SetDesiredVelocities(zeros);
+        SetZeroGains();
+    }
+
     /**
      * @brief Overwrites the control commands for a default safety controller.
      * The safety controller applies a D control to all the joints based
@@ -175,15 +184,7 @@ public:
      */
     virtual void RunSafetyController()
     {
-        std::array<double, COUNT> zeros;
-        for (int i = 0; i < COUNT; i++) {
-            zeros[i] = 0.;
-        }
-
-        SetTorques(zeros);
-        SetDesiredPositions(zeros);
-        SetDesiredVelocities(zeros);
-        SetZeroGains();
+        SetZeroCommand();
 
         std::array<double, COUNT> kd_safety;
         for (int i = 0; i < COUNT; i++) {

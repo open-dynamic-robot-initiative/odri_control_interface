@@ -68,6 +68,11 @@ public:
         }
     }
 
+    void UpdatePositionOffsets(std::array<double, COUNT>& position_offsets)
+    {
+        position_offsets_ = position_offsets;
+    }
+
     /**
      * @brief Runs the calibration procedure. Returns true if the calibration is done.
      */
@@ -84,6 +89,7 @@ public:
             // If all the indices are already detected, then assume there
             // is nothing that needs to be done.
             if (joints_->SawAllIndices()) {
+                joints_->SetZeroCommand();
                 return true;
             }
         }
