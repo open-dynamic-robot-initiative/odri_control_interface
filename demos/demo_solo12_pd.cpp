@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         joints,
         directions,
         position_offsets,
-        5., 0.05, 0.001
+        5., 0.05, 2., 0.001
     );
 
     std::array<double, 12> zero_array;
