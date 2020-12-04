@@ -1,138 +1,114 @@
 #
-# Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+# Copyright (c) 2020, New York University and Max Planck Gesellschaft.
 #
 # License BSD-3 clause
 #
 
-#
-# set up the project
-#
-cmake_minimum_required(VERSION 3.10.2)
 
-project(odri_control_interface)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
-# Using C++17
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 99)
-endif()
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-endif()
+# ----------------------------------------------------
+# --- CXX FLAGS --------------------------------------
+# ----------------------------------------------------
 
-#
-# Dependencies
-#
+SET(CXX_DISABLE_WERROR True)
+SET(CMAKE_VERBOSE_MAKEFILE True)
 
-# depend on ament macros
-find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_python REQUIRED)
+# These variables have to be defined before running SETUP_PROJECT
+SET(PROJECT_NAME odri_control_interface)
+SET(PROJECT_DESCRIPTION "Common interface for controlling robots build with the odri master board.")
+SET(PROJECT_URL https://github.com/open-dynamic-robot-initiative/odri_control_interface)
+set(PROJECT_USE_CMAKE_EXPORT TRUE)
+SET(PROJECT_VERSION_COMPUTATION_METHODS ROS_PACKAGE_XML_FILE)
 
-# Usual dependencies
-find_package(mpi_cmake_modules REQUIRED)
-find_package(pybind11_vendor REQUIRED)
-find_package(pybind11 REQUIRED)
-find_package(Threads REQUIRED)
-find_package(master_board_sdk REQUIRED)
+# Check if the submodule cmake have been initialized
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+  MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
+ENDIF()
 
-#
-# Setup the environment for dependencies
-#
-ament_export_dependencies(mpi_cmake_modules master_board_sdk Threads pybind11)
-ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-set(all_targets)
+# --- OPTIONS ----------------------------------------
+OPTION(BUILD_PYTHON_INTERFACE "Build the python binding" ON)
+OPTION(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
+OPTION(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
 
-#
-# Add the main library
-#
+INCLUDE(cmake/base.cmake)
+INCLUDE(cmake/boost.cmake)
+INCLUDE(cmake/python.cmake)
+INCLUDE(cmake/ide.cmake)
 
-# Create the CMake target
-add_library(${PROJECT_NAME} INTERFACE)
-# Add the include dependencies
+COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
+PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
+CHECK_MINIMAL_CXX_STANDARD(11 ENFORCE)
+
+# ----------------------------------------------------
+# --- DEPENDENCIES -----------------------------------
+# ----------------------------------------------------
+
+ADD_PROJECT_DEPENDENCY(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
+ADD_PROJECT_DEPENDENCY(master_board_sdk REQUIRED)
+
+# Set component to fetch from boost
+# Get the python interface for the bindings
+IF(BUILD_PYTHON_INTERFACE)
+  FINDPYTHON(REQUIRED)
+  SEARCH_FOR_BOOST_PYTHON(REQUIRED)
+  ADD_PROJECT_DEPENDENCY(eigenpy 2.5.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 2.5.0")
+ENDIF(BUILD_PYTHON_INTERFACE)
+
+# ----------------------------------------------------
+# --- INCLUDE ----------------------------------------
+# ----------------------------------------------------
+
+# --- MAIN LIBRARY -------------------------------------------------------------
+SET(ODRI_CONTROL_INTERFACE_SRC
+    src/joint_modules.cpp
+)
+ADD_LIBRARY(${PROJECT_NAME} SHARED
+  ${ODRI_CONTROL_INTERFACE_SRC}
+)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${MASTER_BOARD_SDK_INCLUDE_DIRS})
+# TARGET_LINK_LIBRARIES(${PROJECT_NAME} pthread)
 target_include_directories(
-  ${PROJECT_NAME}
-  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            $<INSTALL_INTERFACE:include>)
-# Link the dependencies
-target_link_libraries(${PROJECT_NAME} INTERFACE Threads::Threads)
-target_link_libraries(${PROJECT_NAME}
-                      INTERFACE master_board_sdk::master_board_sdk)
-target_link_libraries(${PROJECT_NAME} ${master_board_sdk_LIBRARIES})
-# For the installation
-list(APPEND all_targets ${PROJECT_NAME})
-
-#
-# Demos.
-#
-macro(add_odri_control_interface_demo demo_name)
-  # set(demo_target_name ${PROJECT_NAME}_${demo_name})
-  set(demo_target_name ${demo_name})
-  # add the executable.
-  add_executable(${demo_target_name} demos/${demo_name}.cpp)
-  # save the name for installation
-  list(APPEND all_targets ${demo_target_name})
-  # dependencies
-  target_include_directories(
-    ${demo_target_name}
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-           $<INSTALL_INTERFACE:include>)
-  target_link_libraries(${demo_target_name} ${PROJECT_NAME})
-endmacro(add_odri_control_interface_demo target_name)
-
-add_odri_control_interface_demo(demo_solo12)
-add_odri_control_interface_demo(demo_solo12_pd)
-# add_real_time_tools_demo(demo_realtime_strict_check)
-# add_real_time_tools_demo(demo_spinner) add_real_time_tools_demo(demo_timing)
-# add_real_time_tools_demo(demo_thread)
-# add_real_time_tools_demo(demo_usb_stream_imu_3DM_GX3_25)
-# add_real_time_tools_demo(demo_checkpoint_timer)
-
-#
-# Executables.
-#
-
-# set(EXE1 realtime_test) add_executable(${EXE1} src/bin/realtime_test.cpp)
-# target_link_libraries(${EXE1} ${PROJECT_NAME} ${catkin_LIBRARIES})
-
-# set(EXE2 realtime_test_display) add_executable(${EXE2}
-# src/bin/realtime_test_display.cpp) target_link_libraries(${EXE2}
-# ${PROJECT_NAME} ${catkin_LIBRARIES})
-
-#
-# Python wrapper.
-#
-# add_library(${PROJECT_NAME}_cpp_bindings MODULE srcpy/real_time_tools.cpp)
-# target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE pybind11::module)
-# target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE
-# ${PYTHON_LIBRARIES}) target_link_libraries(${PROJECT_NAME}_cpp_bindings
-# PRIVATE ${PROJECT_NAME}) set_target_properties(${PROJECT_NAME}_cpp_bindings
-# PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
-# target_include_directories( ${PROJECT_NAME}_cpp_bindings PUBLIC
-# $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-# $<INSTALL_INTERFACE:include> SYSTEM PUBLIC ${PYTHON_INCLUDE_DIRS})
-# _ament_cmake_python_get_python_install_dir() install(TARGETS
-# ${PROJECT_NAME}_cpp_bindings DESTINATION ${PYTHON_INSTALL_DIR}) install(FILES
-# srcpy/__init__.py DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME})
-
-#
-# Install the package
-#
+  ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                         $<INSTALL_INTERFACE:include>)
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${TARGETS_EXPORT_NAME}
+  DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
-install(
-  TARGETS ${all_targets}
-  EXPORT export_${PROJECT_NAME}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES
-  DESTINATION include)
+# --- BINDINGS -----------------------------------------------------------------
 
-#
-# Building documentation.
-#
-add_documentation()
+IF(BUILD_PYTHON_INTERFACE)
+  # --- Setup the wrapper name and source files --- #
+  SET(PYWRAP ${PROJECT_NAME}_pywrap)
+  SET(${PYWRAP}_HEADERS
+    srcpy/bindings.h
+  )
+  SET(${PYWRAP}_SOURCES
+    srcpy/bindings.cpp
+  )
 
-#
-# Export as an ament_package
-#
-ament_package()
+  # --- Build the wrapper library --- #
+  SET(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB})
+  ADD_LIBRARY(${PYWRAP} SHARED ${${PYWRAP}_SOURCES} ${${PYWRAP}_HEADERS})
+  TARGET_INCLUDE_DIRECTORIES(${PYWRAP} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIR})
+  TARGET_LINK_LIBRARIES(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy master_board_sdk::master_board_sdk)
+  TARGET_LINK_BOOST_PYTHON(${PYWRAP})
+  SET_TARGET_PROPERTIES(${PYWRAP} PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  INSTALL(TARGETS ${PYWRAP} DESTINATION ${${PYWRAP}_INSTALL_DIR})
+
+  # --- Allow to do: make python --- #
+  ADD_CUSTOM_TARGET(python)
+  SET_TARGET_PROPERTIES(python PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True)
+  ADD_DEPENDENCIES(python ${PYWRAP})
+
+ENDIF(BUILD_PYTHON_INTERFACE)
+
+
+# --- CHECK DEMOS -----------------------------------------------------------
+ADD_EXECUTABLE(demo_solo12 demos/demo_solo12.cpp)
+TARGET_LINK_LIBRARIES(demo_solo12 ${PROJECT_NAME})
+INSTALL(TARGETS demo_solo12 DESTINATION bin)

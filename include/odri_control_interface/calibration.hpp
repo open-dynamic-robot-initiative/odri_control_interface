@@ -82,7 +82,7 @@ public:
      */
     bool Run()
     {
-        double T = 2.;
+        double T = 1.;
         if (t_ == 0.)
         {
             joints_->EnableIndexOffsetCompensation();

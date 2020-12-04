@@ -8,7 +8,7 @@
 
     <name>odri_control_interface</name>
     <version>1.0.0</version>
-    
+
     <description>
 	Common interface for controlling robots build with the odri master board.
     </description>
@@ -26,6 +26,9 @@
     <!-- CMake module containing helper to find the OS, boost, python, etc. -->
     <depend>Threads</depend>
     <depend>master_board_sdk</depend>
+
+    <depend>boost</depend>
+    <depend>eigenpy</depend>
 
     <export>
         <build_type>ament_cmake</build_type>
