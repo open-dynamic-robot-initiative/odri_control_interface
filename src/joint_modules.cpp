@@ -16,13 +16,13 @@ namespace odri_control_interface
 
 JointModules::JointModules(
     MasterBoardInterface* robot_if,
-    Eigen::Matrix<long, Eigen::Dynamic, 1> motor_numbers,
+    RefVectorXl motor_numbers,
     double motor_constants,
     double gear_ratios,
     double max_currents,
-    Eigen::Matrix<long, Eigen::Dynamic, 1> motor_polarities,
-    Eigen::VectorXd lower_joint_limits,
-    Eigen::VectorXd upper_joint_limits,
+    RefVectorXl motor_polarities,
+    RefVectorXd lower_joint_limits,
+    RefVectorXd upper_joint_limits,
     double max_joint_velocities,
     double safety_damping
 ):  robot_if_(robot_if),

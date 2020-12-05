@@ -15,19 +15,13 @@
 #include <vector>
 #include <unistd.h>
 
-#include <Eigen/Dense>
-
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
 
+#include <odri_control_interface/common.hpp>
+
 namespace odri_control_interface
 {
-typedef Eigen::Matrix<long, Eigen::Dynamic, 1> VectorXl;
-typedef Eigen::Matrix<bool, Eigen::Dynamic, 1> VectorXb;
-
-typedef Eigen::Ref<Eigen::Matrix<long, Eigen::Dynamic, 1> > RefVectorXl;
-typedef Eigen::Ref<Eigen::Matrix<bool, Eigen::Dynamic, 1> > RefVectorXb;
-typedef Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 1> > RefVectorXd;
 
 /**
  * @brief Class abstracting the blmc motors to modules.
@@ -72,13 +66,13 @@ protected:
 public:
     JointModules(
         MasterBoardInterface* robot_if,
-        Eigen::Matrix<long, Eigen::Dynamic, 1> motor_numbers,
+        RefVectorXl motor_numbers,
         double motor_constants,
         double gear_ratios,
         double max_currents,
-        Eigen::Matrix<long, Eigen::Dynamic, 1> motor_polarities,
-        Eigen::VectorXd lower_joint_limits,
-        Eigen::VectorXd upper_joint_limits,
+        RefVectorXl motor_polarities,
+        RefVectorXd lower_joint_limits,
+        RefVectorXd upper_joint_limits,
         double max_joint_velocities,
         double safety_damping
     );

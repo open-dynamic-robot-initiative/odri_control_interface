@@ -62,6 +62,7 @@ ENDIF(BUILD_PYTHON_INTERFACE)
 # --- MAIN LIBRARY -------------------------------------------------------------
 SET(ODRI_CONTROL_INTERFACE_SRC
     src/joint_modules.cpp
+    src/imu.cpp
 )
 ADD_LIBRARY(${PROJECT_NAME} SHARED
   ${ODRI_CONTROL_INTERFACE_SRC}

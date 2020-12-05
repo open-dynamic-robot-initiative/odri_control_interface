@@ -10,7 +10,7 @@
  */
 
 
-#include "my_bindings_headr.h"
+#include "bindings.h"
 #include <eigenpy/eigenpy.hpp>
 
 using namespace boost::python;
@@ -27,8 +27,8 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 
     class_<JointModules>("JointModules", init<
             MasterBoardInterface*,
-            VectorXl, double, double, double, VectorXl,
-            Eigen::VectorXd, Eigen::VectorXd,
+            RefVectorXl, double, double, double, RefVectorXl,
+            RefVectorXd, RefVectorXd,
             double, double>())
 
         .def("enable", &JointModules::Enable)
@@ -56,10 +56,21 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property("is_ready", &JointModules::IsReady)
         .add_property("has_error", &JointModules::HasError)
 
-        .add_property("get_positions", &JointModules::GetPositions)
-        .add_property("get_velocities", &JointModules::GetVelocities)
-        .add_property("get_sent_torques", &JointModules::GetSentTorques)
-        .add_property("get_measured_torques", &JointModules::GetMeasuredTorques)
+        .add_property("positions", &JointModules::GetPositions)
+        .add_property("velocities", &JointModules::GetVelocities)
+        .add_property("sent_torques", &JointModules::GetSentTorques)
+        .add_property("measured_torques", &JointModules::GetMeasuredTorques)
 
         .add_property("gear_ratios", &JointModules::GetGearRatios);
+
+    class_<IMU>("IMU", init<MasterBoardInterface*>())
+        .def(init<MasterBoardInterface*, RefVectorXl, RefVectorXl>())
+
+        .add_property("has_error", &IMU::HasError)
+
+        .add_property("gyroscope", &IMU::GetGyroscope)
+        .add_property("accelerometer", &IMU::GetAccelerometer)
+        .add_property("linear_acceleration", &IMU::GetLinearAcceleration)
+        .add_property("attitude_euler", &IMU::GetAttitudeEuler)
+        .add_property("attitude_quaternion", &IMU::GetAttitudeQuaternion);
 }
