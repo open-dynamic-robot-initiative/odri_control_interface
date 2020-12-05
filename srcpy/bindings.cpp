@@ -73,4 +73,22 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property("linear_acceleration", &IMU::GetLinearAcceleration)
         .add_property("attitude_euler", &IMU::GetAttitudeEuler)
         .add_property("attitude_quaternion", &IMU::GetAttitudeQuaternion);
+
+    class_<Robot>("Robot", init<MasterBoardInterface*, JointModules*, IMU*>())
+        .def("init", &Robot::Init)
+        .def("SendInit", &Robot::SendInit)
+        .def("Start", &Robot::Start)
+
+        .def("parse_sensor_data", &Robot::ParseSensorData)
+        .def("send_command", &Robot::SendCommand)
+
+        .def("report_error", &Robot::ReportError)
+
+        .def("wait_until_ready", &Robot::WaitUntilReady)
+
+        .add_property("is_ready", &Robot::IsReady)
+        .add_property("is_timeout", &Robot::IsTimeout)
+        .add_property("is_ack_msg_received", &Robot::IsAckMsgReceived)
+        .add_property("has_error", &Robot::HasError);
+
 }

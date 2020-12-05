@@ -1,4 +1,4 @@
-    /**
+/**
  * @file joint_modules.cpp
  * @author Julian Viereck (jviereck@tuebingen.mpg.de)
  * license License BSD-3-Clause
