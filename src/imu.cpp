@@ -11,6 +11,8 @@
 
 #include "odri_control_interface/imu.hpp"
 
+#include <iostream>
+
 namespace odri_control_interface
 {
 
@@ -94,6 +96,11 @@ void IMU::ParseSensorData()
     double attitude0 = robot_if_->imu_data_attitude(0);
     double attitude1 = robot_if_->imu_data_attitude(1);
     double attitude2 = robot_if_->imu_data_attitude(2);
+
+    static int counter = 0;
+    if (counter++ % 1000 == 0) {
+        std::cout << "IMU attitude " << attitude0 << ", " << attitude1 << ", " << attitude2 << std::endl;
+    }
 
     double sr = sin(attitude0 / 2.);
     double cr = cos(attitude0 / 2.);

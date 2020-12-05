@@ -19,6 +19,26 @@ using namespace odri_control_interface;
 typedef Eigen::Matrix<long, Eigen::Dynamic, 1> VectorXl;
 typedef Eigen::Matrix<bool, Eigen::Dynamic, 1> VectorXb;
 
+JointCalibrator* joint_calibrator_constructor(
+    JointModules* joints,
+    boost::python::list search_methods,
+    RefVectorXd position_offsets,
+    double Kp, double Kd, double T, double dt
+)
+{
+    boost::python::ssize_t len = boost::python::len(search_methods);
+    std::vector<CalibrationMethod> search_method_vec;
+    for(int i = 0; i < len; i++)
+    {
+        search_method_vec.push_back(
+            boost::python::extract<CalibrationMethod>(search_methods[i])
+        );
+    }
+    return new JointCalibrator(
+        joints, search_method_vec, position_offsets, Kp, Kd, T, dt
+    );
+}
+
 BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 {
     eigenpy::enableEigenPy();
@@ -27,7 +47,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 
     class_<JointModules>("JointModules", init<
             MasterBoardInterface*,
-            RefVectorXl, double, double, double, RefVectorXl,
+            RefVectorXl, double, double, double, RefVectorXb,
             RefVectorXd, RefVectorXd,
             double, double>())
 
@@ -76,8 +96,8 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 
     class_<Robot>("Robot", init<MasterBoardInterface*, JointModules*, IMU*>())
         .def("init", &Robot::Init)
-        .def("SendInit", &Robot::SendInit)
-        .def("Start", &Robot::Start)
+        .def("sendInit", &Robot::SendInit)
+        .def("start", &Robot::Start)
 
         .def("parse_sensor_data", &Robot::ParseSensorData)
         .def("send_command", &Robot::SendCommand)
@@ -90,5 +110,17 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property("is_timeout", &Robot::IsTimeout)
         .add_property("is_ack_msg_received", &Robot::IsAckMsgReceived)
         .add_property("has_error", &Robot::HasError);
+
+    enum_<CalibrationMethod>("CalibrationMethod")
+        .value("auto", CalibrationMethod::AUTO)
+        .value("positive", CalibrationMethod::POSITIVE)
+        .value("negative", CalibrationMethod::NEGATIVE)
+        .value("alternative", CalibrationMethod::ALTERNATIVE)
+        ;
+
+    class_<JointCalibrator>("JointCalibrator", no_init)
+        .def("__init__", make_constructor(&joint_calibrator_constructor))
+        .def("run", &JointCalibrator::Run)
+        ;
 
 }

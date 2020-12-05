@@ -64,6 +64,7 @@ SET(ODRI_CONTROL_INTERFACE_SRC
     src/joint_modules.cpp
     src/imu.cpp
     src/robot.cpp
+    src/calibration.cpp
 )
 ADD_LIBRARY(${PROJECT_NAME} SHARED
   ${ODRI_CONTROL_INTERFACE_SRC}
@@ -112,5 +113,5 @@ ENDIF(BUILD_PYTHON_INTERFACE)
 
 # --- CHECK DEMOS -----------------------------------------------------------
 ADD_EXECUTABLE(demo_solo12 demos/demo_solo12.cpp)
-TARGET_LINK_LIBRARIES(demo_solo12 ${PROJECT_NAME})
+TARGET_LINK_LIBRARIES(demo_solo12 ${PROJECT_NAME} master_board_sdk::master_board_sdk)
 INSTALL(TARGETS demo_solo12 DESTINATION bin)

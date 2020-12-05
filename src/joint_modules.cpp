@@ -20,13 +20,12 @@ JointModules::JointModules(
     double motor_constants,
     double gear_ratios,
     double max_currents,
-    RefVectorXl motor_polarities,
+    RefVectorXb reverse_polarities,
     RefVectorXd lower_joint_limits,
     RefVectorXd upper_joint_limits,
     double max_joint_velocities,
     double safety_damping
 ):  robot_if_(robot_if),
-    polarities_(motor_polarities),
     lower_joint_limits_(lower_joint_limits),
     upper_joint_limits_(upper_joint_limits),
     max_joint_velocities_(max_joint_velocities),
@@ -35,6 +34,23 @@ JointModules::JointModules(
     n_ = motor_numbers.size();
     nd_ = (n_ + 1)/2;
 
+    // Check input arrays for correct sizes.
+    if (reverse_polarities.size() != n_)
+    {
+        throw std::runtime_error("Motor polarities has different size than motor numbers");
+    }
+
+    if (lower_joint_limits.size() != n_)
+    {
+        throw std::runtime_error("Lower joint limits has different size than motor numbers");
+    }
+
+    if (upper_joint_limits.size() != n_)
+    {
+        throw std::runtime_error("Upper joint limits has different size than motor numbers");
+    }
+
+    // Resize and fill the vectors.
     gear_ratios_.resize(n_);
     motor_constants_.resize(n_);
     positions_.resize(n_);
@@ -43,6 +59,7 @@ JointModules::JointModules(
     measured_torques_.resize(n_);
     index_been_detected_.resize(n_);
     index_been_detected_.fill(false);
+    polarities_.resize(n_);
     ready_.resize(n_);
     ready_.fill(false);
     enabled_.resize(n_);
@@ -62,9 +79,10 @@ JointModules::JointModules(
     for (int i = 0; i < n_; i++)
     {
         motors_.push_back(robot_if_->GetMotor(motor_numbers[i]));
+        polarities_(i) = reverse_polarities(i) ? -1 : 1;
     }
 
-    // SetMaximumCurrents(max_currents);
+    SetMaximumCurrents(max_currents);
 }
 
 RefVectorXd JointModules::GetGearRatios()
@@ -187,6 +205,7 @@ void JointModules::SetPositionOffsets(const RefVectorXd position_offsets)
     }
     // Need to trigger a sensor parsing to update the joint positions.
     robot_if_->ParseSensorData();
+    ParseSensorData();
 }
 
 void JointModules::EnableIndexOffsetCompensation()
@@ -278,7 +297,7 @@ void JointModules::DisableJointLimitCheck()
 
 void JointModules::EnableJointLimitCheck()
 {
-    check_joint_limits_ = false;
+    check_joint_limits_ = true;
 }
 
 /**
@@ -385,7 +404,7 @@ bool JointModules::HasError()
 void JointModules::PrintVector(RefVectorXd vector)
 {
     Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
-    msg_out_ << vector.format(CleanFmt) << std::endl;
+    msg_out_ << vector.transpose().format(CleanFmt);
 }
 
 void JointModules::SetMaximumCurrents(double max_currents)

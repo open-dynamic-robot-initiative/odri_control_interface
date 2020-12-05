@@ -34,7 +34,7 @@ protected:
 
     Eigen::VectorXd gear_ratios_;
     Eigen::VectorXd motor_constants_;
-    Eigen::Matrix<long, Eigen::Dynamic, 1> polarities_;
+    Eigen::Matrix<int, Eigen::Dynamic, 1> polarities_;
     Eigen::VectorXd lower_joint_limits_;
     Eigen::VectorXd upper_joint_limits_;
     Eigen::VectorXd safety_damping_;
@@ -70,7 +70,7 @@ public:
         double motor_constants,
         double gear_ratios,
         double max_currents,
-        RefVectorXl motor_polarities,
+        RefVectorXb reverse_polarities,
         RefVectorXd lower_joint_limits,
         RefVectorXd upper_joint_limits,
         double max_joint_velocities,
