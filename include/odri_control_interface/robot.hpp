@@ -42,6 +42,12 @@ public:
         IMU* imu
     );
 
+    MasterBoardInterface* GetRobotInterface();
+
+    JointModules* GetJoints();
+
+    IMU* GetIMU();
+
     void Init();
 
     void SendInit();

@@ -23,6 +23,21 @@ Robot::Robot(
 {
 }
 
+MasterBoardInterface* Robot::GetRobotInterface()
+{
+    return robot_if;
+}
+
+JointModules* Robot::GetJoints()
+{
+    return joints;
+}
+
+IMU* Robot::GetIMU()
+{
+    return imu;
+}
+
 void Robot::Init()
 {
     // Init the robot.

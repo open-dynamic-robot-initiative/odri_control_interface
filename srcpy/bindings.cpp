@@ -98,13 +98,19 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .def("init", &Robot::Init)
         .def("sendInit", &Robot::SendInit)
         .def("start", &Robot::Start)
+        .def("wait_until_ready", &Robot::WaitUntilReady)
 
         .def("parse_sensor_data", &Robot::ParseSensorData)
         .def("send_command", &Robot::SendCommand)
 
         .def("report_error", &Robot::ReportError)
 
-        .def("wait_until_ready", &Robot::WaitUntilReady)
+        .add_property("robot_interface", make_function(&Robot::GetRobotInterface,
+                    return_value_policy<boost::python::reference_existing_object>()))
+        .add_property("joints", make_function(&Robot::GetJoints,
+                    return_value_policy<boost::python::reference_existing_object>()))
+        .add_property("imu", make_function(&Robot::GetIMU,
+                return_value_policy<reference_existing_object>()))
 
         .add_property("is_ready", &Robot::IsReady)
         .add_property("is_timeout", &Robot::IsTimeout)
@@ -122,5 +128,10 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .def("__init__", make_constructor(&joint_calibrator_constructor))
         .def("run", &JointCalibrator::Run)
         ;
+
+    def("robot_from_yaml_file", make_function(
+            &RobotFromYamlFile, return_value_policy<reference_existing_object>()));
+    def("joint_calibrator_from_yaml_file", make_function(
+            &JointCalibratorFromYamlFile, return_value_policy<reference_existing_object>()));
 
 }
