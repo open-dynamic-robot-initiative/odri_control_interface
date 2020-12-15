@@ -102,6 +102,9 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 
         .def("parse_sensor_data", &Robot::ParseSensorData)
         .def("send_command", &Robot::SendCommand)
+        .def("send_command_and_wait_end_of_cycle", &Robot::SendCommandAndWaitEndOfCycle)
+
+        .def("run_calibration", &Robot::RunCalibration)
 
         .def("report_error", &Robot::ReportError)
 

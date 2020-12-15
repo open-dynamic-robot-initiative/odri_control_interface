@@ -18,6 +18,7 @@
 
 #include <odri_control_interface/imu.hpp>
 #include <odri_control_interface/joint_modules.hpp>
+#include <odri_control_interface/calibration.hpp>
 
 namespace odri_control_interface
 {
@@ -30,6 +31,7 @@ protected:
     int timeout_counter_;
     bool saw_error_;
     std::ostream& msg_out_ = std::cout;
+    std::chrono::time_point<std::chrono::system_clock> last_time_;
 
 public:
     MasterBoardInterface* robot_if;
@@ -42,14 +44,30 @@ public:
         IMU* imu
     );
 
+    /**
+     * @brief Returns the underlying robot interface
+     */
     MasterBoardInterface* GetRobotInterface();
 
+    /**
+     * @brief Returns the joint module.
+     */
     JointModules* GetJoints();
 
+    /**
+     * @brief Return the IMU.
+     */
     IMU* GetIMU();
 
+    /**
+     * @brief Initializes the connection. Use `SendInit` to initialize the
+     * session.
+     */
     void Init();
 
+    /**
+     * @brief Establishes the session with the robot interface.
+     */
     void SendInit();
 
     /**
@@ -66,19 +84,41 @@ public:
     bool SendCommand();
 
     /**
-     *
+     * @brief Same as SendCommand but waits till the end of the cycle.
+     */
+    bool SendCommandAndWaitEndOfCycle();
+
+    /**
+     * @brief Parses the sensor data and calls ParseSensorData on all devices.
      */
     void ParseSensorData();
+
+    /**
+     * @brief Run the calibration procedure and blocks. Returns true if the
+     * calibration procedure finished successfuly. Otherwise (e.g. when an
+     * error occurred or the communication timed-out) return false.
+     */
+    bool RunCalibration(JointCalibrator* calibrator);
 
     /**
      * @brief Returns true if all connected devices report ready.
      */
     bool IsReady();
 
+    /**
+     * @brief Returns true if the connection timed out.
+     */
     bool IsTimeout();
 
+    /**
+     * @brief Returns true if during the session initialization the message got
+     * acknowledged.
+     */
     bool IsAckMsgReceived();
 
+    /**
+     * @brief Blocks until all devices report ready.
+     */
     void WaitUntilReady();
 
     /**

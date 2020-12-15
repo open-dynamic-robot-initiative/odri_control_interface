@@ -24,7 +24,10 @@ robot:
         orientation_vector: [1, 2, 3, 4]
 joint_calibrator:
     # Can be either POS, NEG, ALT or AUTO
-    search_methods: [AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO]
+    search_methods: [
+      AUTO, AUTO, AUTO, AUTO, AUTO, AUTO,
+      AUTO, AUTO, AUTO, AUTO, AUTO, AUTO
+    ]
     position_offsets: [
         0.184, -0.370, -0.005, -.150,
         0.000,  0.310,  0.165, 0.150,

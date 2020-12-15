@@ -21,6 +21,7 @@ Robot::Robot(
 ): robot_if(robot_if), joints(joint_modules), imu(imu),
     saw_error_(false)
 {
+    last_time_ = std::chrono::system_clock::now();
 }
 
 MasterBoardInterface* Robot::GetRobotInterface()
@@ -93,6 +94,22 @@ bool Robot::SendCommand()
 }
 
 /**
+ * @brief
+ */
+bool Robot::SendCommandAndWaitEndOfCycle()
+{
+    bool result = SendCommand();
+
+    while (((std::chrono::duration<double>)(std::chrono::system_clock::now() - last_time_)).count() < 0.001)
+    {
+        std::this_thread::yield();
+    }
+    last_time_ = std::chrono::system_clock::now();
+
+    return result;
+}
+
+/**
  *
  */
 void Robot::ParseSensorData()
@@ -104,6 +121,25 @@ void Robot::ParseSensorData()
         imu->ParseSensorData();
     }
 };
+
+bool Robot::RunCalibration(JointCalibrator* calibrator)
+{
+    bool is_done = false;
+    while (!IsTimeout()) {
+        ParseSensorData();
+
+        is_done = calibrator->Run();
+
+        if (is_done) {
+            return true;
+        }
+
+        if (!SendCommandAndWaitEndOfCycle()) {
+            return false;
+        }
+    }
+    return false;
+}
 
 /**
  * @brief Way to report an external error. Causes the robot to go into
