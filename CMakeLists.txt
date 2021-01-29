@@ -19,7 +19,7 @@ SET(PROJECT_NAME odri_control_interface)
 SET(PROJECT_DESCRIPTION "Common interface for controlling robots build with the odri master board.")
 SET(PROJECT_URL https://github.com/open-dynamic-robot-initiative/odri_control_interface)
 set(PROJECT_USE_CMAKE_EXPORT TRUE)
-SET(PROJECT_VERSION_COMPUTATION_METHODS ROS_PACKAGE_XML_FILE)
+
 
 # Check if the submodule cmake have been initialized
 IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
