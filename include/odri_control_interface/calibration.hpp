@@ -55,8 +55,8 @@ protected:
 
 public:
     JointCalibrator(
-        std::shared_ptr<JointModules> joints,
-        std::vector<CalibrationMethod> search_methods,
+        const std::shared_ptr<JointModules>& joints,
+        const std::vector<CalibrationMethod>& search_methods,
         RefVectorXd position_offsets,
         double Kp, double Kd, double T, double dt
     );

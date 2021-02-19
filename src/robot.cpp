@@ -15,9 +15,9 @@ namespace odri_control_interface
 {
 
 Robot::Robot(
-    std::shared_ptr<MasterBoardInterface> robot_if,
-    std::shared_ptr<JointModules> joint_modules,
-    std::shared_ptr<IMU> imu
+    const std::shared_ptr<MasterBoardInterface>& robot_if,
+    const std::shared_ptr<JointModules>& joint_modules,
+    const std::shared_ptr<IMU>& imu
 ): robot_if(robot_if),
    joints(joint_modules),
    imu(imu),
@@ -26,17 +26,17 @@ Robot::Robot(
     last_time_ = std::chrono::system_clock::now();
 }
 
-std::shared_ptr<MasterBoardInterface> Robot::GetRobotInterface()
+const std::shared_ptr<MasterBoardInterface>& Robot::GetRobotInterface()
 {
     return robot_if;
 }
 
-std::shared_ptr<JointModules> Robot::GetJoints()
+const std::shared_ptr<JointModules>& Robot::GetJoints()
 {
     return joints;
 }
 
-std::shared_ptr<IMU> Robot::GetIMU()
+const std::shared_ptr<IMU>& Robot::GetIMU()
 {
     return imu;
 }

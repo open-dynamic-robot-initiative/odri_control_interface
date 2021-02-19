@@ -171,4 +171,10 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(std::string file_pa
     return JointCalibratorFromYaml(joints, param["joint_calibrator"]);
 }
 
+std::shared_ptr<MasterBoardInterface> CreateMasterBoardInterface(
+    const std::string &if_name, bool listener_mode)
+{
+    return std::make_shared<MasterBoardInterface>(if_name, listener_mode);
+}
+
 } // namespace odri_control_interface

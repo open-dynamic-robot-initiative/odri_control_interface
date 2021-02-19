@@ -41,13 +41,13 @@ protected:
 
 public:
     IMU(
-        std::shared_ptr<MasterBoardInterface> robot_if,
+        const std::shared_ptr<MasterBoardInterface>& robot_if,
         RefVectorXl rotate_vector,
         RefVectorXl orientation_vector
     );
 
     IMU(
-        std::shared_ptr<MasterBoardInterface> robot_if
+        const std::shared_ptr<MasterBoardInterface>& robot_if
     );
 
     // If needed, add some error handling for the IMU as well.
@@ -57,6 +57,7 @@ public:
 
     void ParseSensorData();
 
+    const std::shared_ptr<MasterBoardInterface>& GetMasterBoardInterface();
     RefVector3d GetGyroscope();
     RefVector3d GetAccelerometer();
     RefVector3d GetLinearAcceleration();

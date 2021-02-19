@@ -40,25 +40,25 @@ protected:
 
 public:
     Robot(
-        std::shared_ptr<MasterBoardInterface> robot_if,
-        std::shared_ptr<JointModules> joint_modules,
-        std::shared_ptr<IMU> imu
+        const std::shared_ptr<MasterBoardInterface>& robot_if,
+        const std::shared_ptr<JointModules>& joint_modules,
+        const std::shared_ptr<IMU>& imu
     );
 
     /**
      * @brief Returns the underlying robot interface
      */
-    std::shared_ptr<MasterBoardInterface> GetRobotInterface();
+    const std::shared_ptr<MasterBoardInterface>& GetRobotInterface();
 
     /**
      * @brief Returns the joint module.
      */
-    std::shared_ptr<JointModules> GetJoints();
+    const std::shared_ptr<JointModules>& GetJoints();
 
     /**
      * @brief Return the IMU.
      */
-    std::shared_ptr<IMU> GetIMU();
+    const std::shared_ptr<IMU>& GetIMU();
 
     /**
      * @brief Initializes the connection. Use `SendInit` to initialize the
