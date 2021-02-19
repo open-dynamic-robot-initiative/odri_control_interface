@@ -99,7 +99,7 @@ public:
      * calibration procedure finished successfully. Otherwise (e.g. when an
      * error occurred or the communication timed-out) return false.
      */
-    bool RunCalibration(std::shared_ptr<JointCalibrator> calibrator);
+    bool RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator);
 
     /**
      * @brief Returns true if all connected devices report ready.
@@ -132,7 +132,7 @@ public:
      * @brief Way to report an external error. Causes the robot to go into
      *   safety mode.
      */
-    void ReportError(std::string error);
+    void ReportError(const std::string& error);
 };
 
 }  // namespace odri_control_interface

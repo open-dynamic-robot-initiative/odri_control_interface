@@ -15,14 +15,14 @@ namespace odri_control_interface
 {
 
 JointModules::JointModules(
-    std::shared_ptr<MasterBoardInterface> robot_if,
-    RefVectorXl motor_numbers,
+    const std::shared_ptr<MasterBoardInterface>& robot_if,
+    ConstRefVectorXi motor_numbers,
     double motor_constants,
     double gear_ratios,
     double max_currents,
-    RefVectorXb reverse_polarities,
-    RefVectorXd lower_joint_limits,
-    RefVectorXd upper_joint_limits,
+    ConstRefVectorXb reverse_polarities,
+    ConstRefVectorXd lower_joint_limits,
+    ConstRefVectorXd upper_joint_limits,
     double max_joint_velocities,
     double safety_damping
 ):  robot_if_(robot_if),
@@ -31,7 +31,7 @@ JointModules::JointModules(
     max_joint_velocities_(max_joint_velocities),
     check_joint_limits_(true)
 {
-    n_ = motor_numbers.size();
+    n_ = static_cast<int>(motor_numbers.size());
     nd_ = (n_ + 1)/2;
 
     // Check input arrays for correct sizes.
@@ -85,7 +85,7 @@ JointModules::JointModules(
     SetMaximumCurrents(max_currents);
 }
 
-RefVectorXd JointModules::GetGearRatios()
+ConstRefVectorXd JointModules::GetGearRatios()
 {
     return gear_ratios_;
 }
@@ -129,7 +129,7 @@ void JointModules::Enable()
     }
 }
 
-void JointModules::SetTorques(const RefVectorXd desired_torques)
+void JointModules::SetTorques(ConstRefVectorXd desired_torques)
 {
     for (int i = 0; i < n_; i++)
     {
@@ -139,7 +139,7 @@ void JointModules::SetTorques(const RefVectorXd desired_torques)
     }
 }
 
-void JointModules::SetDesiredPositions(const RefVectorXd desired_positions)
+void JointModules::SetDesiredPositions(ConstRefVectorXd desired_positions)
 {
     for (int i = 0; i < n_; i++)
     {
@@ -148,7 +148,7 @@ void JointModules::SetDesiredPositions(const RefVectorXd desired_positions)
     }
 }
 
-void JointModules::SetDesiredVelocities(const RefVectorXd desired_velocities)
+void JointModules::SetDesiredVelocities(ConstRefVectorXd desired_velocities)
 {
     for (int i = 0; i < n_; i++)
     {
@@ -157,7 +157,7 @@ void JointModules::SetDesiredVelocities(const RefVectorXd desired_velocities)
     }
 }
 
-void JointModules::SetPositionGains(const RefVectorXd desired_gains)
+void JointModules::SetPositionGains(ConstRefVectorXd desired_gains)
 {
     for (int i = 0; i < n_; i++)
     {
@@ -166,7 +166,7 @@ void JointModules::SetPositionGains(const RefVectorXd desired_gains)
     }
 }
 
-void JointModules::SetVelocityGains(const RefVectorXd desired_gains)
+void JointModules::SetVelocityGains(ConstRefVectorXd desired_gains)
 {
     for (int i = 0; i < n_; i++)
     {
@@ -195,7 +195,7 @@ void JointModules::RunSafetyController()
     SetVelocityGains(safety_damping_);
 }
 
-void JointModules::SetPositionOffsets(const RefVectorXd position_offsets)
+void JointModules::SetPositionOffsets(ConstRefVectorXd position_offsets)
 {
     for (int i = 0; i < n_; i++)
     {
@@ -216,27 +216,27 @@ void JointModules::EnableIndexOffsetCompensation()
     }
 }
 
-RefVectorXb JointModules::HasIndexBeenDetected()
+ConstRefVectorXb JointModules::HasIndexBeenDetected()
 {
     return index_been_detected_;
 }
 
-RefVectorXb JointModules::GetReady()
+ConstRefVectorXb JointModules::GetReady()
 {
     return ready_;
 }
 
-RefVectorXb JointModules::GetEnabled()
+ConstRefVectorXb JointModules::GetEnabled()
 {
     return enabled_;
 }
 
-RefVectorXb JointModules::GetMotorDriverEnabled()
+ConstRefVectorXb JointModules::GetMotorDriverEnabled()
 {
     return motor_driver_enabled_;
 }
 
-RefVectorXb JointModules::GetMotorDriverErrors()
+ConstRefVectorXb JointModules::GetMotorDriverErrors()
 {
     return motor_driver_errors_;
 }
@@ -270,22 +270,22 @@ bool JointModules::IsReady()
     return is_ready_;
 }
 
-RefVectorXd JointModules::GetPositions()
+ConstRefVectorXd JointModules::GetPositions()
 {
     return positions_;
 }
 
-RefVectorXd JointModules::GetVelocities()
+ConstRefVectorXd JointModules::GetVelocities()
 {
     return velocities_;
 }
 
-RefVectorXd JointModules::GetSentTorques()
+ConstRefVectorXd JointModules::GetSentTorques()
 {
     return sent_torques_;
 }
 
-RefVectorXd JointModules::GetMeasuredTorques()
+ConstRefVectorXd JointModules::GetMeasuredTorques()
 {
     return measured_torques_;
 }
@@ -401,7 +401,7 @@ bool JointModules::HasError()
     return has_error;
 }
 
-void JointModules::PrintVector(RefVectorXd vector)
+void JointModules::PrintVector(ConstRefVectorXd vector)
 {
     Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
     msg_out_ << vector.transpose().format(CleanFmt);

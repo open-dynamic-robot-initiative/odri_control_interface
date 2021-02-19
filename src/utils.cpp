@@ -24,10 +24,10 @@ std::shared_ptr<JointModules> JointModulesFromYaml(
 {
     const YAML::Node& motor_numbers = joint_modules_yaml["motor_numbers"];
     std::size_t n = motor_numbers.size();
-    VectorXl motor_numbers_vec;
+    VectorXi motor_numbers_vec;
     motor_numbers_vec.resize(n);
     for (std::size_t i = 0; i < n; i++) {
-        motor_numbers_vec(i) = motor_numbers[i].as<long>();
+        motor_numbers_vec(i) = motor_numbers[i].as<int>();
     }
 
     const YAML::Node& rev_polarities = joint_modules_yaml["reverse_polarities"];

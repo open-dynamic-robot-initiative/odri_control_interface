@@ -14,6 +14,7 @@ typedef Eigen::Matrix<bool, 12, 1> Vector12b;
 typedef Eigen::Matrix<long, 3, 1> Vector3l;
 typedef Eigen::Matrix<long, 4, 1> Vector4l;
 typedef Eigen::Matrix<long, 12, 1> Vector12l;
+typedef Eigen::Matrix<int, 12, 1> Vector12i;
 
 int main(int argc, char **argv)
 {
@@ -27,7 +28,7 @@ int main(int argc, char **argv)
 
     auto main_board_ptr_ = std::make_shared<MasterBoardInterface>(argv[1]);
 
-    Vector12l motor_numbers;
+    Vector12i motor_numbers;
     motor_numbers << 0, 3, 2, 1, 5, 4, 6, 9, 8, 7, 11, 10;
     Vector12b motor_reversed;
     motor_reversed << true, false, true, true, false, false, true, false, true, true, false, false;

@@ -124,7 +124,7 @@ void Robot::ParseSensorData()
     }
 }
 
-bool Robot::RunCalibration(std::shared_ptr<JointCalibrator> calibrator)
+bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
 {
     bool is_done = false;
     while (!IsTimeout()) {
@@ -147,7 +147,7 @@ bool Robot::RunCalibration(std::shared_ptr<JointCalibrator> calibrator)
  * @brief Way to report an external error. Causes the robot to go into
  *   safety mode.
  */
-void Robot::ReportError(std::string error)
+void Robot::ReportError(const std::string& error)
 {
     msg_out_ << "ERROR: " << error << std::endl;
     saw_error_ = true;

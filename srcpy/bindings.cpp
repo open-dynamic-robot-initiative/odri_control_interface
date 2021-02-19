@@ -62,8 +62,8 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
     // JointModules bindings and it's std::shared_ptr.
     class_<JointModules>("JointModules", init<
             std::shared_ptr<MasterBoardInterface>,
-            RefVectorXl, double, double, double, RefVectorXb,
-            RefVectorXd, RefVectorXd,
+            ConstRefVectorXi, double, double, double, ConstRefVectorXb,
+            ConstRefVectorXd, ConstRefVectorXd,
             double, double>())
         .def("enable", &JointModules::Enable)
         .def("set_torques", &JointModules::SetTorques)
