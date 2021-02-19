@@ -17,7 +17,7 @@ namespace odri_control_interface
 {
 
 IMU::IMU(
-    MasterBoardInterface* robot_if,
+    std::shared_ptr<MasterBoardInterface> robot_if,
     RefVectorXl rotate_vector,
     RefVectorXl orientation_vector
 ): robot_if_(robot_if)
@@ -42,7 +42,7 @@ IMU::IMU(
 }
 
 IMU::IMU(
-    MasterBoardInterface* robot_if
+    std::shared_ptr<MasterBoardInterface> robot_if
 ): robot_if_(robot_if),
    rotate_vector_({1, 2, 3}),
    orientation_vector_({1, 2, 3, 4})

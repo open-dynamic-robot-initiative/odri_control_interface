@@ -16,23 +16,29 @@ namespace odri_control_interface
 {
 
 JointCalibrator::JointCalibrator(
-    JointModules* joints,
+    std::shared_ptr<JointModules> joints,
     std::vector<CalibrationMethod> search_methods,
     RefVectorXd position_offsets,
     double Kp, double Kd, double T, double dt
-): joints_(joints), search_methods_(search_methods),
-    position_offsets_(position_offsets), Kp_(Kp), Kd_(Kd),
-    T_(T), dt_(dt), t_(0.), go_to_zero_position_(false)
+): joints_(joints),
+   search_methods_(search_methods),
+   position_offsets_(position_offsets),
+   Kp_(Kp),
+   Kd_(Kd),
+   T_(T),
+   dt_(dt),
+   t_(0.),
+   go_to_zero_position_(false)
 {
     gear_ratios_ = joints->GetGearRatios();
-    n_ = gear_ratios_.size();
+    n_ = static_cast<int>(gear_ratios_.size());
 
-    if (search_methods.size() != n_)
+    if (static_cast<int>(search_methods.size()) != n_)
     {
         throw std::runtime_error("Search methods has different size than motor numbers");
     }
 
-    if (position_offsets.size() != n_)
+    if (static_cast<int>(position_offsets.size()) != n_)
     {
         throw std::runtime_error("Position offsets has different size than motor numbers");
     }

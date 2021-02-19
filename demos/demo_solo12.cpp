@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
     nice(-20); // Give the process a high priority.
 
-    auto main_board_ptr_ = new MasterBoardInterface(argv[1]);
+    auto main_board_ptr_ = std::make_shared<MasterBoardInterface>(argv[1]);
 
     Vector12l motor_numbers;
     motor_numbers << 0, 3, 2, 1, 5, 4, 6, 9, 8, 7, 11, 10;
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
                           1.2,  1.7, +3.4, +1.2, +1.7, +3.4;
 
     // Define the joint module.
-    auto joints = new JointModules(
+    auto joints = std::make_shared<JointModules>(
         main_board_ptr_,
         motor_numbers,
         0.025, 9., 1.,
@@ -53,10 +53,10 @@ int main(int argc, char **argv)
     Vector4l orientation_vector;
     rotate_vector << 1, 2, 3;
     orientation_vector << 1, 2, 3, 4;
-    auto imu = new IMU(main_board_ptr_, rotate_vector, orientation_vector);
+    auto imu = std::make_shared<IMU>(main_board_ptr_, rotate_vector, orientation_vector);
 
     // Define the robot.
-    auto robot = new Robot(
+    auto robot = std::make_shared<Robot>(
         main_board_ptr_, joints, imu
     );
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
                         0., 0.310, 0.165, 0.150,
                         0.365, 0.202, -0.175, -0.175;
 
-    auto calib_ctrl = new JointCalibrator(
+    auto calib_ctrl = std::make_shared<JointCalibrator>(
         joints,
         directions,
         position_offsets,

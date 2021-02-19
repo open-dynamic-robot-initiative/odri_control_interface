@@ -19,8 +19,8 @@ using namespace odri_control_interface;
 typedef Eigen::Matrix<long, Eigen::Dynamic, 1> VectorXl;
 typedef Eigen::Matrix<bool, Eigen::Dynamic, 1> VectorXb;
 
-JointCalibrator* joint_calibrator_constructor(
-    JointModules* joints,
+std::shared_ptr<JointCalibrator> joint_calibrator_constructor(
+    std::shared_ptr<JointModules> joints,
     boost::python::list search_methods,
     RefVectorXd position_offsets,
     double Kp, double Kd, double T, double dt
@@ -34,7 +34,7 @@ JointCalibrator* joint_calibrator_constructor(
             boost::python::extract<CalibrationMethod>(search_methods[i])
         );
     }
-    return new JointCalibrator(
+    return std::make_shared<JointCalibrator>(
         joints, search_method_vec, position_offsets, Kp, Kd, T, dt
     );
 }
@@ -45,8 +45,10 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
     eigenpy::enableEigenPySpecific<VectorXl>();
     eigenpy::enableEigenPySpecific<VectorXb >();
 
+    register_ptr_to_python<std::shared_ptr<MasterBoardInterface> >();
+
     class_<JointModules>("JointModules", init<
-            MasterBoardInterface*,
+            std::shared_ptr<MasterBoardInterface>,
             RefVectorXl, double, double, double, RefVectorXb,
             RefVectorXd, RefVectorXd,
             double, double>())
@@ -83,8 +85,8 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 
         .add_property("gear_ratios", &JointModules::GetGearRatios);
 
-    class_<IMU>("IMU", init<MasterBoardInterface*>())
-        .def(init<MasterBoardInterface*, RefVectorXl, RefVectorXl>())
+    class_<IMU>("IMU", init<std::shared_ptr<MasterBoardInterface>>())
+        .def(init<std::shared_ptr<MasterBoardInterface>, RefVectorXl, RefVectorXl>()    )
 
         .add_property("has_error", &IMU::HasError)
 
@@ -94,7 +96,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property("attitude_euler", &IMU::GetAttitudeEuler)
         .add_property("attitude_quaternion", &IMU::GetAttitudeQuaternion);
 
-    class_<Robot>("Robot", init<MasterBoardInterface*, JointModules*, IMU*>())
+    class_<Robot>("Robot", init<std::shared_ptr<MasterBoardInterface>, std::shared_ptr<JointModules>, std::shared_ptr<IMU>>())
         .def("init", &Robot::Init)
         .def("sendInit", &Robot::SendInit)
         .def("start", &Robot::Start)
@@ -132,9 +134,12 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .def("run", &JointCalibrator::Run)
         ;
 
-    def("robot_from_yaml_file", make_function(
-            &RobotFromYamlFile, return_value_policy<reference_existing_object>()));
-    def("joint_calibrator_from_yaml_file", make_function(
-            &JointCalibratorFromYamlFile, return_value_policy<reference_existing_object>()));
+    register_ptr_to_python<std::shared_ptr<JointModules> >();
+    register_ptr_to_python<std::shared_ptr<IMU> >();
+    register_ptr_to_python<std::shared_ptr<Robot> >();
+    register_ptr_to_python<std::shared_ptr<JointCalibrator> >();
 
+
+    def("robot_from_yaml_file", &RobotFromYamlFile);
+    def("joint_calibrator_from_yaml_file", &JointCalibratorFromYamlFile);
 }

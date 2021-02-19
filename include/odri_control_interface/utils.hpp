@@ -17,7 +17,7 @@
 namespace odri_control_interface
 {
 
-Robot* RobotFromYamlFile(std::string file_path);
-JointCalibrator* JointCalibratorFromYamlFile(std::string file_path, JointModules* joints);
+std::shared_ptr<Robot> RobotFromYamlFile(std::string file_path);
+std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(std::string file_path, std::shared_ptr<JointModules> joints);
 
 }

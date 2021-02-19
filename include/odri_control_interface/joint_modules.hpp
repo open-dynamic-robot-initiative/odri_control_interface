@@ -29,7 +29,7 @@ namespace odri_control_interface
 class JointModules
 {
 protected:
-    MasterBoardInterface* robot_if_;
+    std::shared_ptr<MasterBoardInterface> robot_if_;
     std::vector<Motor*> motors_;
 
     Eigen::VectorXd gear_ratios_;
@@ -65,7 +65,7 @@ protected:
 
 public:
     JointModules(
-        MasterBoardInterface* robot_if,
+        std::shared_ptr<MasterBoardInterface> robot_if,
         RefVectorXl motor_numbers,
         double motor_constants,
         double gear_ratios,

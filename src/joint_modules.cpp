@@ -15,7 +15,7 @@ namespace odri_control_interface
 {
 
 JointModules::JointModules(
-    MasterBoardInterface* robot_if,
+    std::shared_ptr<MasterBoardInterface> robot_if,
     RefVectorXl motor_numbers,
     double motor_constants,
     double gear_ratios,

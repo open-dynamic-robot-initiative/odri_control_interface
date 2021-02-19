@@ -15,26 +15,28 @@ namespace odri_control_interface
 {
 
 Robot::Robot(
-    MasterBoardInterface* robot_if,
-    JointModules* joint_modules,
-    IMU* imu
-): robot_if(robot_if), joints(joint_modules), imu(imu),
-    saw_error_(false)
+    std::shared_ptr<MasterBoardInterface> robot_if,
+    std::shared_ptr<JointModules> joint_modules,
+    std::shared_ptr<IMU> imu
+): robot_if(robot_if),
+   joints(joint_modules),
+   imu(imu),
+   saw_error_(false)
 {
     last_time_ = std::chrono::system_clock::now();
 }
 
-MasterBoardInterface* Robot::GetRobotInterface()
+std::shared_ptr<MasterBoardInterface> Robot::GetRobotInterface()
 {
     return robot_if;
 }
 
-JointModules* Robot::GetJoints()
+std::shared_ptr<JointModules> Robot::GetJoints()
 {
     return joints;
 }
 
-IMU* Robot::GetIMU()
+std::shared_ptr<IMU> Robot::GetIMU()
 {
     return imu;
 }
@@ -120,9 +122,9 @@ void Robot::ParseSensorData()
     if (imu) {
         imu->ParseSensorData();
     }
-};
+}
 
-bool Robot::RunCalibration(JointCalibrator* calibrator)
+bool Robot::RunCalibration(std::shared_ptr<JointCalibrator> calibrator)
 {
     bool is_done = false;
     while (!IsTimeout()) {
@@ -203,7 +205,7 @@ bool Robot::HasError()
     {
         if (timeout_counter_++ % 2000 == 0)
         {
-            msg_out_ << "ERROR: Robot communicaton timedout." << std::endl;
+            msg_out_ << "ERROR: Robot communication timedout." << std::endl;
         }
         saw_error_ = true;
     }
@@ -211,6 +213,4 @@ bool Robot::HasError()
     return saw_error_;
 }
 
-} // namespace ordi_control_interface
-
-
+} // namespace odri_control_interface

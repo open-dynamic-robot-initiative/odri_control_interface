@@ -37,7 +37,7 @@ enum CalibrationMethod
 class JointCalibrator
 {
 protected:
-    JointModules* joints_;
+    std::shared_ptr<JointModules> joints_;
     std::vector<CalibrationMethod> search_methods_;
     VectorXd position_offsets_;
     VectorXd initial_positions_;
@@ -45,18 +45,17 @@ protected:
     VectorXd t_end_;
     VectorXd gear_ratios_;
     VectorXd command_;
-    double Kd_;
     double Kp_;
-    double dt_;
+    double Kd_;    
     double T_;
+    double dt_;
     double t_;
     bool go_to_zero_position_;
-
     int n_;
 
 public:
     JointCalibrator(
-        JointModules* joints,
+        std::shared_ptr<JointModules> joints,
         std::vector<CalibrationMethod> search_methods,
         RefVectorXd position_offsets,
         double Kp, double Kd, double T, double dt

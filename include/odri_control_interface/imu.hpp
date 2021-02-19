@@ -28,7 +28,7 @@ namespace odri_control_interface
 class IMU
 {
 protected:
-    MasterBoardInterface* robot_if_;
+    std::shared_ptr<MasterBoardInterface> robot_if_;
     std::array<int, 3> rotate_vector_;
     std::array<int, 4> orientation_vector_;
 
@@ -41,13 +41,13 @@ protected:
 
 public:
     IMU(
-        MasterBoardInterface* robot_if,
+        std::shared_ptr<MasterBoardInterface> robot_if,
         RefVectorXl rotate_vector,
         RefVectorXl orientation_vector
     );
 
     IMU(
-        MasterBoardInterface* robot_if
+        std::shared_ptr<MasterBoardInterface> robot_if
     );
 
     // If needed, add some error handling for the IMU as well.
