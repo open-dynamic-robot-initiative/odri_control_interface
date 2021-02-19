@@ -16,9 +16,9 @@
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
 
+#include <odri_control_interface/calibration.hpp>
 #include <odri_control_interface/imu.hpp>
 #include <odri_control_interface/joint_modules.hpp>
-#include <odri_control_interface/calibration.hpp>
 
 namespace odri_control_interface
 {
@@ -39,11 +39,9 @@ protected:
     std::chrono::time_point<std::chrono::system_clock> last_time_;
 
 public:
-    Robot(
-        const std::shared_ptr<MasterBoardInterface>& robot_if,
-        const std::shared_ptr<JointModules>& joint_modules,
-        const std::shared_ptr<IMU>& imu
-    );
+    Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
+          const std::shared_ptr<JointModules>& joint_modules,
+          const std::shared_ptr<IMU>& imu);
 
     /**
      * @brief Returns the underlying robot interface

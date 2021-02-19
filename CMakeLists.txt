@@ -4,76 +4,73 @@
 # License BSD-3 clause
 #
 
-
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1)
 
 # ----------------------------------------------------
 # --- CXX FLAGS --------------------------------------
 # ----------------------------------------------------
 
-SET(CXX_DISABLE_WERROR True)
-SET(CMAKE_VERBOSE_MAKEFILE True)
+set(CXX_DISABLE_WERROR True)
+set(CMAKE_VERBOSE_MAKEFILE True)
 
 # These variables have to be defined before running SETUP_PROJECT
-SET(PROJECT_NAME odri_control_interface)
-SET(PROJECT_DESCRIPTION "Common interface for controlling robots build with the odri master board.")
-SET(PROJECT_URL https://github.com/open-dynamic-robot-initiative/odri_control_interface)
+set(PROJECT_NAME odri_control_interface)
+set(PROJECT_DESCRIPTION
+    "Common interface for controlling robots build with the odri master board.")
+set(PROJECT_URL
+    https://github.com/open-dynamic-robot-initiative/odri_control_interface)
 set(PROJECT_USE_CMAKE_EXPORT TRUE)
 
-
 # Check if the submodule cmake have been initialized
-IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
-  MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
-ENDIF()
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+  message(
+    FATAL_ERROR
+      "\nPlease run the following command first:\ngit submodule update --init\n"
+  )
+endif()
 
 # --- OPTIONS ----------------------------------------
-OPTION(BUILD_PYTHON_INTERFACE "Build the python binding" ON)
-OPTION(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
-OPTION(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
+option(BUILD_PYTHON_INTERFACE "Build the python binding" ON)
+option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
+option(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
 
-INCLUDE(cmake/base.cmake)
-INCLUDE(cmake/boost.cmake)
-INCLUDE(cmake/python.cmake)
-INCLUDE(cmake/ide.cmake)
+include(cmake/base.cmake)
+include(cmake/boost.cmake)
+include(cmake/python.cmake)
+include(cmake/ide.cmake)
 
-COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
-PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
-CHECK_MINIMAL_CXX_STANDARD(11 ENFORCE)
+compute_project_args(PROJECT_ARGS LANGUAGES CXX)
+project(${PROJECT_NAME} ${PROJECT_ARGS})
+check_minimal_cxx_standard(11 ENFORCE)
 
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
 
-ADD_PROJECT_DEPENDENCY(yaml-cpp CONFIG REQUIRED)
-ADD_PROJECT_DEPENDENCY(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
-ADD_PROJECT_DEPENDENCY(master_board_sdk REQUIRED)
+add_project_dependency(yaml-cpp CONFIG REQUIRED)
+add_project_dependency(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
+add_project_dependency(master_board_sdk REQUIRED)
 
-# Set component to fetch from boost
-# Get the python interface for the bindings
-IF(BUILD_PYTHON_INTERFACE)
-  FINDPYTHON(REQUIRED)
-  SEARCH_FOR_BOOST_PYTHON(REQUIRED)
-  ADD_PROJECT_DEPENDENCY(eigenpy 2.5.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 2.5.0")
-ENDIF(BUILD_PYTHON_INTERFACE)
+# Set component to fetch from boost Get the python interface for the bindings
+if(BUILD_PYTHON_INTERFACE)
+  findpython(REQUIRED)
+  search_for_boost_python(REQUIRED)
+  add_project_dependency(eigenpy 2.5.0 REQUIRED PKG_CONFIG_REQUIRES
+                         "eigenpy >= 2.5.0")
+endif(BUILD_PYTHON_INTERFACE)
 
 # ----------------------------------------------------
 # --- INCLUDE ----------------------------------------
 # ----------------------------------------------------
 
 # --- MAIN LIBRARY -------------------------------------------------------------
-SET(ODRI_CONTROL_INTERFACE_SRC
-    src/joint_modules.cpp
-    src/imu.cpp
-    src/robot.cpp
-    src/calibration.cpp
-    src/utils.cpp
-)
-ADD_LIBRARY(${PROJECT_NAME} SHARED
-  ${ODRI_CONTROL_INTERFACE_SRC}
-)
+set(ODRI_CONTROL_INTERFACE_SRC src/joint_modules.cpp src/imu.cpp src/robot.cpp
+                               src/calibration.cpp src/utils.cpp)
+add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${MASTER_BOARD_SDK_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
+target_include_directories(${PROJECT_NAME} SYSTEM
+                           PUBLIC ${MASTER_BOARD_SDK_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
 target_include_directories(
   ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                          $<INSTALL_INTERFACE:include>)
@@ -85,36 +82,32 @@ install(DIRECTORY include/ DESTINATION include)
 
 # --- BINDINGS -----------------------------------------------------------------
 
-IF(BUILD_PYTHON_INTERFACE)
+if(BUILD_PYTHON_INTERFACE)
   # --- Setup the wrapper name and source files --- #
-  SET(PYWRAP ${PROJECT_NAME}_pywrap)
-  SET(${PYWRAP}_HEADERS
-    srcpy/bindings.h
-  )
-  SET(${PYWRAP}_SOURCES
-    srcpy/bindings.cpp
-  )
+  set(PYWRAP ${PROJECT_NAME}_pywrap)
+  set(${PYWRAP}_HEADERS srcpy/bindings.h)
+  set(${PYWRAP}_SOURCES srcpy/bindings.cpp)
 
   # --- Build the wrapper library --- #
-  SET(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB})
-  ADD_LIBRARY(${PYWRAP} SHARED ${${PYWRAP}_SOURCES} ${${PYWRAP}_HEADERS})
-  TARGET_INCLUDE_DIRECTORIES(${PYWRAP} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIR})
-  TARGET_LINK_LIBRARIES(${PYWRAP} ${PROJECT_NAME}
-      eigenpy::eigenpy master_board_sdk::master_board_sdk)
-  TARGET_LINK_BOOST_PYTHON(${PYWRAP})
-  SET_TARGET_PROPERTIES(${PYWRAP} PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  INSTALL(TARGETS ${PYWRAP} DESTINATION ${${PYWRAP}_INSTALL_DIR})
+  set(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB})
+  add_library(${PYWRAP} SHARED ${${PYWRAP}_SOURCES} ${${PYWRAP}_HEADERS})
+  target_include_directories(${PYWRAP} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIR})
+  target_link_libraries(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy
+                        master_board_sdk::master_board_sdk)
+  target_link_boost_python(${PYWRAP})
+  set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
+                                             "${CMAKE_INSTALL_PREFIX}/lib")
+  install(TARGETS ${PYWRAP} DESTINATION ${${PYWRAP}_INSTALL_DIR})
 
   # --- Allow to do: make python --- #
-  ADD_CUSTOM_TARGET(python)
-  SET_TARGET_PROPERTIES(python PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True)
-  ADD_DEPENDENCIES(python ${PYWRAP})
+  add_custom_target(python)
+  set_target_properties(python PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True)
+  add_dependencies(python ${PYWRAP})
 
-ENDIF(BUILD_PYTHON_INTERFACE)
-
+endif(BUILD_PYTHON_INTERFACE)
 
 # --- CHECK DEMOS -----------------------------------------------------------
-ADD_EXECUTABLE(demo_solo12 demos/demo_solo12.cpp)
-TARGET_LINK_LIBRARIES(demo_solo12 ${PROJECT_NAME} master_board_sdk::master_board_sdk)
-INSTALL(TARGETS demo_solo12 DESTINATION bin)
+add_executable(demo_solo12 demos/demo_solo12.cpp)
+target_link_libraries(demo_solo12 ${PROJECT_NAME}
+                      master_board_sdk::master_board_sdk)
+install(TARGETS demo_solo12 DESTINATION bin)

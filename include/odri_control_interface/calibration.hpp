@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include <algorithm>
 #include <math.h>
 #include <unistd.h>
+#include <algorithm>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
@@ -46,7 +46,7 @@ protected:
     VectorXd gear_ratios_;
     VectorXd command_;
     double Kp_;
-    double Kd_;    
+    double Kd_;
     double T_;
     double dt_;
     double t_;
@@ -54,20 +54,21 @@ protected:
     int n_;
 
 public:
-    JointCalibrator(
-        const std::shared_ptr<JointModules>& joints,
-        const std::vector<CalibrationMethod>& search_methods,
-        RefVectorXd position_offsets,
-        double Kp, double Kd, double T, double dt
-    );
+    JointCalibrator(const std::shared_ptr<JointModules>& joints,
+                    const std::vector<CalibrationMethod>& search_methods,
+                    RefVectorXd position_offsets,
+                    double Kp,
+                    double Kd,
+                    double T,
+                    double dt);
 
     void UpdatePositionOffsets(RefVectorXd position_offsets);
 
     /**
-     * @brief Runs the calibration procedure. Returns true if the calibration is done.
+     * @brief Runs the calibration procedure. Returns true if the calibration is
+     * done.
      */
     bool Run();
 };
 
-
-} // namespace odri_control_interface
+}  // namespace odri_control_interface

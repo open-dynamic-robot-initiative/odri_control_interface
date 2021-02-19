@@ -11,9 +11,9 @@
 
 #pragma once
 
+#include <unistd.h>
 #include <iostream>
 #include <vector>
-#include <unistd.h>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
@@ -22,7 +22,6 @@
 
 namespace odri_control_interface
 {
-
 /**
  * @brief Class abstracting the blmc motors to modules.
  */
@@ -64,18 +63,16 @@ protected:
     std::ostream& msg_out_ = std::cout;
 
 public:
-    JointModules(
-        const std::shared_ptr<MasterBoardInterface>& robot_if,
-        ConstRefVectorXi motor_numbers,
-        double motor_constants,
-        double gear_ratios,
-        double max_currents,
-        ConstRefVectorXb reverse_polarities,
-        ConstRefVectorXd lower_joint_limits,
-        ConstRefVectorXd upper_joint_limits,
-        double max_joint_velocities,
-        double safety_damping
-    );
+    JointModules(const std::shared_ptr<MasterBoardInterface>& robot_if,
+                 ConstRefVectorXi motor_numbers,
+                 double motor_constants,
+                 double gear_ratios,
+                 double max_currents,
+                 ConstRefVectorXb reverse_polarities,
+                 ConstRefVectorXd lower_joint_limits,
+                 ConstRefVectorXd upper_joint_limits,
+                 double max_joint_velocities,
+                 double safety_damping);
 
     void Enable();
 

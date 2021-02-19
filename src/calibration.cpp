@@ -14,43 +14,53 @@
 
 namespace odri_control_interface
 {
-
 JointCalibrator::JointCalibrator(
     const std::shared_ptr<JointModules>& joints,
     const std::vector<CalibrationMethod>& search_methods,
     RefVectorXd position_offsets,
-    double Kp, double Kd, double T, double dt
-): joints_(joints),
-   search_methods_(search_methods),
-   position_offsets_(position_offsets),
-   Kp_(Kp),
-   Kd_(Kd),
-   T_(T),
-   dt_(dt),
-   t_(0.),
-   go_to_zero_position_(false)
+    double Kp,
+    double Kd,
+    double T,
+    double dt)
+    : joints_(joints),
+      search_methods_(search_methods),
+      position_offsets_(position_offsets),
+      Kp_(Kp),
+      Kd_(Kd),
+      T_(T),
+      dt_(dt),
+      t_(0.),
+      go_to_zero_position_(false)
 {
     gear_ratios_ = joints->GetGearRatios();
     n_ = static_cast<int>(gear_ratios_.size());
 
     if (static_cast<int>(search_methods.size()) != n_)
     {
-        throw std::runtime_error("Search methods has different size than motor numbers");
+        throw std::runtime_error(
+            "Search methods has different size than motor numbers");
     }
 
     if (static_cast<int>(position_offsets.size()) != n_)
     {
-        throw std::runtime_error("Position offsets has different size than motor numbers");
+        throw std::runtime_error(
+            "Position offsets has different size than motor numbers");
     }
 
     for (int i = 0; i < n_; i++)
     {
-        if (search_methods_[i] == AUTO) {
-            if (position_offsets[i] > (M_PI/2.) / gear_ratios_[i]) {
+        if (search_methods_[i] == AUTO)
+        {
+            if (position_offsets[i] > (M_PI / 2.) / gear_ratios_[i])
+            {
                 search_methods_[i] = POSITIVE;
-            } else if (position_offsets[i] < (-M_PI/2.) / gear_ratios_[i]) {
+            }
+            else if (position_offsets[i] < (-M_PI / 2.) / gear_ratios_[i])
+            {
                 search_methods_[i] = NEGATIVE;
-            } else {
+            }
+            else
+            {
                 search_methods_[i] = ALTERNATIVE;
             }
         }
@@ -70,7 +80,8 @@ void JointCalibrator::UpdatePositionOffsets(RefVectorXd position_offsets)
 }
 
 /**
- * @brief Runs the calibration procedure. Returns true if the calibration is done.
+ * @brief Runs the calibration procedure. Returns true if the calibration is
+ * done.
  */
 bool JointCalibrator::Run()
 {
@@ -83,7 +94,8 @@ bool JointCalibrator::Run()
 
         // If all the indices are already detected, then assume there
         // is nothing that needs to be done.
-        if (joints_->SawAllIndices()) {
+        if (joints_->SawAllIndices())
+        {
             joints_->SetZeroCommands();
             return true;
         }
@@ -100,36 +112,56 @@ bool JointCalibrator::Run()
     for (int i = 0; i < n_; i++)
     {
         // As long as the index was not found, search for it.
-        if (!found_index_[i]) {
+        if (!found_index_[i])
+        {
             if (has_index_been_detected[i])
             {
                 found_index_[i] = true;
                 initial_positions_[i] = positions[i];
                 t_end_[i] = t_ + T_;
-            } else {
+            }
+            else
+            {
                 if (search_methods_[i] == ALTERNATIVE)
                 {
                     if (t_ < T_ / 2.)
                     {
-                        des_pos = 1.2 * M_PI * 0.5 * (1. - cos(2. * M_PI * (1. / T_) * t_));
-                    } else {
-                        des_pos = 1.2 * M_PI * cos(2. * M_PI * (0.5 / T_)*(t_-T_/2.0));
+                        des_pos = 1.2 * M_PI * 0.5 *
+                                  (1. - cos(2. * M_PI * (1. / T_) * t_));
                     }
-                } else if (search_methods_[i] == POSITIVE) {
-                    des_pos = 2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
-                } else {
-                    des_pos = -2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
+                    else
+                    {
+                        des_pos = 1.2 * M_PI *
+                                  cos(2. * M_PI * (0.5 / T_) * (t_ - T_ / 2.0));
+                    }
                 }
-                command_[i] = Kp_ * (des_pos/gear_ratios_[i] + initial_positions_[i] - positions[i]) - Kd_ * velocities[i];
+                else if (search_methods_[i] == POSITIVE)
+                {
+                    des_pos =
+                        2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
+                }
+                else
+                {
+                    des_pos =
+                        -2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
+                }
+                command_[i] = Kp_ * (des_pos / gear_ratios_[i] +
+                                     initial_positions_[i] - positions[i]) -
+                              Kd_ * velocities[i];
                 // std::cout << des_pos << " ";
             }
             finished = false;
-        // After the index was found, move to the initial zero position.
-        } else {
-            if (t_end_[i] > t_) {
-                des_pos = initial_positions_[i] * (t_end_[i] - t_)/T_;
+            // After the index was found, move to the initial zero position.
+        }
+        else
+        {
+            if (t_end_[i] > t_)
+            {
+                des_pos = initial_positions_[i] * (t_end_[i] - t_) / T_;
                 finished = false;
-            } else {
+            }
+            else
+            {
                 des_pos = 0;
             }
             command_[i] = Kp_ * (des_pos - positions[i]) - Kd_ * velocities[i];
@@ -146,5 +178,4 @@ bool JointCalibrator::Run()
     return finished;
 }
 
-
-} // namespace odri_control_interface
+}  // namespace odri_control_interface

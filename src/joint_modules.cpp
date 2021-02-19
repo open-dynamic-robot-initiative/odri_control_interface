@@ -13,7 +13,6 @@
 
 namespace odri_control_interface
 {
-
 JointModules::JointModules(
     const std::shared_ptr<MasterBoardInterface>& robot_if,
     ConstRefVectorXi motor_numbers,
@@ -24,30 +23,33 @@ JointModules::JointModules(
     ConstRefVectorXd lower_joint_limits,
     ConstRefVectorXd upper_joint_limits,
     double max_joint_velocities,
-    double safety_damping
-):  robot_if_(robot_if),
-    lower_joint_limits_(lower_joint_limits),
-    upper_joint_limits_(upper_joint_limits),
-    max_joint_velocities_(max_joint_velocities),
-    check_joint_limits_(true)
+    double safety_damping)
+    : robot_if_(robot_if),
+      lower_joint_limits_(lower_joint_limits),
+      upper_joint_limits_(upper_joint_limits),
+      max_joint_velocities_(max_joint_velocities),
+      check_joint_limits_(true)
 {
     n_ = static_cast<int>(motor_numbers.size());
-    nd_ = (n_ + 1)/2;
+    nd_ = (n_ + 1) / 2;
 
     // Check input arrays for correct sizes.
     if (reverse_polarities.size() != n_)
     {
-        throw std::runtime_error("Motor polarities has different size than motor numbers");
+        throw std::runtime_error(
+            "Motor polarities has different size than motor numbers");
     }
 
     if (lower_joint_limits.size() != n_)
     {
-        throw std::runtime_error("Lower joint limits has different size than motor numbers");
+        throw std::runtime_error(
+            "Lower joint limits has different size than motor numbers");
     }
 
     if (upper_joint_limits.size() != n_)
     {
-        throw std::runtime_error("Upper joint limits has different size than motor numbers");
+        throw std::runtime_error(
+            "Upper joint limits has different size than motor numbers");
     }
 
     // Resize and fill the vectors.
@@ -94,12 +96,14 @@ void JointModules::ParseSensorData()
 {
     for (int i = 0; i < n_; i++)
     {
-        positions_(i) = motors_[i]->get_position() * polarities_(i) / gear_ratios_(i);
-        velocities_(i) = motors_[i]->get_velocity() * polarities_(i) / gear_ratios_(i);
+        positions_(i) =
+            motors_[i]->get_position() * polarities_(i) / gear_ratios_(i);
+        velocities_(i) =
+            motors_[i]->get_velocity() * polarities_(i) / gear_ratios_(i);
         sent_torques_(i) = (motors_[i]->get_current_ref() * polarities_(i) *
-            gear_ratios_(i) * motor_constants_(i));
-        measured_torques_(i) = (motors_[i]->get_current() *
-            polarities_[i] * gear_ratios_[i] * motor_constants_[i]);
+                            gear_ratios_(i) * motor_constants_(i));
+        measured_torques_(i) = (motors_[i]->get_current() * polarities_[i] *
+                                gear_ratios_[i] * motor_constants_[i]);
 
         index_been_detected_(i) = motors_[i]->HasIndexBeenDetected();
         ready_(i) = motors_[i]->get_is_ready();
@@ -135,7 +139,7 @@ void JointModules::SetTorques(ConstRefVectorXd desired_torques)
     {
         motors_[i]->SetCurrentReference(
             polarities_(i) * desired_torques(i) /
-                (gear_ratios_(i) * motor_constants_(i)));
+            (gear_ratios_(i) * motor_constants_(i)));
     }
 }
 
@@ -143,8 +147,8 @@ void JointModules::SetDesiredPositions(ConstRefVectorXd desired_positions)
 {
     for (int i = 0; i < n_; i++)
     {
-        motors_[i]->SetPositionReference(
-            polarities_[i] * desired_positions[i] * gear_ratios_[i]);
+        motors_[i]->SetPositionReference(polarities_[i] * desired_positions[i] *
+                                         gear_ratios_[i]);
     }
 }
 
@@ -162,7 +166,8 @@ void JointModules::SetPositionGains(ConstRefVectorXd desired_gains)
     for (int i = 0; i < n_; i++)
     {
         motors_[i]->set_kp(
-            desired_gains[i] / (gear_ratios_[i] * gear_ratios_[i] * motor_constants_[i]));
+            desired_gains[i] /
+            (gear_ratios_[i] * gear_ratios_[i] * motor_constants_[i]));
     }
 }
 
@@ -171,7 +176,8 @@ void JointModules::SetVelocityGains(ConstRefVectorXd desired_gains)
     for (int i = 0; i < n_; i++)
     {
         motors_[i]->set_kd(
-            desired_gains[i] / (gear_ratios_[i] * gear_ratios_[i] * motor_constants_[i]));
+            desired_gains[i] /
+            (gear_ratios_[i] * gear_ratios_[i] * motor_constants_[i]));
     }
 }
 
@@ -200,8 +206,8 @@ void JointModules::SetPositionOffsets(ConstRefVectorXd position_offsets)
     for (int i = 0; i < n_; i++)
     {
         // REVIEW: Is the following correct?
-        motors_[i]->SetPositionOffset(position_offsets(i) *
-            polarities_(i) * gear_ratios_(i));
+        motors_[i]->SetPositionOffset(position_offsets(i) * polarities_(i) *
+                                      gear_ratios_(i));
     }
     // Need to trigger a sensor parsing to update the joint positions.
     robot_if_->ParseSensorData();
@@ -245,7 +251,8 @@ bool JointModules::SawAllIndices()
 {
     for (int i = 0; i < n_; i++)
     {
-        if (!motors_[i]->get_has_index_been_detected()) {
+        if (!motors_[i]->get_has_index_been_detected())
+        {
             return false;
         }
     }
@@ -315,10 +322,16 @@ bool JointModules::HasError()
             if (positions_(i) > upper_joint_limits_(i))
             {
                 has_error = true;
-                if (upper_joint_limits_counter_++ % 2000 == 0) {
-                    msg_out_ << "ERROR: Above joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; PrintVector(positions_); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; PrintVector(upper_joint_limits_); msg_out_ << std::endl;
+                if (upper_joint_limits_counter_++ % 2000 == 0)
+                {
+                    msg_out_ << "ERROR: Above joint limits at joint #" << (i)
+                             << std::endl;
+                    msg_out_ << "  Joints: ";
+                    PrintVector(positions_);
+                    msg_out_ << std::endl;
+                    msg_out_ << "  Limits: ";
+                    PrintVector(upper_joint_limits_);
+                    msg_out_ << std::endl;
                 }
                 break;
             }
@@ -329,10 +342,16 @@ bool JointModules::HasError()
             if (positions_(i) < lower_joint_limits_(i))
             {
                 has_error = true;
-                if (lower_joint_limits_counter_++ % 2000 == 0) {
-                    msg_out_ << "ERROR: Below joint limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; PrintVector(positions_); msg_out_ << std::endl;
-                    msg_out_ << "  Limits: "; PrintVector(lower_joint_limits_); msg_out_ << std::endl;
+                if (lower_joint_limits_counter_++ % 2000 == 0)
+                {
+                    msg_out_ << "ERROR: Below joint limits at joint #" << (i)
+                             << std::endl;
+                    msg_out_ << "  Joints: ";
+                    PrintVector(positions_);
+                    msg_out_ << std::endl;
+                    msg_out_ << "  Limits: ";
+                    PrintVector(lower_joint_limits_);
+                    msg_out_ << std::endl;
                 }
                 break;
             }
@@ -342,7 +361,8 @@ bool JointModules::HasError()
     // Check for joint velocities limtis.
     // Check the velocity only after the motors report ready to avoid
     // fast motions during the initialization phase detected as error.
-    if (IsReady()) {
+    if (IsReady())
+    {
         for (int i = 0; i < n_; i++)
         {
             if (std::abs(velocities_[i]) > max_joint_velocities_)
@@ -350,9 +370,13 @@ bool JointModules::HasError()
                 has_error = true;
                 if (velocity_joint_limits_counter_++ % 2000 == 0)
                 {
-                    msg_out_ << "ERROR: Above joint velocity limits at joint #" << (i) << std::endl;
-                    msg_out_ << "  Joints: "; PrintVector(velocities_); msg_out_ << std::endl;
-                    msg_out_ << "  Limit: " << max_joint_velocities_ << std::endl;
+                    msg_out_ << "ERROR: Above joint velocity limits at joint #"
+                             << (i) << std::endl;
+                    msg_out_ << "  Joints: ";
+                    PrintVector(velocities_);
+                    msg_out_ << std::endl;
+                    msg_out_ << "  Limit: " << max_joint_velocities_
+                             << std::endl;
                 }
                 break;
             }
@@ -369,7 +393,7 @@ bool JointModules::HasError()
             {
                 print_error = true;
                 msg_out_ << "ERROR at motor drivers #" << (i) << ": ";
-                switch(robot_if_->motor_drivers[i].error_code)
+                switch (robot_if_->motor_drivers[i].error_code)
                 {
                     case UD_SENSOR_STATUS_ERROR_ENCODER1:
                         msg_out_ << "Encoder1 error";
@@ -415,4 +439,4 @@ void JointModules::SetMaximumCurrents(double max_currents)
     }
 }
 
-}
+}  // namespace odri_control_interface

@@ -14,10 +14,8 @@
 #include <odri_control_interface/common.hpp>
 #include <odri_control_interface/utils.hpp>
 
-
 namespace odri_control_interface
 {
-
 std::shared_ptr<JointModules> JointModulesFromYaml(
     std::shared_ptr<MasterBoardInterface> robot_if,
     const YAML::Node& joint_modules_yaml)
@@ -26,45 +24,55 @@ std::shared_ptr<JointModules> JointModulesFromYaml(
     std::size_t n = motor_numbers.size();
     VectorXi motor_numbers_vec;
     motor_numbers_vec.resize(n);
-    for (std::size_t i = 0; i < n; i++) {
+    for (std::size_t i = 0; i < n; i++)
+    {
         motor_numbers_vec(i) = motor_numbers[i].as<int>();
     }
 
     const YAML::Node& rev_polarities = joint_modules_yaml["reverse_polarities"];
     if (rev_polarities.size() != n)
     {
-        throw std::runtime_error("Motor polarities has different size than motor numbers");
+        throw std::runtime_error(
+            "Motor polarities has different size than motor numbers");
     }
     VectorXb rev_polarities_vec;
     rev_polarities_vec.resize(n);
-    for (std::size_t i = 0; i < n; i++) {
+    for (std::size_t i = 0; i < n; i++)
+    {
         rev_polarities_vec(i) = rev_polarities[i].as<bool>();
     }
 
-    const YAML::Node& lower_joint_limits = joint_modules_yaml["lower_joint_limits"];
+    const YAML::Node& lower_joint_limits =
+        joint_modules_yaml["lower_joint_limits"];
     if (lower_joint_limits.size() != n)
     {
-        throw std::runtime_error("Lower joint limits has different size than motor numbers");
+        throw std::runtime_error(
+            "Lower joint limits has different size than motor numbers");
     }
     VectorXd lower_joint_limits_vec;
     lower_joint_limits_vec.resize(n);
-    for (std::size_t i = 0; i < n; i++) {
+    for (std::size_t i = 0; i < n; i++)
+    {
         lower_joint_limits_vec(i) = lower_joint_limits[i].as<double>();
     }
 
-    const YAML::Node& upper_joint_limits = joint_modules_yaml["upper_joint_limits"];
+    const YAML::Node& upper_joint_limits =
+        joint_modules_yaml["upper_joint_limits"];
     if (upper_joint_limits.size() != n)
     {
-        throw std::runtime_error("Upper joint limits has different size than motor numbers");
+        throw std::runtime_error(
+            "Upper joint limits has different size than motor numbers");
     }
     VectorXd upper_joint_limits_vec;
     upper_joint_limits_vec.resize(n);
-    for (std::size_t i = 0; i < n; i++) {
+    for (std::size_t i = 0; i < n; i++)
+    {
         upper_joint_limits_vec(i) = upper_joint_limits[i].as<double>();
     }
 
     return std::make_shared<JointModules>(
-        robot_if, motor_numbers_vec,
+        robot_if,
+        motor_numbers_vec,
         joint_modules_yaml["motor_constants"].as<double>(),
         joint_modules_yaml["gear_ratios"].as<double>(),
         joint_modules_yaml["max_currents"].as<double>(),
@@ -72,12 +80,11 @@ std::shared_ptr<JointModules> JointModulesFromYaml(
         lower_joint_limits_vec,
         upper_joint_limits_vec,
         joint_modules_yaml["max_joint_velocities"].as<double>(),
-        joint_modules_yaml["safety_damping"].as<double>()
-    );
+        joint_modules_yaml["safety_damping"].as<double>());
 }
 
 std::shared_ptr<IMU> IMUFromYaml(std::shared_ptr<MasterBoardInterface> robot_if,
-                          const YAML::Node& imu_yaml)
+                                 const YAML::Node& imu_yaml)
 {
     const YAML::Node& rotate_vector = imu_yaml["rotate_vector"];
     VectorXl rotate_vector_vec;
@@ -86,7 +93,8 @@ std::shared_ptr<IMU> IMUFromYaml(std::shared_ptr<MasterBoardInterface> robot_if,
     {
         throw std::runtime_error("Rotate vector not of size 3.");
     }
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
         rotate_vector_vec(i) = rotate_vector[i].as<long>();
     }
 
@@ -97,7 +105,8 @@ std::shared_ptr<IMU> IMUFromYaml(std::shared_ptr<MasterBoardInterface> robot_if,
     {
         throw std::runtime_error("Rotate vector not of size 3.");
     }
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         orientation_vector_vec(i) = orientation_vector[i].as<long>();
     }
 
@@ -105,23 +114,32 @@ std::shared_ptr<IMU> IMUFromYaml(std::shared_ptr<MasterBoardInterface> robot_if,
         robot_if, rotate_vector_vec, orientation_vector_vec);
 }
 
-std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(std::shared_ptr<JointModules> joints,
-                                         const YAML::Node& joint_calibrator)
+std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(
+    std::shared_ptr<JointModules> joints, const YAML::Node& joint_calibrator)
 {
     std::vector<CalibrationMethod> calib_methods;
     for (std::size_t i = 0; i < joint_calibrator["search_methods"].size(); i++)
     {
         std::string method =
             joint_calibrator["search_methods"][i].as<std::string>();
-        if (method == "AUTO") {
+        if (method == "AUTO")
+        {
             calib_methods.push_back(CalibrationMethod::AUTO);
-        } else if (method == "POS") {
+        }
+        else if (method == "POS")
+        {
             calib_methods.push_back(CalibrationMethod::POSITIVE);
-        } else if (method == "NEG") {
+        }
+        else if (method == "NEG")
+        {
             calib_methods.push_back(CalibrationMethod::NEGATIVE);
-        } else if (method == "ALT") {
+        }
+        else if (method == "ALT")
+        {
             calib_methods.push_back(CalibrationMethod::ALTERNATIVE);
-        } else {
+        }
+        else
+        {
             throw std::runtime_error("Unknown search method '" + method + "'.");
         }
     }
@@ -130,18 +148,19 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(std::shared_ptr<JointMo
     std::size_t n = position_offsets.size();
     VectorXd position_offsets_vec;
     position_offsets_vec.resize(n);
-    for (std::size_t i = 0; i < n; i++) {
+    for (std::size_t i = 0; i < n; i++)
+    {
         position_offsets_vec(i) = position_offsets[i].as<double>();
     }
 
     return std::make_shared<JointCalibrator>(
         joints,
-        calib_methods, position_offsets_vec,
+        calib_methods,
+        position_offsets_vec,
         joint_calibrator["Kp"].as<double>(),
         joint_calibrator["Kd"].as<double>(),
         joint_calibrator["T"].as<double>(),
-        joint_calibrator["dt"].as<double>()
-    );
+        joint_calibrator["dt"].as<double>());
 }
 
 std::shared_ptr<Robot> RobotFromYamlFile(std::string file_path)
@@ -153,10 +172,12 @@ std::shared_ptr<Robot> RobotFromYamlFile(std::string file_path)
 
     // 1. Create the robot interface.
     std::shared_ptr<MasterBoardInterface> robot_if =
-        std::make_shared<MasterBoardInterface>(robot_node["interface"].as<std::string>());
+        std::make_shared<MasterBoardInterface>(
+            robot_node["interface"].as<std::string>());
 
     // 2. Create the joint modules.
-    std::shared_ptr<JointModules> joints = JointModulesFromYaml(robot_if, robot_node["joint_modules"]);
+    std::shared_ptr<JointModules> joints =
+        JointModulesFromYaml(robot_if, robot_node["joint_modules"]);
 
     std::shared_ptr<IMU> imu = IMUFromYaml(robot_if, robot_node["imu"]);
 
@@ -164,7 +185,8 @@ std::shared_ptr<Robot> RobotFromYamlFile(std::string file_path)
     return std::make_shared<Robot>(robot_if, joints, imu);
 }
 
-std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(std::string file_path, std::shared_ptr<JointModules> joints)
+std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(
+    std::string file_path, std::shared_ptr<JointModules> joints)
 {
     YAML::Node param = YAML::LoadFile(file_path);
 
@@ -172,9 +194,9 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(std::string file_pa
 }
 
 std::shared_ptr<MasterBoardInterface> CreateMasterBoardInterface(
-    const std::string &if_name, bool listener_mode)
+    const std::string& if_name, bool listener_mode)
 {
     return std::make_shared<MasterBoardInterface>(if_name, listener_mode);
 }
 
-} // namespace odri_control_interface
+}  // namespace odri_control_interface
