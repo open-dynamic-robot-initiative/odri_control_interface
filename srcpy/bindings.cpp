@@ -145,7 +145,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property(
             "imu",
             make_function(&Robot::GetIMU,
-                          return_value_policy<reference_existing_object>()))
+                          return_value_policy<copy_const_reference>()))
         .add_property("is_ready", &Robot::IsReady)
         .add_property("is_timeout", &Robot::IsTimeout)
         .add_property("is_ack_msg_received", &Robot::IsAckMsgReceived)
