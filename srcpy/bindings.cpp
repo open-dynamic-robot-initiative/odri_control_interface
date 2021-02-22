@@ -48,6 +48,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 {
     // Enabling eigenpy support, i.e. numpy/eigen compatibility.
     eigenpy::enableEigenPy();
+    eigenpy::enableEigenPySpecific<VectorXi>();
     eigenpy::enableEigenPySpecific<VectorXl>();
     eigenpy::enableEigenPySpecific<VectorXb>();
 

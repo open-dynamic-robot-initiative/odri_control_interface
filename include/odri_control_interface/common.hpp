@@ -25,15 +25,15 @@ typedef Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 1> > RefVectorXd;
 typedef Eigen::Ref<Eigen::Vector3d> RefVector3d;
 typedef Eigen::Ref<Eigen::Vector4d> RefVector4d;
 
-typedef Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >
+typedef const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >
     ConstRefVectorXi;
-typedef Eigen::Ref<const Eigen::Matrix<long, Eigen::Dynamic, 1> >
+typedef const Eigen::Ref<const Eigen::Matrix<long, Eigen::Dynamic, 1> >
     ConstRefVectorXl;
-typedef Eigen::Ref<const Eigen::Matrix<bool, Eigen::Dynamic, 1> >
+typedef const Eigen::Ref<const Eigen::Matrix<bool, Eigen::Dynamic, 1> >
     ConstRefVectorXb;
-typedef Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1> >
+typedef const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1> >
     ConstRefVectorXd;
-typedef Eigen::Ref<const Eigen::Vector3d> ConstRefVector3d;
-typedef Eigen::Ref<const Eigen::Vector4d> ConstRefVector4d;
+typedef const Eigen::Ref<const Eigen::Vector3d> ConstRefVector3d;
+typedef const Eigen::Ref<const Eigen::Vector4d> ConstRefVector4d;
 
 }  // namespace odri_control_interface
