@@ -390,7 +390,7 @@ bool JointModules::HasError()
                         msg_out_ << "Encoder2 error";
                         break;
                     default:
-                        msg_out_ << "Other error";
+                        msg_out_ << "Other error (" << robot_if_->motor_drivers[i].error_code << ")";
                         break;
                 }
                 msg_out_ << std::endl;
