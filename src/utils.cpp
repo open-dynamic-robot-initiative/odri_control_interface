@@ -163,7 +163,8 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(
         joint_calibrator["dt"].as<double>());
 }
 
-std::shared_ptr<Robot> RobotFromYamlFile(std::string file_path)
+std::shared_ptr<Robot> RobotFromYamlFile(const std::string& if_name,
+                                         const std::string& file_path)
 {
     YAML::Node param = YAML::LoadFile(file_path);
 
@@ -172,8 +173,7 @@ std::shared_ptr<Robot> RobotFromYamlFile(std::string file_path)
 
     // 1. Create the robot interface.
     std::shared_ptr<MasterBoardInterface> robot_if =
-        std::make_shared<MasterBoardInterface>(
-            robot_node["interface"].as<std::string>());
+        std::make_shared<MasterBoardInterface>(if_name);
 
     // 2. Create the joint modules.
     std::shared_ptr<JointModules> joints =
@@ -185,8 +185,18 @@ std::shared_ptr<Robot> RobotFromYamlFile(std::string file_path)
     return std::make_shared<Robot>(robot_if, joints, imu);
 }
 
+std::shared_ptr<Robot> RobotFromYamlFile(const std::string& file_path)
+{
+    YAML::Node param = YAML::LoadFile(file_path);
+
+    // Parse the robot part.
+    std::string if_name = param["robot"]["interface"].as<std::string>();
+
+    return RobotFromYamlFile(if_name, file_path);
+}
+
 std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(
-    std::string file_path, std::shared_ptr<JointModules> joints)
+    const std::string& file_path, std::shared_ptr<JointModules> joints)
 {
     YAML::Node param = YAML::LoadFile(file_path);
 

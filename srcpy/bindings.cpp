@@ -10,6 +10,7 @@
  */
 
 #include "bindings.h"
+
 #include <eigenpy/eigenpy.hpp>
 
 using namespace boost::python;
@@ -42,6 +43,17 @@ std::shared_ptr<MasterBoardInterface> CreateMasterBoardInterfaceDefaults(
     const std::string& if_name)
 {
     return CreateMasterBoardInterface(if_name);
+}
+
+std::shared_ptr<Robot> RobotFromYamlFileAndIfConfig(
+    const std::string& if_name, const std::string& file_path)
+{
+    return RobotFromYamlFile(if_name, file_path);
+}
+
+std::shared_ptr<Robot> RobotOnlyFromYamlFile(const std::string& file_path)
+{
+    return RobotFromYamlFile(file_path);
 }
 
 BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
@@ -158,6 +170,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .def("run", &JointCalibrator::Run);
     register_ptr_to_python<std::shared_ptr<JointCalibrator>>();
 
-    def("robot_from_yaml_file", &RobotFromYamlFile);
+    def("robot_from_yaml_file", &RobotOnlyFromYamlFile);
+    def("robot_from_yaml_file", &RobotFromYamlFileAndIfConfig);
     def("joint_calibrator_from_yaml_file", &JointCalibratorFromYamlFile);
 }
