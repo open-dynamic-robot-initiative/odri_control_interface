@@ -26,8 +26,8 @@ int main()
 
     // Initialize simple pd controller.
     Vector12d torques;
-    double kp = 5.;
-    double kd = 0.1;
+    double kp = 3.;
+    double kd = 0.05;
     int c = 0;
     std::chrono::time_point<std::chrono::system_clock> last =
         std::chrono::system_clock::now();
