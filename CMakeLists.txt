@@ -67,10 +67,9 @@ endif(BUILD_PYTHON_INTERFACE)
 set(ODRI_CONTROL_INTERFACE_SRC src/joint_modules.cpp src/imu.cpp src/robot.cpp
                                src/calibration.cpp src/utils.cpp)
 add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} SYSTEM
-                           PUBLIC ${MASTER_BOARD_SDK_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
+target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                          $<INSTALL_INTERFACE:include>)
@@ -92,8 +91,7 @@ if(BUILD_PYTHON_INTERFACE)
   set(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB})
   add_library(${PYWRAP} SHARED ${${PYWRAP}_SOURCES} ${${PYWRAP}_HEADERS})
   target_include_directories(${PYWRAP} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIR})
-  target_link_libraries(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy
-                        master_board_sdk::master_board_sdk)
+  target_link_libraries(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy)
   target_link_boost_python(${PYWRAP})
   set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
                                              "${CMAKE_INSTALL_PREFIX}/lib")
@@ -107,7 +105,16 @@ if(BUILD_PYTHON_INTERFACE)
 endif(BUILD_PYTHON_INTERFACE)
 
 # --- CHECK DEMOS -----------------------------------------------------------
-add_executable(demo_solo12 demos/demo_solo12.cpp)
-target_link_libraries(demo_solo12 ${PROJECT_NAME}
-                      master_board_sdk::master_board_sdk)
-install(TARGETS demo_solo12 DESTINATION bin)
+macro(create_solo12_demo source)
+
+set(demo_name ${PROJECT_NAME}_${source})
+add_executable(${demo_name} demos/${source}.cpp)
+target_link_libraries(${demo_name} ${PROJECT_NAME})
+target_compile_definitions(${demo_name}
+  PUBLIC CONFIG_SOLO12_YAML="${PROJECT_SOURCE_DIR}/demos/config_solo12.yaml")
+install(TARGETS ${demo_name} DESTINATION bin)
+    
+endmacro(create_solo12_demo source)
+
+create_solo12_demo(demo_create_solo12_robot)
+create_solo12_demo(demo_solo12_from_yaml)
