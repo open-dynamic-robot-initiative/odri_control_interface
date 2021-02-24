@@ -74,7 +74,7 @@ JointCalibrator::JointCalibrator(
     found_index_.fill(false);
 }
 
-void JointCalibrator::UpdatePositionOffsets(RefVectorXd position_offsets)
+void JointCalibrator::UpdatePositionOffsets(ConstRefVectorXd position_offsets)
 {
     position_offsets_ = position_offsets;
 }

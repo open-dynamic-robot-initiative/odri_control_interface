@@ -62,7 +62,7 @@ public:
                     double T,
                     double dt);
 
-    void UpdatePositionOffsets(RefVectorXd position_offsets);
+    void UpdatePositionOffsets(ConstRefVectorXd position_offsets);
 
     /**
      * @brief Runs the calibration procedure. Returns true if the calibration is
