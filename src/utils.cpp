@@ -11,11 +11,18 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <fstream>
 #include <odri_control_interface/common.hpp>
 #include <odri_control_interface/utils.hpp>
 
 namespace odri_control_interface
 {
+inline bool file_exists(const std::string& name)
+{
+    std::ifstream f(name.c_str());
+    return f.good();
+}
+
 std::shared_ptr<JointModules> JointModulesFromYaml(
     std::shared_ptr<MasterBoardInterface> robot_if,
     const YAML::Node& joint_modules_yaml)
@@ -166,6 +173,12 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(
 std::shared_ptr<Robot> RobotFromYamlFile(const std::string& if_name,
                                          const std::string& file_path)
 {
+    if (!file_exists(file_path))
+    {
+        throw std::runtime_error("The YAML parameter file [" + file_path +
+                                 "] does not exists.");
+    }
+
     YAML::Node param = YAML::LoadFile(file_path);
 
     // Parse the robot part.
@@ -187,6 +200,12 @@ std::shared_ptr<Robot> RobotFromYamlFile(const std::string& if_name,
 
 std::shared_ptr<Robot> RobotFromYamlFile(const std::string& file_path)
 {
+    if (!file_exists(file_path))
+    {
+        throw std::runtime_error("The YAML parameter file [" + file_path +
+                                 "] does not exists.");
+    }
+    
     YAML::Node param = YAML::LoadFile(file_path);
 
     // Parse the robot part.
