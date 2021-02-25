@@ -242,7 +242,7 @@ ConstRefVectorXb JointModules::GetMotorDriverEnabled()
     return motor_driver_enabled_;
 }
 
-ConstRefVectorXb JointModules::GetMotorDriverErrors()
+ConstRefVectorXi JointModules::GetMotorDriverErrors()
 {
     return motor_driver_errors_;
 }

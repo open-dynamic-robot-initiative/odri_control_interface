@@ -49,7 +49,7 @@ protected:
     VectorXb ready_;
     VectorXb enabled_;
     VectorXb motor_driver_enabled_;
-    VectorXb motor_driver_errors_;
+    VectorXi motor_driver_errors_;
 
     Eigen::VectorXd zero_vector_;
 
@@ -107,7 +107,7 @@ public:
     ConstRefVectorXb GetReady();
     ConstRefVectorXb GetEnabled();
     ConstRefVectorXb GetMotorDriverEnabled();
-    ConstRefVectorXb GetMotorDriverErrors();
+    ConstRefVectorXi GetMotorDriverErrors();
 
     bool SawAllIndices();
 
