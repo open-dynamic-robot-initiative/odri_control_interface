@@ -39,6 +39,35 @@ std::shared_ptr<JointCalibrator> joint_calibrator_constructor(
         joints, search_method_vec, position_offsets, Kp, Kd, T, dt);
 }
 
+std::shared_ptr<JointModules> joint_modules_constructor(
+    const std::shared_ptr<MasterBoardInterface>& robot_if,
+    ConstRefVectorXl motor_numbers,
+    double motor_constants,
+    double gear_ratios,
+    double max_currents,
+    ConstRefVectorXb reverse_polarities,
+    ConstRefVectorXd lower_joint_limits,
+    ConstRefVectorXd upper_joint_limits,
+    double max_joint_velocities,
+    double safety_damping)
+{
+    VectorXi motor_numbers_int = VectorXi::Zero(motor_numbers.size());
+    for (Eigen::Index i=0 ; i < motor_numbers.size(); ++i)
+    {
+        motor_numbers_int(i) = static_cast<int>(motor_numbers(i));
+    }
+    return std::make_shared<JointModules>(robot_if,
+                                          motor_numbers_int,
+                                          motor_constants,
+                                          gear_ratios,
+                                          max_currents,
+                                          reverse_polarities,
+                                          lower_joint_limits,
+                                          upper_joint_limits,
+                                          max_joint_velocities,
+                                          safety_damping);
+}
+
 std::shared_ptr<MasterBoardInterface> CreateMasterBoardInterfaceDefaults(
     const std::string& if_name)
 {
@@ -72,17 +101,8 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
     register_ptr_to_python<std::shared_ptr<MasterBoardInterface>>();
 
     // JointModules bindings and it's std::shared_ptr.
-    class_<JointModules>("JointModules",
-                         init<std::shared_ptr<MasterBoardInterface>,
-                              ConstRefVectorXi,
-                              double,
-                              double,
-                              double,
-                              ConstRefVectorXb,
-                              ConstRefVectorXd,
-                              ConstRefVectorXd,
-                              double,
-                              double>())
+    class_<JointModules>("JointModules", no_init)
+        .def("__init__", make_constructor(&joint_modules_constructor))
         .def("enable", &JointModules::Enable)
         .def("set_torques", &JointModules::SetTorques)
         .def("set_desired_positions", &JointModules::SetDesiredPositions)

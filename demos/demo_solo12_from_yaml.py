@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import numpy as np
 
 np.set_printoptions(suppress=True, precision=2)
@@ -7,7 +9,12 @@ import time
 import libmaster_board_sdk_pywrap as mbs
 import libodri_control_interface_pywrap as oci
 
-robot = oci.robot_from_yaml_file("config_solo12.yaml")
+import pathlib
+
+config_dir = pathlib.Path(__file__).parent.absolute()
+robot = oci.robot_from_yaml_file(
+    str(pathlib.Path.joinpath(config_dir, "config_solo12.yaml"))
+)
 joint_calibrator = oci.joint_calibrator_from_yaml_file(
     "config_solo12.yaml", robot.joints
 )

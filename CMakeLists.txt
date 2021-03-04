@@ -107,13 +107,14 @@ endif(BUILD_PYTHON_INTERFACE)
 # --- CHECK DEMOS -----------------------------------------------------------
 macro(create_solo12_demo source)
 
-set(demo_name ${PROJECT_NAME}_${source})
-add_executable(${demo_name} demos/${source}.cpp)
-target_link_libraries(${demo_name} ${PROJECT_NAME})
-target_compile_definitions(${demo_name}
-  PUBLIC CONFIG_SOLO12_YAML="${PROJECT_SOURCE_DIR}/demos/config_solo12.yaml")
-install(TARGETS ${demo_name} DESTINATION bin)
-    
+  set(demo_name ${PROJECT_NAME}_${source})
+  add_executable(${demo_name} demos/${source}.cpp)
+  target_link_libraries(${demo_name} ${PROJECT_NAME})
+  target_compile_definitions(
+    ${demo_name}
+    PUBLIC CONFIG_SOLO12_YAML="${PROJECT_SOURCE_DIR}/demos/config_solo12.yaml")
+  install(TARGETS ${demo_name} DESTINATION bin)
+
 endmacro(create_solo12_demo source)
 
 create_solo12_demo(demo_create_solo12_robot)
