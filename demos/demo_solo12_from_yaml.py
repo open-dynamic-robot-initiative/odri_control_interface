@@ -11,22 +11,19 @@ import libodri_control_interface_pywrap as oci
 
 import pathlib
 
-config_dir = pathlib.Path(__file__).parent.absolute()
-robot = oci.robot_from_yaml_file(
-    str(pathlib.Path.joinpath(config_dir, "config_solo12.yaml"))
-)
+robot = oci.robot_from_yaml_file("config_solo12.yaml")
 joint_calibrator = oci.joint_calibrator_from_yaml_file(
     "config_solo12.yaml", robot.joints
 )
 
 # Initialize the communication and the session.
-# robot.start()
-# robot.wait_until_ready()
+robot.start()
+robot.wait_until_ready()
 
 # Calibrate the robot if needed.
-# robot.run_calibration(joint_calibrator)
+robot.run_calibration(joint_calibrator)
 
-# robot.parse_sensor_data()
+robot.parse_sensor_data()
 
 # Read the values once here. The returned values are views on the data and
 # update after the call to `robot.parse_sensor_data()`.
