@@ -25,13 +25,8 @@ robot.run_calibration(joint_calibrator)
 
 robot.parse_sensor_data()
 
-# Read the values once here. The returned values are views on the data and
-# update after the call to `robot.parse_sensor_data()`.
-imu_attitude = robot.imu.attitude_euler
-positions = robot.joints.positions
-velocities = robot.joints.velocities
 
-init_imu_attitude = imu_attitude.copy()
+init_imu_attitude = robot.imu.attitude_euler.copy()
 
 des_pos = np.zeros(12)
 
@@ -41,6 +36,10 @@ calibration_done = False
 next_tick = time.time()
 while not robot.is_timeout:
     robot.parse_sensor_data()
+
+    imu_attitude = robot.imu.attitude_euler
+    positions = robot.joints.positions
+    velocities = robot.joints.velocities
 
     if c % 2000 == 0:
         print("IMU attitude:", imu_attitude)
