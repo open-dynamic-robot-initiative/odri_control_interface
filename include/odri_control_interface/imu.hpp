@@ -57,11 +57,11 @@ public:
     void ParseSensorData();
 
     const std::shared_ptr<MasterBoardInterface>& GetMasterBoardInterface();
-    RefVector3d GetGyroscope();
-    RefVector3d GetAccelerometer();
-    RefVector3d GetLinearAcceleration();
-    RefVector3d GetAttitudeEuler();
-    RefVector4d GetAttitudeQuaternion();
+    const Eigen::Vector3d& GetGyroscope();
+    const Eigen::Vector3d& GetAccelerometer();
+    const Eigen::Vector3d& GetLinearAcceleration();
+    const Eigen::Vector3d& GetAttitudeEuler();
+    const Eigen::Vector4d& GetAttitudeQuaternion();
 };
 
 }  // namespace odri_control_interface

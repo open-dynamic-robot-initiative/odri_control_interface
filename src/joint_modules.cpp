@@ -87,7 +87,7 @@ JointModules::JointModules(
     SetMaximumCurrents(max_currents);
 }
 
-ConstRefVectorXd JointModules::GetGearRatios()
+const VectorXd& JointModules::GetGearRatios()
 {
     return gear_ratios_;
 }
@@ -222,27 +222,27 @@ void JointModules::EnableIndexOffsetCompensation()
     }
 }
 
-ConstRefVectorXb JointModules::HasIndexBeenDetected()
+const VectorXb& JointModules::HasIndexBeenDetected()
 {
     return index_been_detected_;
 }
 
-ConstRefVectorXb JointModules::GetReady()
+const VectorXb& JointModules::GetReady()
 {
     return ready_;
 }
 
-ConstRefVectorXb JointModules::GetEnabled()
+const VectorXb& JointModules::GetEnabled()
 {
     return enabled_;
 }
 
-ConstRefVectorXb JointModules::GetMotorDriverEnabled()
+const VectorXb& JointModules::GetMotorDriverEnabled()
 {
     return motor_driver_enabled_;
 }
 
-ConstRefVectorXi JointModules::GetMotorDriverErrors()
+const VectorXi& JointModules::GetMotorDriverErrors()
 {
     return motor_driver_errors_;
 }
@@ -277,22 +277,22 @@ bool JointModules::IsReady()
     return is_ready_;
 }
 
-ConstRefVectorXd JointModules::GetPositions()
+const VectorXd& JointModules::GetPositions()
 {
     return positions_;
 }
 
-ConstRefVectorXd JointModules::GetVelocities()
+const VectorXd& JointModules::GetVelocities()
 {
     return velocities_;
 }
 
-ConstRefVectorXd JointModules::GetSentTorques()
+const VectorXd& JointModules::GetSentTorques()
 {
     return sent_torques_;
 }
 
-ConstRefVectorXd JointModules::GetMeasuredTorques()
+const VectorXd& JointModules::GetMeasuredTorques()
 {
     return measured_torques_;
 }

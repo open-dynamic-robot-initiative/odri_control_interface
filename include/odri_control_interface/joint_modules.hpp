@@ -103,11 +103,11 @@ public:
 
     void EnableIndexOffsetCompensation();
 
-    ConstRefVectorXb HasIndexBeenDetected();
-    ConstRefVectorXb GetReady();
-    ConstRefVectorXb GetEnabled();
-    ConstRefVectorXb GetMotorDriverEnabled();
-    ConstRefVectorXi GetMotorDriverErrors();
+    const VectorXb& HasIndexBeenDetected();
+    const VectorXb& GetReady();
+    const VectorXb& GetEnabled();
+    const VectorXb& GetMotorDriverEnabled();
+    const VectorXi& GetMotorDriverErrors();
 
     bool SawAllIndices();
 
@@ -116,12 +116,12 @@ public:
      */
     bool IsReady();
 
-    ConstRefVectorXd GetPositions();
-    ConstRefVectorXd GetVelocities();
-    ConstRefVectorXd GetSentTorques();
-    ConstRefVectorXd GetMeasuredTorques();
+    const VectorXd& GetPositions();
+    const VectorXd& GetVelocities();
+    const VectorXd& GetSentTorques();
+    const VectorXd& GetMeasuredTorques();
 
-    ConstRefVectorXd GetGearRatios();
+    const VectorXd& GetGearRatios();
 
     void DisableJointLimitCheck();
     void EnableJointLimitCheck();

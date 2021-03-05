@@ -51,27 +51,27 @@ const std::shared_ptr<MasterBoardInterface>& IMU::GetMasterBoardInterface()
     return robot_if_;
 }
 
-RefVector3d IMU::GetGyroscope()
+const Eigen::Vector3d& IMU::GetGyroscope()
 {
     return gyroscope_;
 }
 
-RefVector3d IMU::GetAccelerometer()
+const Eigen::Vector3d& IMU::GetAccelerometer()
 {
     return accelerometer_;
 }
 
-RefVector3d IMU::GetLinearAcceleration()
+const Eigen::Vector3d& IMU::GetLinearAcceleration()
 {
     return linear_acceleration_;
 }
 
-RefVector3d IMU::GetAttitudeEuler()
+const Eigen::Vector3d& IMU::GetAttitudeEuler()
 {
     return attitude_euler_;
 }
 
-RefVector4d IMU::GetAttitudeQuaternion()
+const Eigen::Vector4d& IMU::GetAttitudeQuaternion()
 {
     return attitude_quaternion_;
 }

@@ -52,7 +52,7 @@ std::shared_ptr<JointModules> joint_modules_constructor(
     double safety_damping)
 {
     VectorXi motor_numbers_int = VectorXi::Zero(motor_numbers.size());
-    for (Eigen::Index i=0 ; i < motor_numbers.size(); ++i)
+    for (Eigen::Index i = 0; i < motor_numbers.size(); ++i)
     {
         motor_numbers_int(i) = static_cast<int>(motor_numbers(i));
     }
@@ -92,6 +92,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
     eigenpy::enableEigenPySpecific<VectorXi>();
     eigenpy::enableEigenPySpecific<VectorXl>();
     eigenpy::enableEigenPySpecific<VectorXb>();
+    eigenpy::enableEigenPySpecific<Eigen::VectorXd>();
 
     /* Operation on the master_board_sdk
      * - Import the python binding of the master_board_sdk
@@ -117,16 +118,39 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .def("set_maximum_current", &JointModules::SetMaximumCurrents)
         .def("disable_joint_limit_check", &JointModules::DisableJointLimitCheck)
         .def("enable_joint_limit_check", &JointModules::EnableJointLimitCheck)
-        .add_property("ready", &JointModules::GetReady)
-        .add_property("enabled", &JointModules::GetEnabled)
-        .add_property("saw_all_indices", &JointModules::SawAllIndices)
-        .add_property("is_ready", &JointModules::IsReady)
+        .add_property(
+            "ready",
+            make_function(&JointModules::GetReady,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "enabled",
+            make_function(&JointModules::GetEnabled,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "saw_all_indices", &JointModules::SawAllIndices)
+        .add_property(
+            "is_ready", &JointModules::IsReady)
         .add_property("has_error", &JointModules::HasError)
-        .add_property("positions", &JointModules::GetPositions)
-        .add_property("velocities", &JointModules::GetVelocities)
-        .add_property("sent_torques", &JointModules::GetSentTorques)
-        .add_property("measured_torques", &JointModules::GetMeasuredTorques)
-        .add_property("gear_ratios", &JointModules::GetGearRatios);
+        .add_property(
+            "positions",
+            make_function(&JointModules::GetPositions,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "velocities",
+            make_function(&JointModules::GetVelocities,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "sent_torques",
+            make_function(&JointModules::GetSentTorques,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "measured_torques",
+            make_function(&JointModules::GetMeasuredTorques,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "gear_ratios",
+            make_function(&JointModules::GetGearRatios,
+                          return_value_policy<copy_const_reference>()));
     register_ptr_to_python<std::shared_ptr<JointModules>>();
 
     // JointModules bindings and it's std::shared_ptr.
@@ -139,11 +163,26 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
             "robot_interface",
             make_function(&IMU::GetMasterBoardInterface,
                           return_value_policy<copy_const_reference>()))
-        .add_property("gyroscope", &IMU::GetGyroscope)
-        .add_property("accelerometer", &IMU::GetAccelerometer)
-        .add_property("linear_acceleration", &IMU::GetLinearAcceleration)
-        .add_property("attitude_euler", &IMU::GetAttitudeEuler)
-        .add_property("attitude_quaternion", &IMU::GetAttitudeQuaternion);
+        .add_property(
+            "gyroscope",
+            make_function(&IMU::GetGyroscope,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "accelerometer",
+            make_function(&IMU::GetAccelerometer,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "linear_acceleration",
+            make_function(&IMU::GetLinearAcceleration,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "attitude_euler",
+            make_function(&IMU::GetAttitudeEuler,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "attitude_quaternion",
+            make_function(&IMU::GetAttitudeQuaternion,
+                          return_value_policy<copy_const_reference>()));
     register_ptr_to_python<std::shared_ptr<IMU>>();
 
     // CalibrationMethod enum bindings.
