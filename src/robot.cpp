@@ -167,9 +167,15 @@ void Robot::WaitUntilReady()
         if (((std::chrono::duration<double>)(std::chrono::system_clock::now() - last)).count() > 0.001)
         {
             last += std::chrono::milliseconds(1);
-            ParseSensorData();
-            SendCommand();
-        } else {
+            if (!IsAckMsgReceived()) {
+                SendInit();
+            } else {
+                ParseSensorData();
+                SendCommand();
+            }
+        }
+        else
+        {
             std::this_thread::yield();
         }
     }
