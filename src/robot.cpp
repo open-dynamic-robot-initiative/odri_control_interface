@@ -161,6 +161,8 @@ bool Robot::IsReady()
 
 void Robot::WaitUntilReady()
 {
+    joints->SetZeroCommands();
+
     std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
     while (!IsReady() && !HasError())
     {
