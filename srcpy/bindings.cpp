@@ -10,7 +10,8 @@
  */
 
 #include "bindings.h"
-
+#include <boost/python/class.hpp>
+#include <boost/python/overloads.hpp>
 #include <eigenpy/eigenpy.hpp>
 
 using namespace boost::python;
@@ -83,6 +84,16 @@ std::shared_ptr<Robot> RobotFromYamlFileAndIfConfig(
 std::shared_ptr<Robot> RobotOnlyFromYamlFile(const std::string& file_path)
 {
     return RobotFromYamlFile(file_path);
+}
+
+void ReportErrorVerbose(Robot& r, const std::string err_msg)
+{
+    r.ReportError(err_msg);
+}
+
+void ReportErrorQuiet(Robot& r)
+{
+    r.ReportError();
 }
 
 BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
@@ -205,7 +216,8 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .def("send_command_and_wait_end_of_cycle",
              &Robot::SendCommandAndWaitEndOfCycle)
         .def("run_calibration", &Robot::RunCalibration)
-        .def("report_error", &Robot::ReportError)
+        .def("report_error", &ReportErrorVerbose)
+        .def("report_error", &ReportErrorQuiet)
         .add_property(
             "robot_interface",
             make_function(&Robot::GetRobotInterface,

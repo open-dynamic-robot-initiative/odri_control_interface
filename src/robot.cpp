@@ -155,6 +155,15 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
 void Robot::ReportError(const std::string& error)
 {
     msg_out_ << "ERROR: " << error << std::endl;
+    ReportError();
+}
+
+/**
+ * @brief Way to report an external error. Causes the robot to go into
+ *   safety mode.
+ */
+void Robot::ReportError()
+{
     saw_error_ = true;
 }
 

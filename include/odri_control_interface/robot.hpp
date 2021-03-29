@@ -131,6 +131,12 @@ public:
      *   safety mode.
      */
     void ReportError(const std::string& error);
+
+    /**
+     * @brief Way to report an external error quietly. Causes the robot to go into
+     *   safety mode.
+     */
+    void ReportError();
 };
 
 }  // namespace odri_control_interface
