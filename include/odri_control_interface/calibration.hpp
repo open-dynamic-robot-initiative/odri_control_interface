@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include <algorithm>
 #include <math.h>
 #include <unistd.h>
+#include <algorithm>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
@@ -37,7 +37,7 @@ enum CalibrationMethod
 class JointCalibrator
 {
 protected:
-    JointModules* joints_;
+    std::shared_ptr<JointModules> joints_;
     std::vector<CalibrationMethod> search_methods_;
     VectorXd position_offsets_;
     VectorXd initial_positions_;
@@ -45,30 +45,30 @@ protected:
     VectorXd t_end_;
     VectorXd gear_ratios_;
     VectorXd command_;
-    double Kd_;
     double Kp_;
-    double dt_;
+    double Kd_;
     double T_;
+    double dt_;
     double t_;
     bool go_to_zero_position_;
-
     int n_;
 
 public:
-    JointCalibrator(
-        JointModules* joints,
-        std::vector<CalibrationMethod> search_methods,
-        RefVectorXd position_offsets,
-        double Kp, double Kd, double T, double dt
-    );
+    JointCalibrator(const std::shared_ptr<JointModules>& joints,
+                    const std::vector<CalibrationMethod>& search_methods,
+                    RefVectorXd position_offsets,
+                    double Kp,
+                    double Kd,
+                    double T,
+                    double dt);
 
-    void UpdatePositionOffsets(RefVectorXd position_offsets);
+    void UpdatePositionOffsets(ConstRefVectorXd position_offsets);
 
     /**
-     * @brief Runs the calibration procedure. Returns true if the calibration is done.
+     * @brief Runs the calibration procedure. Returns true if the calibration is
+     * done.
      */
     bool Run();
 };
 
-
-} // namespace odri_control_interface
+}  // namespace odri_control_interface

@@ -28,7 +28,7 @@ namespace odri_control_interface
 class IMU
 {
 protected:
-    MasterBoardInterface* robot_if_;
+    std::shared_ptr<MasterBoardInterface> robot_if_;
     std::array<int, 3> rotate_vector_;
     std::array<int, 4> orientation_vector_;
 
@@ -40,29 +40,28 @@ protected:
     Eigen::Vector4d attitude_quaternion_;
 
 public:
-    IMU(
-        MasterBoardInterface* robot_if,
+    IMU(const std::shared_ptr<MasterBoardInterface>& robot_if,
         RefVectorXl rotate_vector,
-        RefVectorXl orientation_vector
-    );
+        RefVectorXl orientation_vector);
 
-    IMU(
-        MasterBoardInterface* robot_if
-    );
+    IMU(const std::shared_ptr<MasterBoardInterface>& robot_if);
 
     // If needed, add some error handling for the IMU as well.
     // For instance, check for bounds on the maximum linear acceleration
     // or the maximum angular velocity that should be detected as an error.
-    bool HasError() { return false; }
+    bool HasError()
+    {
+        return false;
+    }
 
     void ParseSensorData();
 
-    RefVector3d GetGyroscope();
-    RefVector3d GetAccelerometer();
-    RefVector3d GetLinearAcceleration();
-    RefVector3d GetAttitudeEuler();
-    RefVector4d GetAttitudeQuaternion();
-
+    const std::shared_ptr<MasterBoardInterface>& GetMasterBoardInterface();
+    const Eigen::Vector3d& GetGyroscope();
+    const Eigen::Vector3d& GetAccelerometer();
+    const Eigen::Vector3d& GetLinearAcceleration();
+    const Eigen::Vector3d& GetAttitudeEuler();
+    const Eigen::Vector4d& GetAttitudeQuaternion();
 };
 
 }  // namespace odri_control_interface

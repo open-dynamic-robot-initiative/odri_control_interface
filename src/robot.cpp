@@ -13,28 +13,25 @@
 
 namespace odri_control_interface
 {
-
-Robot::Robot(
-    MasterBoardInterface* robot_if,
-    JointModules* joint_modules,
-    IMU* imu
-): robot_if(robot_if), joints(joint_modules), imu(imu),
-    saw_error_(false)
+Robot::Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
+             const std::shared_ptr<JointModules>& joint_modules,
+             const std::shared_ptr<IMU>& imu)
+    : robot_if(robot_if), joints(joint_modules), imu(imu), saw_error_(false)
 {
     last_time_ = std::chrono::system_clock::now();
 }
 
-MasterBoardInterface* Robot::GetRobotInterface()
+const std::shared_ptr<MasterBoardInterface>& Robot::GetRobotInterface()
 {
     return robot_if;
 }
 
-JointModules* Robot::GetJoints()
+const std::shared_ptr<JointModules>& Robot::GetJoints()
 {
     return joints;
 }
 
-IMU* Robot::GetIMU()
+const std::shared_ptr<IMU>& Robot::GetIMU()
 {
     return imu;
 }
@@ -62,9 +59,13 @@ void Robot::Start()
     Init();
 
     // Initiate the communication session.
-    std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
-    while (!robot_if->IsTimeout() && !robot_if->IsAckMsgReceived()) {
-        if (((std::chrono::duration<double>)(std::chrono::system_clock::now() - last)).count() > 0.001)
+    std::chrono::time_point<std::chrono::system_clock> last =
+        std::chrono::system_clock::now();
+    while (!robot_if->IsTimeout() && !robot_if->IsAckMsgReceived())
+    {
+        if (((std::chrono::duration<double>)(std::chrono::system_clock::now() -
+                                             last))
+                .count() > 0.001)
         {
             last = std::chrono::system_clock::now();
             robot_if->SendInit();
@@ -100,7 +101,9 @@ bool Robot::SendCommandAndWaitEndOfCycle()
 {
     bool result = SendCommand();
 
-    while (((std::chrono::duration<double>)(std::chrono::system_clock::now() - last_time_)).count() < 0.001)
+    while (((std::chrono::duration<double>)(std::chrono::system_clock::now() -
+                                            last_time_))
+               .count() < 0.001)
     {
         std::this_thread::yield();
     }
@@ -117,24 +120,28 @@ void Robot::ParseSensorData()
     robot_if->ParseSensorData();
     joints->ParseSensorData();
 
-    if (imu) {
+    if (imu)
+    {
         imu->ParseSensorData();
     }
-};
+}
 
-bool Robot::RunCalibration(JointCalibrator* calibrator)
+bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
 {
     bool is_done = false;
-    while (!IsTimeout()) {
+    while (!IsTimeout())
+    {
         ParseSensorData();
 
         is_done = calibrator->Run();
 
-        if (is_done) {
+        if (is_done)
+        {
             return true;
         }
 
-        if (!SendCommandAndWaitEndOfCycle()) {
+        if (!SendCommandAndWaitEndOfCycle())
+        {
             return false;
         }
     }
@@ -145,9 +152,18 @@ bool Robot::RunCalibration(JointCalibrator* calibrator)
  * @brief Way to report an external error. Causes the robot to go into
  *   safety mode.
  */
-void Robot::ReportError(std::string error)
+void Robot::ReportError(const std::string& error)
 {
     msg_out_ << "ERROR: " << error << std::endl;
+    ReportError();
+}
+
+/**
+ * @brief Way to report an external error. Causes the robot to go into
+ *   safety mode.
+ */
+void Robot::ReportError()
+{
     saw_error_ = true;
 }
 
@@ -163,10 +179,13 @@ void Robot::WaitUntilReady()
 {
     joints->SetZeroCommands();
 
-    std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
+    std::chrono::time_point<std::chrono::system_clock> last =
+        std::chrono::system_clock::now();
     while (!IsReady() && !HasError())
     {
-        if (((std::chrono::duration<double>)(std::chrono::system_clock::now() - last)).count() > 0.001)
+        if (((std::chrono::duration<double>)(std::chrono::system_clock::now() -
+                                             last))
+                .count() > 0.001)
         {
             last += std::chrono::milliseconds(1);
             if (!IsAckMsgReceived()) {
@@ -195,7 +214,8 @@ bool Robot::IsTimeout()
 bool Robot::HasError()
 {
     saw_error_ |= joints->HasError();
-    if (imu) {
+    if (imu)
+    {
         saw_error_ |= imu->HasError();
     }
 
@@ -203,7 +223,7 @@ bool Robot::HasError()
     {
         if (timeout_counter_++ % 2000 == 0)
         {
-            msg_out_ << "ERROR: Robot communicaton timedout." << std::endl;
+            msg_out_ << "ERROR: Robot communication timedout." << std::endl;
         }
         saw_error_ = true;
     }
@@ -211,6 +231,4 @@ bool Robot::HasError()
     return saw_error_;
 }
 
-} // namespace ordi_control_interface
-
-
+}  // namespace odri_control_interface

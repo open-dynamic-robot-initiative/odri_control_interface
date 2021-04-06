@@ -16,9 +16,9 @@
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
 
+#include <odri_control_interface/calibration.hpp>
 #include <odri_control_interface/imu.hpp>
 #include <odri_control_interface/joint_modules.hpp>
-#include <odri_control_interface/calibration.hpp>
 
 namespace odri_control_interface
 {
@@ -27,6 +27,11 @@ namespace odri_control_interface
  */
 class Robot
 {
+public:
+    std::shared_ptr<MasterBoardInterface> robot_if;
+    std::shared_ptr<JointModules> joints;
+    std::shared_ptr<IMU> imu;
+
 protected:
     int timeout_counter_;
     bool saw_error_;
@@ -34,30 +39,24 @@ protected:
     std::chrono::time_point<std::chrono::system_clock> last_time_;
 
 public:
-    MasterBoardInterface* robot_if;
-    JointModules* joints;
-    IMU* imu;
-
-    Robot(
-        MasterBoardInterface* robot_if,
-        JointModules* joint_modules,
-        IMU* imu
-    );
+    Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
+          const std::shared_ptr<JointModules>& joint_modules,
+          const std::shared_ptr<IMU>& imu);
 
     /**
      * @brief Returns the underlying robot interface
      */
-    MasterBoardInterface* GetRobotInterface();
+    const std::shared_ptr<MasterBoardInterface>& GetRobotInterface();
 
     /**
      * @brief Returns the joint module.
      */
-    JointModules* GetJoints();
+    const std::shared_ptr<JointModules>& GetJoints();
 
     /**
      * @brief Return the IMU.
      */
-    IMU* GetIMU();
+    const std::shared_ptr<IMU>& GetIMU();
 
     /**
      * @brief Initializes the connection. Use `SendInit` to initialize the
@@ -95,10 +94,10 @@ public:
 
     /**
      * @brief Run the calibration procedure and blocks. Returns true if the
-     * calibration procedure finished successfuly. Otherwise (e.g. when an
+     * calibration procedure finished successfully. Otherwise (e.g. when an
      * error occurred or the communication timed-out) return false.
      */
-    bool RunCalibration(JointCalibrator* calibrator);
+    bool RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator);
 
     /**
      * @brief Returns true if all connected devices report ready.
@@ -131,7 +130,13 @@ public:
      * @brief Way to report an external error. Causes the robot to go into
      *   safety mode.
      */
-    void ReportError(std::string error);
+    void ReportError(const std::string& error);
+
+    /**
+     * @brief Way to report an external error quietly. Causes the robot to go into
+     *   safety mode.
+     */
+    void ReportError();
 };
 
 }  // namespace odri_control_interface

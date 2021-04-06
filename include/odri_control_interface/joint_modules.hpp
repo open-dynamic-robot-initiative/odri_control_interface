@@ -11,9 +11,9 @@
 
 #pragma once
 
+#include <unistd.h>
 #include <iostream>
 #include <vector>
-#include <unistd.h>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
@@ -22,19 +22,18 @@
 
 namespace odri_control_interface
 {
-
 /**
  * @brief Class abstracting the blmc motors to modules.
  */
 class JointModules
 {
 protected:
-    MasterBoardInterface* robot_if_;
+    std::shared_ptr<MasterBoardInterface> robot_if_;
     std::vector<Motor*> motors_;
 
     Eigen::VectorXd gear_ratios_;
     Eigen::VectorXd motor_constants_;
-    Eigen::Matrix<int, Eigen::Dynamic, 1> polarities_;
+    VectorXi polarities_;
     Eigen::VectorXd lower_joint_limits_;
     Eigen::VectorXd upper_joint_limits_;
     Eigen::VectorXd safety_damping_;
@@ -50,7 +49,7 @@ protected:
     VectorXb ready_;
     VectorXb enabled_;
     VectorXb motor_driver_enabled_;
-    VectorXb motor_driver_errors_;
+    VectorXi motor_driver_errors_;
 
     Eigen::VectorXd zero_vector_;
 
@@ -64,28 +63,26 @@ protected:
     std::ostream& msg_out_ = std::cout;
 
 public:
-    JointModules(
-        MasterBoardInterface* robot_if,
-        RefVectorXl motor_numbers,
-        double motor_constants,
-        double gear_ratios,
-        double max_currents,
-        RefVectorXb reverse_polarities,
-        RefVectorXd lower_joint_limits,
-        RefVectorXd upper_joint_limits,
-        double max_joint_velocities,
-        double safety_damping
-    );
+    JointModules(const std::shared_ptr<MasterBoardInterface>& robot_if,
+                 ConstRefVectorXi motor_numbers,
+                 double motor_constants,
+                 double gear_ratios,
+                 double max_currents,
+                 ConstRefVectorXb reverse_polarities,
+                 ConstRefVectorXd lower_joint_limits,
+                 ConstRefVectorXd upper_joint_limits,
+                 double max_joint_velocities,
+                 double safety_damping);
 
     void Enable();
 
     void ParseSensorData();
 
-    void SetTorques(const RefVectorXd desired_torques);
-    void SetDesiredPositions(const RefVectorXd desired_positions);
-    void SetDesiredVelocities(const RefVectorXd desired_velocities);
-    void SetPositionGains(const RefVectorXd desired_gains);
-    void SetVelocityGains(const RefVectorXd desired_gains);
+    void SetTorques(ConstRefVectorXd desired_torques);
+    void SetDesiredPositions(ConstRefVectorXd desired_positions);
+    void SetDesiredVelocities(ConstRefVectorXd desired_velocities);
+    void SetPositionGains(ConstRefVectorXd desired_gains);
+    void SetVelocityGains(ConstRefVectorXd desired_gains);
     void SetMaximumCurrents(double max_currents);
 
     /**
@@ -102,15 +99,15 @@ public:
     virtual void RunSafetyController();
 
     // Used for calibration.
-    void SetPositionOffsets(const RefVectorXd position_offsets);
+    void SetPositionOffsets(ConstRefVectorXd position_offsets);
 
     void EnableIndexOffsetCompensation();
 
-    RefVectorXb HasIndexBeenDetected();
-    RefVectorXb GetReady();
-    RefVectorXb GetEnabled();
-    RefVectorXb GetMotorDriverEnabled();
-    RefVectorXb GetMotorDriverErrors();
+    const VectorXb& HasIndexBeenDetected();
+    const VectorXb& GetReady();
+    const VectorXb& GetEnabled();
+    const VectorXb& GetMotorDriverEnabled();
+    const VectorXi& GetMotorDriverErrors();
 
     bool SawAllIndices();
 
@@ -119,12 +116,12 @@ public:
      */
     bool IsReady();
 
-    RefVectorXd GetPositions();
-    RefVectorXd GetVelocities();
-    RefVectorXd GetSentTorques();
-    RefVectorXd GetMeasuredTorques();
+    const VectorXd& GetPositions();
+    const VectorXd& GetVelocities();
+    const VectorXd& GetSentTorques();
+    const VectorXd& GetMeasuredTorques();
 
-    RefVectorXd GetGearRatios();
+    const VectorXd& GetGearRatios();
 
     void DisableJointLimitCheck();
     void EnableJointLimitCheck();
@@ -134,7 +131,7 @@ public:
      */
     bool HasError();
 
-    void PrintVector(RefVectorXd vector);
+    void PrintVector(ConstRefVectorXd vector);
 
 protected:
     int upper_joint_limits_counter_;

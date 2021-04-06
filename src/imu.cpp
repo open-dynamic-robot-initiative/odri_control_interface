@@ -1,4 +1,4 @@
- /**
+/**
  * @file imu.cpp
  * @author Julian Viereck (jviereck@tuebingen.mpg.de)
  * license License BSD-3-Clause
@@ -15,12 +15,10 @@
 
 namespace odri_control_interface
 {
-
-IMU::IMU(
-    MasterBoardInterface* robot_if,
-    RefVectorXl rotate_vector,
-    RefVectorXl orientation_vector
-): robot_if_(robot_if)
+IMU::IMU(const std::shared_ptr<MasterBoardInterface>& robot_if,
+         RefVectorXl rotate_vector,
+         RefVectorXl orientation_vector)
+    : robot_if_(robot_if)
 {
     if (rotate_vector.size() != 3)
     {
@@ -41,39 +39,42 @@ IMU::IMU(
     }
 }
 
-IMU::IMU(
-    MasterBoardInterface* robot_if
-): robot_if_(robot_if),
-   rotate_vector_({1, 2, 3}),
-   orientation_vector_({1, 2, 3, 4})
+IMU::IMU(const std::shared_ptr<MasterBoardInterface>& robot_if)
+    : robot_if_(robot_if),
+      rotate_vector_({1, 2, 3}),
+      orientation_vector_({1, 2, 3, 4})
 {
 }
 
-RefVector3d IMU::GetGyroscope()
+const std::shared_ptr<MasterBoardInterface>& IMU::GetMasterBoardInterface()
+{
+    return robot_if_;
+}
+
+const Eigen::Vector3d& IMU::GetGyroscope()
 {
     return gyroscope_;
 }
 
-RefVector3d IMU::GetAccelerometer()
+const Eigen::Vector3d& IMU::GetAccelerometer()
 {
     return accelerometer_;
 }
 
-RefVector3d IMU::GetLinearAcceleration()
+const Eigen::Vector3d& IMU::GetLinearAcceleration()
 {
-   return linear_acceleration_;
+    return linear_acceleration_;
 }
 
-RefVector3d IMU::GetAttitudeEuler()
+const Eigen::Vector3d& IMU::GetAttitudeEuler()
 {
     return attitude_euler_;
 }
 
-RefVector4d IMU::GetAttitudeQuaternion()
+const Eigen::Vector4d& IMU::GetAttitudeQuaternion()
 {
     return attitude_quaternion_;
 }
-
 
 void IMU::ParseSensorData()
 {
@@ -81,14 +82,19 @@ void IMU::ParseSensorData()
     for (int i = 0; i < 3; i++)
     {
         index = rotate_vector_[i];
-        if (index < 0) {
+        if (index < 0)
+        {
             gyroscope_(i) = -robot_if_->imu_data_gyroscope(-index - 1);
             accelerometer_(i) = -robot_if_->imu_data_accelerometer(-index - 1);
-            linear_acceleration_(i) = -robot_if_->imu_data_linear_acceleration(-index - 1);
-        } else {
+            linear_acceleration_(i) =
+                -robot_if_->imu_data_linear_acceleration(-index - 1);
+        }
+        else
+        {
             gyroscope_(i) = robot_if_->imu_data_gyroscope(index - 1);
             accelerometer_(i) = robot_if_->imu_data_accelerometer(index - 1);
-            linear_acceleration_(i) = robot_if_->imu_data_linear_acceleration(index - 1);
+            linear_acceleration_(i) =
+                robot_if_->imu_data_linear_acceleration(index - 1);
         }
     }
 
@@ -109,17 +115,22 @@ void IMU::ParseSensorData()
     attitude[3] = cr * cp * cy + sr * sp * sy;
 
     // Rotate the attitude.
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         int index = orientation_vector_[i];
-        if (index < 0) {
+        if (index < 0)
+        {
             attitude_quaternion_(i) = -attitude[-index - 1];
-        } else {
+        }
+        else
+        {
             attitude_quaternion_(i) = attitude[index - 1];
         }
     }
 
     // Convert the rotated quatenion back into euler angles.
-    // Source: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    // Source:
+    // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
     double qx = attitude_quaternion_(0);
     double qy = attitude_quaternion_(1);
     double qz = attitude_quaternion_(2);
@@ -131,7 +142,8 @@ void IMU::ParseSensorData()
 
     double sinp = 2 * (qw * qy - qz * qx);
     if (std::abs(sinp) >= 1)
-        attitude_euler_(1) = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+        attitude_euler_(1) =
+            std::copysign(M_PI / 2, sinp);  // use 90 degrees if out of range
     else
         attitude_euler_(1) = std::asin(sinp);
 
@@ -140,4 +152,4 @@ void IMU::ParseSensorData()
     attitude_euler_(2) = std::atan2(siny_cosp, cosy_cosp);
 }
 
-} // namespace odri_control_interface
+}  // namespace odri_control_interface
