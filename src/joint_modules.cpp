@@ -396,7 +396,7 @@ bool JointModules::HasError()
                 switch (robot_if_->motor_drivers[i].error_code)
                 {
                     case UD_SENSOR_STATUS_ERROR_ENCODER1:
-                        msg_out_ << "Encoder1 error";
+                        msg_out_ << "Encoder A error";
                         break;
                     case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
                         msg_out_ << "SPI Receiver timeout";
@@ -411,7 +411,7 @@ bool JointModules::HasError()
                         msg_out_ << "Position rollover occured";
                         break;
                     case UD_SENSOR_STATUS_ERROR_ENCODER2:
-                        msg_out_ << "Encoder2 error";
+                        msg_out_ << "Encoder B error";
                         break;
                     default:
                         msg_out_ << "Other error (" << robot_if_->motor_drivers[i].error_code << ")";
