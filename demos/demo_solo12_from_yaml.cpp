@@ -8,23 +8,27 @@ using namespace odri_control_interface;
 #include <iostream>
 #include <stdexcept>
 
-typedef Eigen::Matrix<double, 2, 1> Vector2d;
+typedef Eigen::Matrix<double, 12, 1> Vector12d;
 
 int main()
 {
     nice(-20);  // Give the process a high priority.
 
     // Define the robot from a yaml file.
-    auto robot = RobotFromYamlFile(CONFIG_TESTBENCH_YAML);
+    auto robot = RobotFromYamlFile(CONFIG_SOLO12_YAML);
 
     // Start the robot.
     robot->Start();
 
     // Define controller to calibrate the joints from yaml file.
-    auto calib_ctrl = JointCalibratorFromYamlFile(
-        CONFIG_TESTBENCH_YAML, robot->joints);
+    auto calib_ctrl =
+        JointCalibratorFromYamlFile(CONFIG_SOLO12_YAML, robot->joints);
 
-    Vector2d pos_init(3.1415 * 0.5, - 3.1415 * 0.5);  // Target position at the end of the calibration
+    Vector12d pos_init;  // Target position at the end of the calibration
+    pos_init << 0.0, 0.7, -1.4, -0.0, 0.7, -1.4, 0.0, -0.7, +1.4, -0.0, -0.7,
+        +1.4;
+    double kp = 3.0;
+    double kd = 0.05;
     int c = 0;
     std::chrono::time_point<std::chrono::system_clock> last =
         std::chrono::system_clock::now();
@@ -50,7 +54,15 @@ int main()
                 }
                 else
                 {
-                    robot->joints->SetZeroCommands();
+                    // Set all command quantities
+                    robot->joints->SetTorques(Eigen::VectorXd::Zero(12));
+                    robot->joints->SetDesiredPositions(pos_init);
+                    robot->joints->SetDesiredVelocities(
+                        Eigen::VectorXd::Zero(12));
+                    robot->joints->SetPositionGains(kp *
+                                                    Eigen::VectorXd::Ones(12));
+                    robot->joints->SetVelocityGains(kd *
+                                                    Eigen::VectorXd::Ones(12));
                 }
             }
 

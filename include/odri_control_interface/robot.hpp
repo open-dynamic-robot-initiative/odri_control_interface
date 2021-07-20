@@ -109,7 +109,8 @@ public:
      * calibration procedure finished successfully. Otherwise (e.g. when an
      * error occurred or the communication timed-out) return false.
      */
-    bool RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator);
+    bool RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator,
+                        VectorXd const& target_positions);
 
     /**
      * @brief Runs the calibration procedure for the calibrator passed in

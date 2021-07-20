@@ -92,6 +92,11 @@ const VectorXd& JointModules::GetGearRatios()
     return gear_ratios_;
 }
 
+int JointModules::GetMotorNumber()
+{
+    return n_;
+}
+
 void JointModules::ParseSensorData()
 {
     for (int i = 0; i < n_; i++)

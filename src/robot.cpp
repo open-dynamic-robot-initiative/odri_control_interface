@@ -139,14 +139,21 @@ void Robot::ParseSensorData()
     }
 }
 
-bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
+bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator,
+                           VectorXd const& target_positions)
 {
     bool is_done = false;
+    if (target_positions.size() != joints->GetMotorNumber())
+    {
+        throw std::runtime_error(
+            "Target position vector has different size than motor "
+            "numbers");
+    }
     while (!IsTimeout())
     {
         ParseSensorData();
 
-        is_done = calibrator->Run();
+        is_done = calibrator->RunAndGoTo(target_positions);
 
         if (is_done)
         {
