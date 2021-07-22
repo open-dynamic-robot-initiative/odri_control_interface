@@ -22,7 +22,7 @@ init_imu_attitude = robot.imu.attitude_euler.copy()
 des_pos = np.zeros(12)
 
 c = 0
-while not robot.is_timeout:
+while not robot.is_timeout and not robot.has_error:
     robot.parse_sensor_data()
 
     imu_attitude = robot.imu.attitude_euler

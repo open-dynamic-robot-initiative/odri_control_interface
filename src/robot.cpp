@@ -9,6 +9,8 @@
  * @brief Robot class orchistrating the devices.
  */
 
+#include <stdexcept>   // for exception, runtime_error, out_of_range
+
 #include "odri_control_interface/robot.hpp"
 
 namespace odri_control_interface
@@ -72,6 +74,11 @@ void Robot::Start()
             last = std::chrono::system_clock::now();
             robot_if->SendInit();
         }
+    }
+
+    if (robot_if->IsTimeout())
+    {
+        throw std::runtime_error("Timeout during Robot::Start().");
     }
 }
 
@@ -144,9 +151,11 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
 
         if (!SendCommandAndWaitEndOfCycle(calibrator->dt))
         {
-            return false;
+            throw std::runtime_error("Error during Robot::RunCalibration().");
         }
     }
+
+    throw std::runtime_error("Timeout during Robot::RunCalibration().");
     return false;
 }
 
@@ -206,6 +215,15 @@ void Robot::WaitUntilReady()
         else
         {
             std::this_thread::yield();
+        }
+    }
+
+    if (HasError()) {
+        if (robot_if->IsTimeout())
+        {
+            throw std::runtime_error("Timeout during Robot::WaitUntilReady().");
+        } else {
+            throw std::runtime_error("Error during Robot::WaitUntilReady().");
         }
     }
 }
