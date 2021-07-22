@@ -1,15 +1,12 @@
 #! /usr/bin/env python
 
-import numpy as np
+import pathlib
 
+import numpy as np
 np.set_printoptions(suppress=True, precision=2)
 
-import time
-
-import libmaster_board_sdk_pywrap as mbs
 import libodri_control_interface_pywrap as oci
 
-import pathlib
 
 robot = oci.robot_from_yaml_file("config_solo12.yaml")
 
@@ -18,9 +15,7 @@ robot.start()
 robot.wait_until_ready()
 
 # Calibrate the robot if needed.
-print("Starting calibration")
 robot.run_calibration()
-print("Finished calibration")
 
 robot.parse_sensor_data()
 init_imu_attitude = robot.imu.attitude_euler.copy()
@@ -30,7 +25,6 @@ des_pos = np.zeros(12)
 c = 0
 dt = 0.001
 calibration_done = False
-next_tick = time.time()
 while not robot.is_timeout:
     robot.parse_sensor_data()
 
