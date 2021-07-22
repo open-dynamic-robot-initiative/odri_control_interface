@@ -7,19 +7,15 @@ np.set_printoptions(suppress=True, precision=2)
 
 import libodri_control_interface_pywrap as oci
 
-
+# Create the robot object from yaml.
 robot = oci.robot_from_yaml_file("config_solo12.yaml")
 
-# Initialize the communication and the session.
-robot.start()
-robot.wait_until_ready()
+# Initialize the communication, session, joints, wait for motors to be ready
+# and run the joint calibration.ArithmeticError()
+robot.initialize()
 
-# Calibrate the robot if needed.
-robot.run_calibration()
-
-robot.parse_sensor_data()
+# Store initial position data.
 init_imu_attitude = robot.imu.attitude_euler.copy()
-
 des_pos = np.zeros(12)
 
 c = 0

@@ -210,6 +210,13 @@ void Robot::WaitUntilReady()
     }
 }
 
+void Robot::Initialize()
+{
+    Start();
+    WaitUntilReady();
+    RunCalibration();
+}
+
 bool Robot::IsTimeout()
 {
     return robot_if->IsTimeout();

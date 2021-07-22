@@ -78,6 +78,16 @@ public:
     void Start();
 
     /**
+     * @brief Initializes the robot. This inclues establishing the communication
+     * to the robot, wait until the joints are all ready and running the
+     * calibration procedure.
+     *
+     * This command corresponds to running `Start()`, `WaitUntilReady()` and
+     * `RunCalibration()` in sequence.
+     */
+    void Initialize();
+
+    /**
      * @brief If no error happend, send the previously specified commands
      *   to the robot. If an error was detected, go into safety mode
      *   and apply the safety control from the joint_module.
