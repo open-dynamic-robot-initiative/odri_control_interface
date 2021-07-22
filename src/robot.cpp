@@ -71,6 +71,10 @@ void Robot::Start()
             robot_if->SendInit();
         }
     }
+
+    // Pare the sensor data to make sure all fields are filled properly when
+    // the user starts using the robot object.
+    ParseSensorData();
 }
 
 bool Robot::IsAckMsgReceived()
