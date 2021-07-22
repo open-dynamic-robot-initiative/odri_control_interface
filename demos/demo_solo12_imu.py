@@ -1,6 +1,7 @@
 #! /usr/bin/env python
-
-# Run a PD controller to keep the zero position.
+#
+# Similar to `demo_solo12.py`. Uses the IMU attitude to control the desired
+# joint positions.
 
 import pathlib
 
@@ -17,6 +18,7 @@ robot = oci.robot_from_yaml_file("config_solo12.yaml")
 robot.initialize()
 
 # Store initial position data.
+init_imu_attitude = robot.imu.attitude_euler.copy()
 des_pos = np.zeros(12)
 
 c = 0
@@ -27,7 +29,7 @@ while not robot.is_timeout:
     positions = robot.joints.positions
     velocities = robot.joints.velocities
 
-    # Compute the PD control.
+    des_pos[:] = imu_attitude[2] - init_imu_attitude[2]
     torques = 5.0 * (des_pos - positions) - 0.1 * velocities
     robot.joints.set_torques(torques)
 
@@ -35,6 +37,7 @@ while not robot.is_timeout:
     c += 1
 
     if c % 2000 == 0:
+        print("IMU attitude:", imu_attitude)
         print("joint pos:   ", positions)
         print("joint vel:   ", velocities)
         print("torques:     ", torques)
