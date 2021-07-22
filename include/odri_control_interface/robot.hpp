@@ -95,9 +95,9 @@ public:
     bool SendCommand();
 
     /**
-     * @brief Same as SendCommand but waits till the end of the cycle.
+     * @brief Same as SendCommand but waits till the end of the control cycle.
      */
-    bool SendCommandAndWaitEndOfCycle();
+    bool SendCommandAndWaitEndOfCycle(double dt);
 
     /**
      * @brief Parses the sensor data and calls ParseSensorData on all devices.

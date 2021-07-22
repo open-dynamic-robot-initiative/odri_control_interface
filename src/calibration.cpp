@@ -28,7 +28,7 @@ JointCalibrator::JointCalibrator(
       Kp_(Kp),
       Kd_(Kd),
       T_(T),
-      dt_(dt),
+      dt(dt),
       t_(0.),
       go_to_zero_position_(false)
 {
@@ -169,7 +169,7 @@ bool JointCalibrator::Run()
     }
 
     joints_->SetTorques(command_);
-    t_ += dt_;
+    t_ += dt;
 
     if (finished)
     {

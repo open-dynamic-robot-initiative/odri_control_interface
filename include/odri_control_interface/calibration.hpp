@@ -48,12 +48,13 @@ protected:
     double Kp_;
     double Kd_;
     double T_;
-    double dt_;
     double t_;
     bool go_to_zero_position_;
     int n_;
 
 public:
+    double dt;
+
     JointCalibrator(const std::shared_ptr<JointModules>& joints,
                     const std::vector<CalibrationMethod>& search_methods,
                     RefVectorXd position_offsets,

@@ -19,8 +19,6 @@ init_imu_attitude = robot.imu.attitude_euler.copy()
 des_pos = np.zeros(12)
 
 c = 0
-dt = 0.001
-calibration_done = False
 while not robot.is_timeout:
     robot.parse_sensor_data()
 
@@ -39,5 +37,5 @@ while not robot.is_timeout:
         print("torques:     ", torques)
         robot.robot_interface.PrintStats()
 
-    robot.send_command_and_wait_end_of_cycle()
+    robot.send_command_and_wait_end_of_cycle(0.001)
     c += 1

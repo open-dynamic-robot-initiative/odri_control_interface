@@ -99,13 +99,13 @@ bool Robot::SendCommand()
 /**
  * @brief
  */
-bool Robot::SendCommandAndWaitEndOfCycle()
+bool Robot::SendCommandAndWaitEndOfCycle(double dt)
 {
     bool result = SendCommand();
 
     while (((std::chrono::duration<double>)(std::chrono::system_clock::now() -
                                             last_time_))
-               .count() < 0.001)
+               .count() < dt)
     {
         std::this_thread::yield();
     }
@@ -142,7 +142,7 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
             return true;
         }
 
-        if (!SendCommandAndWaitEndOfCycle())
+        if (!SendCommandAndWaitEndOfCycle(calibrator->dt))
         {
             return false;
         }
