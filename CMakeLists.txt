@@ -117,5 +117,4 @@ macro(create_solo12_demo source)
 
 endmacro(create_solo12_demo source)
 
-create_solo12_demo(demo_create_solo12_robot)
 create_solo12_demo(demo_solo12_from_yaml)
