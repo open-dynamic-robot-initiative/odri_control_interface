@@ -15,8 +15,10 @@ namespace odri_control_interface
 {
 Robot::Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
              const std::shared_ptr<JointModules>& joint_modules,
-             const std::shared_ptr<IMU>& imu)
-    : robot_if(robot_if), joints(joint_modules), imu(imu), saw_error_(false)
+             const std::shared_ptr<IMU>& imu,
+             const std::shared_ptr<JointCalibrator>& calibrator)
+    : robot_if(robot_if), joints(joint_modules), imu(imu),
+      calibrator(calibrator), saw_error_(false)
 {
     last_time_ = std::chrono::system_clock::now();
 }
@@ -146,6 +148,11 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
         }
     }
     return false;
+}
+
+bool Robot::RunCalibration()
+{
+    return RunCalibration(calibrator);
 }
 
 /**

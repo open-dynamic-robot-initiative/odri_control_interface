@@ -1,5 +1,5 @@
 robot:
-    interface: ens3
+    interface: enp5s0f1
     joint_modules:
         motor_numbers: [0, 3, 2, 1, 5, 4, 6, 9, 8, 7, 11, 10]
         motor_constants: 0.025
