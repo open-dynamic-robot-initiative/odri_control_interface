@@ -69,7 +69,12 @@ int main()
             // Checks if the robot is in error state (that is, if any component
             // returns an error). If there is an error, the commands to send
             // are changed to send the safety control.
-            robot->SendCommand();
+            if (!robot->SendCommand())
+            {
+                throw std::runtime_error(
+                    "Error when sending the command. Please check error "
+                    "messages.");
+            }
 
             c++;
             if (c % 1000 == 0)

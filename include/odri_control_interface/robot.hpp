@@ -139,7 +139,7 @@ public:
     /**
      * @brief Blocks until all devices report ready.
      */
-    void WaitUntilReady();
+    bool WaitUntilReady();
 
     /**
      * @brief Checks all connected devices for errors. Also checks

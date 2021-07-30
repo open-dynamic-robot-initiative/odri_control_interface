@@ -202,7 +202,7 @@ bool Robot::IsReady()
     return joints->IsReady();
 }
 
-void Robot::WaitUntilReady()
+bool Robot::WaitUntilReady()
 {
     ParseSensorData();
     joints->SetZeroCommands();
@@ -237,6 +237,8 @@ void Robot::WaitUntilReady()
             throw std::runtime_error("Error during Robot::WaitUntilReady().");
         }
     }
+
+    return !saw_error_;
 }
 
 void Robot::Initialize()
