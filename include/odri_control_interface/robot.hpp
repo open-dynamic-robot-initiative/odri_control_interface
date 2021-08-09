@@ -31,6 +31,7 @@ public:
     std::shared_ptr<MasterBoardInterface> robot_if;
     std::shared_ptr<JointModules> joints;
     std::shared_ptr<IMU> imu;
+    std::shared_ptr<JointCalibrator> calibrator;
 
 protected:
     int timeout_counter_;
@@ -41,7 +42,8 @@ protected:
 public:
     Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
           const std::shared_ptr<JointModules>& joint_modules,
-          const std::shared_ptr<IMU>& imu);
+          const std::shared_ptr<IMU>& imu,
+          const std::shared_ptr<JointCalibrator>& calibrator);
 
     /**
      * @brief Returns the underlying robot interface
@@ -76,6 +78,16 @@ public:
     void Start();
 
     /**
+     * @brief Initializes the robot. This inclues establishing the communication
+     * to the robot, wait until the joints are all ready and running the
+     * calibration procedure.
+     *
+     * This command corresponds to running `Start()`, `WaitUntilReady()` and
+     * `RunCalibration()` in sequence.
+     */
+    void Initialize();
+
+    /**
      * @brief If no error happend, send the previously specified commands
      *   to the robot. If an error was detected, go into safety mode
      *   and apply the safety control from the joint_module.
@@ -83,9 +95,9 @@ public:
     bool SendCommand();
 
     /**
-     * @brief Same as SendCommand but waits till the end of the cycle.
+     * @brief Same as SendCommand but waits till the end of the control cycle.
      */
-    bool SendCommandAndWaitEndOfCycle();
+    bool SendCommandAndWaitEndOfCycle(double dt);
 
     /**
      * @brief Parses the sensor data and calls ParseSensorData on all devices.
@@ -98,6 +110,14 @@ public:
      * error occurred or the communication timed-out) return false.
      */
     bool RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator);
+
+    /**
+     * @brief Runs the calibration procedure for the calibrator passed in
+     * during initialization and blocks. * calibration procedure finished
+     * successfully. Otherwise (e.g. when an error occurred or the communication
+     * timed-out) return false.
+     */
+    bool RunCalibration();
 
     /**
      * @brief Returns true if all connected devices report ready.

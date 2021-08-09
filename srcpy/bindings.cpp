@@ -203,19 +203,26 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .value("negative", CalibrationMethod::NEGATIVE)
         .value("alternative", CalibrationMethod::ALTERNATIVE);
 
+    bool (Robot::*RunCalibration0)() = &Robot::RunCalibration;
+    bool (Robot::*RunCalibration1)(const std::shared_ptr<JointCalibrator>&) =
+        &Robot::RunCalibration;
+
     class_<Robot>("Robot",
                   init<std::shared_ptr<MasterBoardInterface>,
                        std::shared_ptr<JointModules>,
-                       std::shared_ptr<IMU>>())
+                       std::shared_ptr<IMU>,
+                       std::shared_ptr<JointCalibrator>>())
         .def("init", &Robot::Init)
         .def("sendInit", &Robot::SendInit)
         .def("start", &Robot::Start)
         .def("wait_until_ready", &Robot::WaitUntilReady)
+        .def("initialize", &Robot::Initialize)
         .def("parse_sensor_data", &Robot::ParseSensorData)
         .def("send_command", &Robot::SendCommand)
         .def("send_command_and_wait_end_of_cycle",
              &Robot::SendCommandAndWaitEndOfCycle)
-        .def("run_calibration", &Robot::RunCalibration)
+        .def("run_calibration", RunCalibration0)
+        .def("run_calibration", RunCalibration1)
         .def("report_error", &ReportErrorVerbose)
         .def("report_error", &ReportErrorQuiet)
         .add_property(
