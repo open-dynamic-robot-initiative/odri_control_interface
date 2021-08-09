@@ -28,7 +28,7 @@ JointCalibrator::JointCalibrator(
       Kp_(Kp),
       Kd_(Kd),
       T_(T),
-      dt(dt),
+      dt_(dt),
       t_(0.),
       go_to_zero_position_(false)
 {
@@ -77,6 +77,11 @@ JointCalibrator::JointCalibrator(
 void JointCalibrator::UpdatePositionOffsets(ConstRefVectorXd position_offsets)
 {
     position_offsets_ = position_offsets;
+}
+
+const double& JointCalibrator::dt()
+{
+    return dt_;
 }
 
 /**
@@ -169,7 +174,7 @@ bool JointCalibrator::Run()
     }
 
     joints_->SetTorques(command_);
-    t_ += dt;
+    t_ += dt_;
 
     if (finished)
     {

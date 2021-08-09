@@ -149,7 +149,7 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
             return true;
         }
 
-        if (!SendCommandAndWaitEndOfCycle(calibrator->dt))
+        if (!SendCommandAndWaitEndOfCycle(calibrator->dt()))
         {
             throw std::runtime_error("Error during Robot::RunCalibration().");
         }

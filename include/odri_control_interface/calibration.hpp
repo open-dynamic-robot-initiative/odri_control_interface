@@ -48,12 +48,12 @@ protected:
     double Kp_;
     double Kd_;
     double T_;
+    double dt_;
     double t_;
     bool go_to_zero_position_;
     int n_;
 
 public:
-    double dt;
 
     JointCalibrator(const std::shared_ptr<JointModules>& joints,
                     const std::vector<CalibrationMethod>& search_methods,
@@ -64,6 +64,11 @@ public:
                     double dt);
 
     void UpdatePositionOffsets(ConstRefVectorXd position_offsets);
+
+    /**
+     * Return the dt used by the joint calibrator.
+     */
+    const double& dt();
 
     /**
      * @brief Runs the calibration procedure. Returns true if the calibration is
