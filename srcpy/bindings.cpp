@@ -147,17 +147,33 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
             make_function(&JointModules::GetPositions,
                           return_value_policy<copy_const_reference>()))
         .add_property(
+            "positions_ref",
+            make_function(&JointModules::GetPositions,
+                          return_value_policy<return_internal_reference>()))
+        .add_property(
             "velocities",
             make_function(&JointModules::GetVelocities,
                           return_value_policy<copy_const_reference>()))
+        .add_property(
+            "velocities_ref",
+            make_function(&JointModules::GetVelocities,
+                          return_value_policy<return_internal_reference>()))
         .add_property(
             "sent_torques",
             make_function(&JointModules::GetSentTorques,
                           return_value_policy<copy_const_reference>()))
         .add_property(
+            "sent_torques_ref",
+            make_function(&JointModules::GetSentTorques,
+                          return_value_policy<return_internal_reference>()))
+        .add_property(
             "measured_torques",
             make_function(&JointModules::GetMeasuredTorques,
                           return_value_policy<copy_const_reference>()))
+        .add_property(
+            "measured_torques_ref",
+            make_function(&JointModules::GetMeasuredTorques,
+                          return_value_policy<return_internal_reference>()))
         .add_property(
             "gear_ratios",
             make_function(&JointModules::GetGearRatios,
@@ -179,21 +195,41 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
             make_function(&IMU::GetGyroscope,
                           return_value_policy<copy_const_reference>()))
         .add_property(
+            "gyroscope_ref",
+            make_function(&IMU::GetGyroscope,
+                          return_value_policy<return_internal_reference>()))
+        .add_property(
             "accelerometer",
             make_function(&IMU::GetAccelerometer,
                           return_value_policy<copy_const_reference>()))
+        .add_property(
+            "accelerometer_ref",
+            make_function(&IMU::GetAccelerometer,
+                          return_value_policy<return_internal_reference>()))
         .add_property(
             "linear_acceleration",
             make_function(&IMU::GetLinearAcceleration,
                           return_value_policy<copy_const_reference>()))
         .add_property(
+            "linear_acceleration_ref",
+            make_function(&IMU::GetLinearAcceleration,
+                          return_value_policy<return_internal_reference>()))
+        .add_property(
             "attitude_euler",
             make_function(&IMU::GetAttitudeEuler,
                           return_value_policy<copy_const_reference>()))
         .add_property(
+            "attitude_euler_ref",
+            make_function(&IMU::GetAttitudeEuler,
+                          return_value_policy<return_internal_reference>()))
+        .add_property(
             "attitude_quaternion",
             make_function(&IMU::GetAttitudeQuaternion,
-                          return_value_policy<copy_const_reference>()));
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "attitude_quaternion_ref",
+            make_function(&IMU::GetAttitudeQuaternion,
+                          return_value_policy<return_internal_reference>()));
     register_ptr_to_python<std::shared_ptr<IMU>>();
 
     // CalibrationMethod enum bindings.
