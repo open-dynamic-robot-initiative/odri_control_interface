@@ -18,7 +18,7 @@ int main()
     auto robot = RobotFromYamlFile(CONFIG_SOLO12_YAML);
 
     // Initialize the communication, session, joints, wait for motors to be ready
-    // and run the joint calibration.ArithmeticError()
+    // and run the joint calibration.
     robot->Initialize();
 
     // Initialize simple pd controller.
