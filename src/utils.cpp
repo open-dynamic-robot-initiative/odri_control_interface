@@ -235,11 +235,17 @@ std::shared_ptr<Robot> RobotFromYamlFile(const std::string& if_name,
     std::shared_ptr<JointModules> joints =
         JointModulesFromYaml(robot_if, robot_node["joint_modules"]);
 
+    // 3. Create the imu.
     assert_yaml_parsing(robot_node, "robot", "imu");
     std::shared_ptr<IMU> imu = IMUFromYaml(robot_if, robot_node["imu"]);
 
-    // 3. Create the robot instance from the objects.
-    return std::make_shared<Robot>(robot_if, joints, imu);
+    // 4. Create the calibrator procedure.
+    assert_yaml_parsing(param, file_path, "joint_calibrator");
+    std::shared_ptr<JointCalibrator> calibrator =
+        JointCalibratorFromYaml(joints, param["joint_calibrator"]);
+
+    // 5. Create the robot instance from the objects.
+    return std::make_shared<Robot>(robot_if, joints, imu, calibrator);
 }
 
 std::shared_ptr<Robot> RobotFromYamlFile(const std::string& file_path)

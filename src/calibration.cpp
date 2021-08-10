@@ -79,6 +79,11 @@ void JointCalibrator::UpdatePositionOffsets(ConstRefVectorXd position_offsets)
     position_offsets_ = position_offsets;
 }
 
+const double& JointCalibrator::dt()
+{
+    return dt_;
+}
+
 /**
  * @brief Runs the calibration procedure. Returns true if the calibration is
  * done.

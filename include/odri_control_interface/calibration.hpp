@@ -54,6 +54,7 @@ protected:
     int n_;
 
 public:
+
     JointCalibrator(const std::shared_ptr<JointModules>& joints,
                     const std::vector<CalibrationMethod>& search_methods,
                     RefVectorXd position_offsets,
@@ -63,6 +64,11 @@ public:
                     double dt);
 
     void UpdatePositionOffsets(ConstRefVectorXd position_offsets);
+
+    /**
+     * Return the dt used by the joint calibrator.
+     */
+    const double& dt();
 
     /**
      * @brief Runs the calibration procedure. Returns true if the calibration is
