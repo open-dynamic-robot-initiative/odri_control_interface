@@ -146,8 +146,8 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator,
     if (target_positions.size() != joints->GetMotorNumber())
     {
         throw std::runtime_error(
-            "Target position vector has different size than motor "
-            "numbers");
+            "Target position vector has a different size than the "
+            "number of motors.");
     }
     while (!IsTimeout())
     {
@@ -170,9 +170,9 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator,
     return false;
 }
 
-bool Robot::RunCalibration()
+bool Robot::RunCalibration(VectorXd const& target_positions)
 {
-    return RunCalibration(calibrator);
+    return RunCalibration(calibrator, target_positions);
 }
 
 /**
@@ -241,11 +241,11 @@ bool Robot::WaitUntilReady()
     return !saw_error_;
 }
 
-void Robot::Initialize()
+void Robot::Initialize(VectorXd const& target_positions)
 {
     Start();
     WaitUntilReady();
-    RunCalibration();
+    RunCalibration(target_positions);
 }
 
 bool Robot::IsTimeout()

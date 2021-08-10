@@ -79,13 +79,13 @@ public:
 
     /**
      * @brief Initializes the robot. This inclues establishing the communication
-     * to the robot, wait until the joints are all ready and running the
-     * calibration procedure.
+     * to the robot, wait until the joints are all ready, running the
+     * calibration procedure and waiting in the desired initial configuration.
      *
      * This command corresponds to running `Start()`, `WaitUntilReady()` and
-     * `RunCalibration()` in sequence.
+     * `RunCalibration(target_positions)` in sequence.
      */
-    void Initialize();
+    void Initialize(VectorXd const& target_positions);
 
     /**
      * @brief If no error happend, send the previously specified commands
@@ -118,7 +118,7 @@ public:
      * successfully. Otherwise (e.g. when an error occurred or the communication
      * timed-out) return false.
      */
-    bool RunCalibration();
+    bool RunCalibration(VectorXd const& target_positions);
 
     /**
      * @brief Returns true if all connected devices report ready.

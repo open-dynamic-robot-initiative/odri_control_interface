@@ -112,7 +112,7 @@ bool JointCalibrator::Run()
  * done. Legs are placed at the target position at the end. Calibration happens in
  * three steps: looking for motor indexes, waiting to be sure index compensation has
  * been taken into account and finally going to the desired target positions at the
- * end of the calibration
+ * end of the calibration.
  *
  * @param target_positions target positions for the legs at the end of the calibration
  */
@@ -125,7 +125,7 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
         initial_positions_ = joints_->GetPositions();
 
         // If all the indices are already detected, then we
-        // do not need to search them
+        // do not need to search them.
         if (joints_->SawAllIndices())
         {
             SwitchToWaitingTime();
@@ -142,7 +142,7 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
     bool finished_indexes_search = true;
     bool finished_goto_initial = false;
 
-    // If all indexes have not been found yet
+    // If all indexes have not been found yet.
     if (!all_indexes_detected_)
     {
         for (int i = 0; i < n_; i++)
@@ -191,19 +191,19 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
                 vel_command_[i] = 0.0;
             }
         }
-        if (finished_indexes_search)  // If all indexes have been found we start the waiting time
+        if (finished_indexes_search)  // If all indexes have been found we start the waiting time.
         {
             SwitchToWaitingTime();
         }
     }
-    else if (t_ - t_all_indexes_detected_ > T_wait_)  // Go to target positions after waiting time
+    else if (t_ - t_all_indexes_detected_ > T_wait_)  // Go to target positions after waiting time.
     {        
-        if (!waiting_time_flag_)  // If the waiting time has just finished
+        if (!waiting_time_flag_)  // If the waiting time has just finished.
         {
             std::cout << std::endl;
             joints_->EnableJointLimitCheck();
 
-            // Refresh initial position of the movement after the waiting time
+            // Refresh initial position of the movement after the waiting time.
             for (int i = 0; i < n_; i++)
             {
                 initial_positions_[i] = positions[i];
@@ -215,7 +215,7 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
             waiting_time_flag_ = true;
         }
 
-        // Interpolation between initial positions and target positions
+        // Interpolation between initial positions and target positions.
         double alpha = (t_ - t_all_indexes_detected_ - T_wait_) / T_;
         if (alpha <= 1.0) 
         {
@@ -224,14 +224,14 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
                 pos_command_[i] = initial_positions_[i] * (1.0 - alpha) + target_positions[i] * alpha;
             }
         }
-        else  // We have reached the target positions (at least for the command)
+        else  // We have reached the target positions (at least for the command).
         {
             finished_goto_initial = true;
         }
     }
-    // else : Waiting time to be sure index compensation taken into account by all motors
+    // else : Waiting time to be sure index compensation taken into account by all motors.
 
-    // Set all command quantities
+    // Set all command quantities.
     joints_->SetTorques(zero_vector_);
     joints_->SetDesiredPositions(pos_command_);
     joints_->SetDesiredVelocities(vel_command_);
@@ -240,7 +240,7 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
 
     t_ += dt_;
 
-    if (finished_goto_initial)  // Set all command quantities to 0 when the calibration finishes
+    if (finished_goto_initial)  // Set all command quantities to 0 when the calibration finishes.
     {
         joints_->SetZeroCommands();
     }
@@ -249,15 +249,15 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
 
 /**
  * @brief Start the calibration waiting time by setting
- * gains to zero and enable index compensation
+ * gains to zero and enable index compensation.
  */
 void JointCalibrator::SwitchToWaitingTime()
 {
     all_indexes_detected_ = true;
     t_all_indexes_detected_ = t_;
-    kp_command_.fill(0.0);  // Zero gains during waiting time
+    kp_command_.fill(0.0);  // Zero gains during waiting time.
     kd_command_.fill(0.0);
-    joints_->EnableIndexOffsetCompensation();  // Enable index compensation
+    joints_->EnableIndexOffsetCompensation();  // Enable index compensation.
 }
 
 }  // namespace odri_control_interface

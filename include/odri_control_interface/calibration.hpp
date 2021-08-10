@@ -93,7 +93,7 @@ public:
 
     /**
      * @brief Start the calibration waiting time by setting
-     * gains to zero and enable index compensation
+     * gains to zero and enable index compensation.
      */
     void SwitchToWaitingTime();
 };
