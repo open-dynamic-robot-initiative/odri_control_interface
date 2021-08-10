@@ -9,14 +9,18 @@
  * @brief Robot class orchistrating the devices.
  */
 
+#include <stdexcept>   // for exception, runtime_error, out_of_range
+
 #include "odri_control_interface/robot.hpp"
 
 namespace odri_control_interface
 {
 Robot::Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
              const std::shared_ptr<JointModules>& joint_modules,
-             const std::shared_ptr<IMU>& imu)
-    : robot_if(robot_if), joints(joint_modules), imu(imu), saw_error_(false)
+             const std::shared_ptr<IMU>& imu,
+             const std::shared_ptr<JointCalibrator>& calibrator)
+    : robot_if(robot_if), joints(joint_modules), imu(imu),
+      calibrator(calibrator), saw_error_(false)
 {
     last_time_ = std::chrono::system_clock::now();
 }
@@ -71,6 +75,11 @@ void Robot::Start()
             robot_if->SendInit();
         }
     }
+
+    if (robot_if->IsTimeout())
+    {
+        throw std::runtime_error("Timeout during Robot::Start().");
+    }
 }
 
 bool Robot::IsAckMsgReceived()
@@ -97,13 +106,13 @@ bool Robot::SendCommand()
 /**
  * @brief
  */
-bool Robot::SendCommandAndWaitEndOfCycle()
+bool Robot::SendCommandAndWaitEndOfCycle(double dt)
 {
     bool result = SendCommand();
 
     while (((std::chrono::duration<double>)(std::chrono::system_clock::now() -
                                             last_time_))
-               .count() < 0.001)
+               .count() < dt)
     {
         std::this_thread::yield();
     }
@@ -140,12 +149,19 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
             return true;
         }
 
-        if (!SendCommandAndWaitEndOfCycle())
+        if (!SendCommandAndWaitEndOfCycle(calibrator->dt()))
         {
-            return false;
+            throw std::runtime_error("Error during Robot::RunCalibration().");
         }
     }
+
+    throw std::runtime_error("Timeout during Robot::RunCalibration().");
     return false;
+}
+
+bool Robot::RunCalibration()
+{
+    return RunCalibration(calibrator);
 }
 
 /**
@@ -177,6 +193,7 @@ bool Robot::IsReady()
 
 void Robot::WaitUntilReady()
 {
+    ParseSensorData();
     joints->SetZeroCommands();
 
     std::chrono::time_point<std::chrono::system_clock> last =
@@ -200,6 +217,22 @@ void Robot::WaitUntilReady()
             std::this_thread::yield();
         }
     }
+
+    if (HasError()) {
+        if (robot_if->IsTimeout())
+        {
+            throw std::runtime_error("Timeout during Robot::WaitUntilReady().");
+        } else {
+            throw std::runtime_error("Error during Robot::WaitUntilReady().");
+        }
+    }
+}
+
+void Robot::Initialize()
+{
+    Start();
+    WaitUntilReady();
+    RunCalibration();
 }
 
 bool Robot::IsTimeout()
