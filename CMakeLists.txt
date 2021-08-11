@@ -105,7 +105,7 @@ if(BUILD_PYTHON_INTERFACE)
 endif(BUILD_PYTHON_INTERFACE)
 
 # --- CHECK DEMOS -----------------------------------------------------------
-macro(create_solo12_demo source)
+macro(create_demo source)
 
   set(demo_name ${PROJECT_NAME}_${source})
   add_executable(${demo_name} demos/${source}.cpp)
@@ -116,7 +116,7 @@ macro(create_solo12_demo source)
     PUBLIC CONFIG_TESTBENCH_YAML="${PROJECT_SOURCE_DIR}/demos/config_testbench.yaml")
   install(TARGETS ${demo_name} DESTINATION bin)
 
-endmacro(create_solo12_demo source)
+endmacro(create_demo source)
 
-create_solo12_demo(demo_solo12)
-create_solo12_demo(demo_testbench)
+create_demo(demo_solo12)
+create_demo(demo_testbench)

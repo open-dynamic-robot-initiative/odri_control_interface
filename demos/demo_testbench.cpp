@@ -58,11 +58,7 @@ int main()
         }
     }
 
-    if (robot->IsTimeout()) {
-        printf("Timeout detected\n");
-    } else if (robot->HasError()) {
-        printf("Error detected\n");
-    }
+    printf("Timeout detected\n");
 
     return 0;
 }
