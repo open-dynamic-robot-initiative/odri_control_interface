@@ -143,7 +143,7 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator,
                            VectorXd const& target_positions)
 {
     bool is_done = false;
-    if (target_positions.size() != joints->GetMotorNumber())
+    if (target_positions.size() != joints->GetNumberMotors())
     {
         throw std::runtime_error(
             "Target position vector has a different size than the "

@@ -92,7 +92,7 @@ const VectorXd& JointModules::GetGearRatios()
     return gear_ratios_;
 }
 
-int JointModules::GetMotorNumber()
+int JointModules::GetNumberMotors()
 {
     return n_;
 }

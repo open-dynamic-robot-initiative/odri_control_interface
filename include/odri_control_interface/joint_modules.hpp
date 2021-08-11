@@ -123,7 +123,7 @@ public:
 
     const VectorXd& GetGearRatios();
 
-    int GetMotorNumber();
+    int GetNumberMotors();
 
     void DisableJointLimitCheck();
     void EnableJointLimitCheck();
