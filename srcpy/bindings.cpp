@@ -203,9 +203,9 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .value("negative", CalibrationMethod::NEGATIVE)
         .value("alternative", CalibrationMethod::ALTERNATIVE);
 
-    bool (Robot::*RunCalibration0)() = &Robot::RunCalibration;
-    bool (Robot::*RunCalibration1)(const std::shared_ptr<JointCalibrator>&) =
-        &Robot::RunCalibration;
+    bool (Robot::*RunCalibration0)(Eigen::VectorXd const&) = &Robot::RunCalibration;
+    bool (Robot::*RunCalibration1)(const std::shared_ptr<JointCalibrator>&,
+        Eigen::VectorXd const&) = &Robot::RunCalibration;
 
     class_<Robot>("Robot",
                   init<std::shared_ptr<MasterBoardInterface>,

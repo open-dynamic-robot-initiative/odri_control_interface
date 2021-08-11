@@ -139,14 +139,21 @@ void Robot::ParseSensorData()
     }
 }
 
-bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
+bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator,
+                           VectorXd const& target_positions)
 {
     bool is_done = false;
+    if (target_positions.size() != joints->GetMotorNumber())
+    {
+        throw std::runtime_error(
+            "Target position vector has a different size than the "
+            "number of motors.");
+    }
     while (!IsTimeout())
     {
         ParseSensorData();
 
-        is_done = calibrator->Run();
+        is_done = calibrator->RunAndGoTo(target_positions);
 
         if (is_done)
         {
@@ -163,9 +170,9 @@ bool Robot::RunCalibration(const std::shared_ptr<JointCalibrator>& calibrator)
     return false;
 }
 
-bool Robot::RunCalibration()
+bool Robot::RunCalibration(VectorXd const& target_positions)
 {
-    return RunCalibration(calibrator);
+    return RunCalibration(calibrator, target_positions);
 }
 
 /**
@@ -195,7 +202,7 @@ bool Robot::IsReady()
     return joints->IsReady();
 }
 
-void Robot::WaitUntilReady()
+bool Robot::WaitUntilReady()
 {
     ParseSensorData();
     joints->SetZeroCommands();
@@ -230,13 +237,15 @@ void Robot::WaitUntilReady()
             throw std::runtime_error("Error during Robot::WaitUntilReady().");
         }
     }
+
+    return !saw_error_;
 }
 
-void Robot::Initialize()
+void Robot::Initialize(VectorXd const& target_positions)
 {
     Start();
     WaitUntilReady();
-    RunCalibration();
+    RunCalibration(target_positions);
 }
 
 bool Robot::IsTimeout()

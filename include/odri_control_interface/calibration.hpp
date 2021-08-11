@@ -42,16 +42,23 @@ protected:
     VectorXd position_offsets_;
     VectorXd initial_positions_;
     VectorXb found_index_;
-    VectorXd t_end_;
     VectorXd gear_ratios_;
-    VectorXd command_;
+    VectorXd pos_command_;
+    VectorXd vel_command_;
+    VectorXd kp_command_;
+    VectorXd kd_command_;
+    VectorXd zero_vector_;
     double Kp_;
     double Kd_;
     double T_;
+    double T_wait_;
     double dt_;
     double t_;
     bool go_to_zero_position_;
     int n_;
+    bool all_indexes_detected_;
+    double t_all_indexes_detected_;
+    bool waiting_time_flag_;
 
 public:
 
@@ -72,9 +79,23 @@ public:
 
     /**
      * @brief Runs the calibration procedure. Returns true if the calibration is
-     * done.
+     * done. Legs are placed in zero position at the end.
      */
     bool Run();
+
+    /**
+     * @brief Runs the calibration procedure. Returns true if the calibration is
+     * done. Legs are placed at the target position at the end.
+     *
+     * @param target_positions target positions for the legs at the end of the calibration
+     */
+    bool RunAndGoTo(VectorXd const& target_positions);
+
+    /**
+     * @brief Start the calibration waiting time by setting
+     * gains to zero and enable index compensation.
+     */
+    void SwitchToWaitingTime();
 };
 
 }  // namespace odri_control_interface
