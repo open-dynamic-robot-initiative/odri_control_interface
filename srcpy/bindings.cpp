@@ -196,6 +196,18 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
                           return_value_policy<copy_const_reference>()));
     register_ptr_to_python<std::shared_ptr<IMU>>();
 
+    // Powerboard bindings and it's std::shared_ptr.
+    class_<Powerboard>("Powerboard", init<std::shared_ptr<MasterBoardInterface>>())
+        .add_property("has_error", &Powerboard::HasError)
+        .add_property(
+            "robot_interface",
+            make_function(&Powerboard::GetMasterBoardInterface,
+                          return_value_policy<copy_const_reference>()))
+        .add_property("current", &Powerboard::GetCurrent)
+        .add_property("voltage", &Powerboard::GetVoltage)
+        .add_property("energy", &Powerboard::GetEnergy);
+    register_ptr_to_python<std::shared_ptr<Powerboard>>();
+
     // CalibrationMethod enum bindings.
     enum_<CalibrationMethod>("CalibrationMethod")
         .value("auto", CalibrationMethod::AUTO)
@@ -211,6 +223,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
                   init<std::shared_ptr<MasterBoardInterface>,
                        std::shared_ptr<JointModules>,
                        std::shared_ptr<IMU>,
+                       std::shared_ptr<Powerboard>,
                        std::shared_ptr<JointCalibrator>>())
         .def("init", &Robot::Init)
         .def("sendInit", &Robot::SendInit)
@@ -236,6 +249,10 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property(
             "imu",
             make_function(&Robot::GetIMU,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "powerboard",
+            make_function(&Robot::GetPowerboard,
                           return_value_policy<copy_const_reference>()))
         .add_property("is_ready", &Robot::IsReady)
         .add_property("is_timeout", &Robot::IsTimeout)

@@ -65,7 +65,7 @@ endif(BUILD_PYTHON_INTERFACE)
 
 # --- MAIN LIBRARY -------------------------------------------------------------
 set(ODRI_CONTROL_INTERFACE_SRC src/joint_modules.cpp src/imu.cpp src/robot.cpp
-                               src/calibration.cpp src/utils.cpp)
+                               src/calibration.cpp src/utils.cpp src/powerboard.cpp)
 add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
 target_link_libraries(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
