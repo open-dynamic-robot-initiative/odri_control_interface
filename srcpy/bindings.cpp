@@ -24,6 +24,8 @@ std::shared_ptr<JointCalibrator> joint_calibrator_constructor(
     std::shared_ptr<JointModules> joints,
     boost::python::list search_methods,
     RefVectorXd position_offsets,
+    RefVectorXi calib_order,
+    RefVectorXd calib_pos,
     double Kp,
     double Kd,
     double T,
@@ -37,7 +39,8 @@ std::shared_ptr<JointCalibrator> joint_calibrator_constructor(
             boost::python::extract<CalibrationMethod>(search_methods[i]));
     }
     return std::make_shared<JointCalibrator>(
-        joints, search_method_vec, position_offsets, Kp, Kd, T, dt);
+        joints, search_method_vec, position_offsets, calib_order,
+        calib_pos, Kp, Kd, T, dt);
 }
 
 std::shared_ptr<JointModules> joint_modules_constructor(
@@ -112,6 +115,11 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
     boost::python::import("libmaster_board_sdk_pywrap");
     register_ptr_to_python<std::shared_ptr<MasterBoardInterface>>();
 
+    void (JointModules::*EnableIndexOffsetCompensation0)(int) =
+        &JointModules::EnableIndexOffsetCompensation;
+    void (JointModules::*EnableIndexOffsetCompensation1)() =
+        &JointModules::EnableIndexOffsetCompensation;
+
     // JointModules bindings and it's std::shared_ptr.
     class_<JointModules>("JointModules", no_init)
         .def("__init__", make_constructor(&joint_modules_constructor))
@@ -124,8 +132,8 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .def("set_zero_gains", &JointModules::SetZeroGains)
         .def("set_zero_commands", &JointModules::SetZeroCommands)
         .def("set_position_offsets", &JointModules::SetPositionOffsets)
-        .def("enable_index_offset_compensation",
-             &JointModules::EnableIndexOffsetCompensation)
+        .def("enable_index_offset_compensation", EnableIndexOffsetCompensation0)
+        .def("enable_index_offset_compensation", EnableIndexOffsetCompensation1)
         .def("set_maximum_current", &JointModules::SetMaximumCurrents)
         .def("disable_joint_limit_check", &JointModules::DisableJointLimitCheck)
         .def("enable_joint_limit_check", &JointModules::EnableJointLimitCheck)

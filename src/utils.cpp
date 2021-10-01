@@ -202,6 +202,40 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(
         position_offsets_vec(i) = position_offsets[i].as<double>();
     }
 
+    VectorXi calib_order_vec;
+    if (joint_calibrator["calib_order"])
+    {
+        const YAML::Node& calib_order = joint_calibrator["calib_order"];
+        std::size_t n_order = calib_order.size();
+        calib_order_vec.resize(n_order);
+        for (std::size_t i = 0; i < n_order; i++)
+        {
+            calib_order_vec(i) = calib_order[i].as<int>();
+        }
+    }
+    else
+    {
+        calib_order_vec.resize(n);
+        calib_order_vec.setZero();
+    }
+
+    VectorXd calib_pos_vec;
+    if (joint_calibrator["calib_pos"])
+    {
+        const YAML::Node& calib_pos = joint_calibrator["calib_pos"];
+        std::size_t n_order = calib_pos.size();
+        calib_pos_vec.resize(n_order);
+        for (std::size_t i = 0; i < n_order; i++)
+        {
+            calib_pos_vec(i) = calib_pos[i].as<double>();
+        }
+    }
+    else
+    {
+        calib_pos_vec.resize(n);
+        calib_pos_vec.setZero();
+    }
+
     assert_yaml_parsing(joint_calibrator, "joint_calibrator", "Kp");
     assert_yaml_parsing(joint_calibrator, "joint_calibrator", "Kd");
     assert_yaml_parsing(joint_calibrator, "joint_calibrator", "T");
@@ -210,6 +244,8 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(
         joints,
         calib_methods,
         position_offsets_vec,
+        calib_order_vec,
+        calib_pos_vec,
         joint_calibrator["Kp"].as<double>(),
         joint_calibrator["Kd"].as<double>(),
         joint_calibrator["T"].as<double>(),
