@@ -142,6 +142,7 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property(
             "is_ready", &JointModules::IsReady)
         .add_property("has_error", &JointModules::HasError)
+        .add_property("number_motors", &JointModules::GetNumberMotors)
         .add_property(
             "positions",
             make_function(&JointModules::GetPositions,
@@ -245,7 +246,15 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
 
     class_<JointCalibrator>("JointCalibrator", no_init)
         .def("__init__", make_constructor(&joint_calibrator_constructor))
-        .def("run", &JointCalibrator::Run);
+        .def("run", &JointCalibrator::Run)
+        .add_property(
+            "position_offsets",
+            make_function(&JointCalibrator::GetPositionOffsets,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "dt",
+            make_function(&JointCalibrator::dt,
+                          return_value_policy<copy_const_reference>()));
     register_ptr_to_python<std::shared_ptr<JointCalibrator>>();
 
     def("robot_from_yaml_file", &RobotOnlyFromYamlFile);
