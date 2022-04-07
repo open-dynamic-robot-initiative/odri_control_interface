@@ -14,7 +14,7 @@ def get_input():
 
 def control_loop(config_file_path):
     """Main function that initializes communication with the robot then waits
-    until the user presses the Enter key to output joint positions offsets 
+    until the user presses the Enter key to output joint positions offsets
 
     Args:
         config_file_path (string): path to the yaml config file of the robot
@@ -22,7 +22,9 @@ def control_loop(config_file_path):
 
     # Load information about the robot from the yaml config file
     device = oci.robot_from_yaml_file(config_file_path)
-    joint_calibrator = oci.joint_calibrator_from_yaml_file(config_file_path, device.joints)
+    joint_calibrator = oci.joint_calibrator_from_yaml_file(
+        config_file_path, device.joints
+    )
 
     # Initiate communication with the device and calibrate encoders
     device.initialize(np.zeros(device.joints.number_motors))
@@ -43,27 +45,33 @@ def control_loop(config_file_path):
         device.send_command_and_wait_end_of_cycle(joint_calibrator.dt)
 
     m = np.pi / device.joints.gear_ratios
-    offsets = np.mod(joint_calibrator.position_offsets - device.joints.positions + m, 2 * m) - m
+    offsets = (
+        np.mod(joint_calibrator.position_offsets - device.joints.positions + m, 2 * m)
+        - m
+    )
     diff = np.mod(joint_calibrator.position_offsets - offsets + m, 2 * m) - m
 
     print("Difference with the previous position_offsets values:")
-    print(np.array2string(np.abs(diff), precision=3, separator=', '))
+    print(np.array2string(np.abs(diff), precision=3, separator=", "))
 
     print("Values to copy-paste in the position_offsets field of the yaml config file:")
-    print(np.array2string(offsets, precision=4, separator=', '))
+    print(np.array2string(offsets, precision=4, separator=", "))
 
     return 0
 
 
 def main():
-    """Main function
-    """
+    """Main function"""
 
-    parser = argparse.ArgumentParser(description='Calibration script to get the joint position offsets of a robot.')
-    parser.add_argument('-c',
-                        '--config',
-                        required=True,
-                        help='Path of the config yaml file that contains information about the robot.')
+    parser = argparse.ArgumentParser(
+        description="Calibration script to get the joint position offsets of a robot."
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        required=True,
+        help="Path of the config yaml file that contains information about the robot.",
+    )
     control_loop(parser.parse_args().config)
     quit()
 
