@@ -23,7 +23,7 @@ The robot node contains general information about the robot such as motor orderi
 
 The joint calibrator node contains information for the calibration step at startup during which the robot slightly moves its joints to find the indexes of the coding wheels.
 
-|Field|Meaning|Example (Solo 12)
+|Field|Meaning|Example value<br>(Solo 12)|
 |---|---|---|
 |search_methods|The index search strategy for each motor, can be POS, NEG, ALT, AUTO. If POS, the motor will search the index by going in the positive direction from its starting position until it reaches it. If NEG, it will go in the negative direction. If ALT, the motor will do back-and-forth movements of increasing amplitude around its starting position till the index is reached. AUTO automatically chooses the strategy based on the position offset value.|[AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO, AUTO]|
 |position_offsets|Angular position offset between the position of the index on the coding wheel and the zero position of the actuator.|[0.142, -0.251, 0.298, -0.240, -0.247, -0.267, -0.155, -0.109, -0.095, 0.098, 0.271, -0.2476]|
