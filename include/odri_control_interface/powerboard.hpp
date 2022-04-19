@@ -2,9 +2,9 @@
  * @file powerboard.hpp
  * @author Pierre-Alexandre Leziart (paleziart@laas.fr)
  * license License BSD-3-Clause
- * @copyright Copyright (c) 2020, New York University and Max Planck
- * Gesellschaft.
- * @date 2021-08-23
+ * @copyright Copyright (c) 2022, New York University, Max Planck
+ * Gesellschaft and LAAS-CNRS
+ * @date 2022-04-19
  *
  * @brief Powerboard abstraction.
  */
