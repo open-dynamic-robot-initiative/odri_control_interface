@@ -27,15 +27,15 @@ protected:
     std::shared_ptr<MasterBoardInterface> robot_if_;
 
     // Cache for the results.
-    double voltage_;
-    double current_;
-    double energy_;
+    double voltage_ = 0.0;
+    double current_ = 0.0;
+    double energy_ = 0.0;
 
-    double previous_voltage_;
-    double previous_current_;
-    double previous_energy_;
+    double previous_voltage_ = 0.0;
+    double previous_current_ = 0.0;
+    double previous_energy_ = 0.0;
 
-    int no_update_counter_;
+    int no_update_counter_ = 0;
 
 public:
     PowerBoard(const std::shared_ptr<MasterBoardInterface>& robot_if);
