@@ -18,14 +18,6 @@ PowerBoard::PowerBoard(const std::shared_ptr<MasterBoardInterface>& robot_if)
 
 bool PowerBoard::HasError() const
 {
-    // FIXME: set proper values
-    // TODO: Make configurable
-    constexpr double MIN_VOLTAGE_V = 20.0, MAX_VOLTAGE_V = 25.0,
-                     MAX_CURRENT_A = 10.0;
-    // FIXME: what would be good value here?
-    // How often is this method actually called?
-    constexpr int MAX_NUM_OF_NO_UPDATES = 100;
-
     static int print_counter = 0;
 
     bool has_error = false;
@@ -36,7 +28,7 @@ bool PowerBoard::HasError() const
         boost::iostreams::null_sink()};
     std::ostream& out = print_counter % 5000 == 0 ? msg_out_ : null_sink;
 
-    if (no_update_counter_ > MAX_NUM_OF_NO_UPDATES)
+    if (no_update_counter_ > limit_max_no_update_counter)
     {
         has_error = true;
         out << "ERROR: No updates from power board since " << no_update_counter_
@@ -46,24 +38,24 @@ bool PowerBoard::HasError() const
     // only check value limits if actual values have been reported
     if (voltage_ != 0 || current_ != 0 || energy_ != 0)
     {
-        if (voltage_ < MIN_VOLTAGE_V)
+        if (voltage_ < limit_min_voltage_V)
         {
             has_error = true;
             out << "ERROR: Power board voltage too low: " << voltage_
-                << " V (limit: " << MIN_VOLTAGE_V << " V)" << std::endl;
+                << " V (limit: " << limit_min_voltage_V << " V)" << std::endl;
         }
-        else if (voltage_ > MAX_VOLTAGE_V)
+        else if (voltage_ > limit_max_voltage_V)
         {
             has_error = true;
             out << "ERROR: Power board voltage too high: " << voltage_
-                << " V (limit: " << MAX_VOLTAGE_V << " V)" << std::endl;
+                << " V (limit: " << limit_max_voltage_V << " V)" << std::endl;
         }
 
-        if (current_ > MAX_CURRENT_A)
+        if (current_ > limit_max_current_A)
         {
             has_error = true;
             out << "ERROR: Power board current too high: " << current_
-                << " A (limit: " << MAX_CURRENT_A << " A)" << std::endl;
+                << " A (limit: " << limit_max_current_A << " A)" << std::endl;
         }
     }
 

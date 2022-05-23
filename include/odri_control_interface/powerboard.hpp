@@ -38,6 +38,29 @@ protected:
     int no_update_counter_ = 0;
 
 public:
+    /**
+     * Lower bound for voltage.  If the measured voltage drops below the limit,
+     * an error is triggered.
+     */
+    double limit_min_voltage_V = 22.0;
+    /**
+     * Upper bound for voltage.  If the measured voltage exceeds the limit, an
+     * error is triggered.
+     */
+    double limit_max_voltage_V = 28.0;
+    /**
+     * Upper bound for current.  If the measured current exceeds the limit, an
+     * error is triggered.
+     */
+    double limit_max_current_A = 10.0;
+    /**
+     * Maximum number of iterations without new data from the power board.  If
+     * this number is exceeded, an error is triggered.
+     */
+    // FIXME: what would be good value here?
+    // How often is this method actually called?
+    double limit_max_no_update_counter = 100;
+
     PowerBoard(const std::shared_ptr<MasterBoardInterface>& robot_if);
 
     bool HasError() const;
