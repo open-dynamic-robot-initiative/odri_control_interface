@@ -19,6 +19,7 @@
 #include <odri_control_interface/calibration.hpp>
 #include <odri_control_interface/imu.hpp>
 #include <odri_control_interface/joint_modules.hpp>
+#include <odri_control_interface/powerboard.hpp>
 
 namespace odri_control_interface
 {
@@ -32,6 +33,7 @@ public:
     std::shared_ptr<JointModules> joints;
     std::shared_ptr<IMU> imu;
     std::shared_ptr<JointCalibrator> calibrator;
+    std::shared_ptr<PowerBoard> powerboard;
 
 protected:
     int timeout_counter_;
@@ -43,7 +45,8 @@ public:
     Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
           const std::shared_ptr<JointModules>& joint_modules,
           const std::shared_ptr<IMU>& imu,
-          const std::shared_ptr<JointCalibrator>& calibrator);
+          const std::shared_ptr<JointCalibrator>& calibrator,
+          const std::shared_ptr<PowerBoard>& powerboard=nullptr);
 
     /**
      * @brief Returns the underlying robot interface

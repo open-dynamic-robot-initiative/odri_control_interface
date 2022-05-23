@@ -18,9 +18,10 @@ namespace odri_control_interface
 Robot::Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
              const std::shared_ptr<JointModules>& joint_modules,
              const std::shared_ptr<IMU>& imu,
-             const std::shared_ptr<JointCalibrator>& calibrator)
+             const std::shared_ptr<JointCalibrator>& calibrator,
+             const std::shared_ptr<PowerBoard>& powerboard)
     : robot_if(robot_if), joints(joint_modules), imu(imu),
-      calibrator(calibrator), saw_error_(false)
+      calibrator(calibrator), powerboard(powerboard), saw_error_(false)
 {
     last_time_ = std::chrono::system_clock::now();
 }
@@ -136,6 +137,11 @@ void Robot::ParseSensorData()
     if (imu)
     {
         imu->ParseSensorData();
+    }
+
+    if (powerboard)
+    {
+        powerboard->ParseSensorData();
     }
 }
 
@@ -263,6 +269,11 @@ bool Robot::HasError()
     if (imu)
     {
         saw_error_ |= imu->HasError();
+    }
+
+    if (powerboard)
+    {
+        saw_error_ |= powerboard->HasError();
     }
 
     if (robot_if->IsTimeout())
