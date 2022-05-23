@@ -44,13 +44,6 @@ bool PowerBoard::HasError() const
             out << "ERROR: Power board voltage too low: " << voltage_
                 << " V (limit: " << limit_min_voltage_V << " V)" << std::endl;
         }
-        else if (voltage_ > limit_max_voltage_V)
-        {
-            has_error = true;
-            out << "ERROR: Power board voltage too high: " << voltage_
-                << " V (limit: " << limit_max_voltage_V << " V)" << std::endl;
-        }
-
         if (current_ > limit_max_current_A)
         {
             has_error = true;

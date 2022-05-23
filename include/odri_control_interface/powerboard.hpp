@@ -44,11 +44,6 @@ public:
      */
     double limit_min_voltage_V = 22.0;
     /**
-     * Upper bound for voltage.  If the measured voltage exceeds the limit, an
-     * error is triggered.
-     */
-    double limit_max_voltage_V = 28.0;
-    /**
      * Upper bound for current.  If the measured current exceeds the limit, an
      * error is triggered.
      */
