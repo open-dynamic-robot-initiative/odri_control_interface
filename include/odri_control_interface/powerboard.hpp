@@ -65,8 +65,11 @@ public:
     const std::shared_ptr<MasterBoardInterface>& GetMasterBoardInterface()
         const;
 
+    //! Get latest voltage measurement (in V).
     double GetVoltage() const;
+    //! Get latest current measurement (in A).
     double GetCurrent() const;
+    //! Get latest energy measurement (in J since start of the system)
     double GetEnergy() const;
 };
 
