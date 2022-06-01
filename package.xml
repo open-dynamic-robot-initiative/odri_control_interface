@@ -3,8 +3,7 @@
    href="http://download.ros.org/schema/package_format3.xsd"
    schematypens="http://www.w3.org/2001/XMLSchema"?>
 
-
-<package format="3">
+<package format="2">
 
     <name>odri_control_interface</name>
     <version>1.0.0</version>
