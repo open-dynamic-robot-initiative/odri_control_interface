@@ -18,6 +18,8 @@ JointCalibrator::JointCalibrator(
     const std::shared_ptr<JointModules>& joints,
     const std::vector<CalibrationMethod>& search_methods,
     RefVectorXd position_offsets,
+    RefVectorXi calib_order,
+    RefVectorXd calib_pos,
     double Kp,
     double Kd,
     double T,
@@ -25,16 +27,21 @@ JointCalibrator::JointCalibrator(
     : joints_(joints),
       search_methods_(search_methods),
       position_offsets_(position_offsets),
+      calib_order_(calib_order),
+      calib_pos_(calib_pos),
       Kp_(Kp),
       Kd_(Kd),
       T_(T),
       T_wait_(0.1),
       dt_(dt),
       t_(0.),
-      go_to_zero_position_(false),
-      all_indexes_detected_(false),
-      t_all_indexes_detected_(0.),
-      waiting_time_flag_(false)
+      already_calibrated_(false),
+      calib_state_(0),
+      step_number_(0),
+      step_number_max_(0),
+      step_indexes_detected_(false),
+      t_step_indexes_detected_(0.),
+      t_step_end_(0.)
 {
     gear_ratios_ = joints->GetGearRatios();
     n_ = static_cast<int>(gear_ratios_.size());
@@ -49,6 +56,20 @@ JointCalibrator::JointCalibrator(
     {
         throw std::runtime_error(
             "Position offsets has different size than motor numbers");
+    }
+
+    if (static_cast<int>(calib_order.size()) != n_)
+    {
+        throw std::runtime_error(
+            "Calibration order has different size than motor numbers");
+    }
+
+    step_number_max_ = calib_order.maxCoeff();
+
+    if (static_cast<int>(calib_pos.size()) != n_)
+    {
+        throw std::runtime_error(
+            "Calibration pos has different size than motor numbers");
     }
 
     for (int i = 0; i < n_; i++)
@@ -71,6 +92,7 @@ JointCalibrator::JointCalibrator(
     }
 
     initial_positions_.resize(n_);
+    target_positions_.resize(n_);
 
     found_index_.resize(n_);
     found_index_.fill(false);
@@ -123,12 +145,14 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
         joints_->SetZeroGains();
         joints_->SetPositionOffsets(position_offsets_);
         initial_positions_ = joints_->GetPositions();
+        target_positions_ = joints_->GetPositions();
 
         // If all the indices are already detected, then we
         // do not need to search them.
         if (joints_->SawAllIndices())
         {
-            SwitchToWaitingTime();
+            already_calibrated_ = true;
+            SwitchToWaiting();
         }
 
         joints_->DisableJointLimitCheck();
@@ -137,18 +161,18 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
     auto has_index_been_detected = joints_->HasIndexBeenDetected();
     auto positions = joints_->GetPositions();
     auto velocities = joints_->GetVelocities();
-    double des_pos = 0.;
-    double des_vel = 0.;
-    bool finished_indexes_search = true;
-    bool finished_goto_initial = false;
 
-    // If all indexes have not been found yet.
-    if (!all_indexes_detected_)
+    if (calib_state_ == SEARCHING)
     {
+        bool finished_indexes_search = true;
         for (int i = 0; i < n_; i++)
         {
-            // As long as the index was not found, search for it.
-            if (!found_index_[i])
+            if (calib_order_[i] != step_number_)  // Stay at current position
+            {
+                pos_command_[i] = positions[i];
+                vel_command_[i] = 0.0;
+            }
+            else if (!found_index_[i])  // As long as the index was not found, search for it.
             {
                 if (has_index_been_detected[i])
                 {
@@ -157,31 +181,7 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
                 }
                 else
                 {
-                    if (search_methods_[i] == ALTERNATIVE)
-                    {
-                        if (t_ < T_ / 2.)
-                        {
-                            des_pos = 1.2 * M_PI * 0.5 * (1. - cos(2. * M_PI * (1. / T_) * t_));
-                            des_vel = 1.2 * M_PI * 0.5 * 2. * M_PI * (1. / T_) * sin(2. * M_PI * (1. / T_) * t_);
-                        }
-                        else
-                        {
-                            des_pos = 1.2 * M_PI * cos(2. * M_PI * (0.5 / T_) * (t_ - T_ / 2.0));
-                            des_vel = 1.2 * M_PI * -2. * M_PI * (0.5 / T_) * sin(2. * M_PI * (0.5 / T_) * (t_ - T_ / 2.0));
-                        }
-                    }
-                    else if (search_methods_[i] == POSITIVE)
-                    {
-                        des_pos = 2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
-                        des_vel = 2.2 * M_PI * 2. * M_PI * (0.5 / T_) * sin(2. * M_PI * (0.5 / T_) * t_);
-                    }
-                    else
-                    {
-                        des_pos = -2.2 * M_PI * (1. - cos(2. * M_PI * (0.5 / T_) * t_));
-                        des_vel = -2.2 * M_PI * 2. * M_PI * (0.5 / T_) * sin(2. * M_PI * (0.5 / T_) * t_);
-                    }
-                    pos_command_[i] = des_pos / gear_ratios_[i] + initial_positions_[i];
-                    vel_command_[i] = des_vel / gear_ratios_[i];
+                    SearchIndex(i);
                 }
                 finished_indexes_search = false;
             }
@@ -193,43 +193,73 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
         }
         if (finished_indexes_search)  // If all indexes have been found we start the waiting time.
         {
-            SwitchToWaitingTime();
+            SwitchToWaiting();
         }
     }
-    else if (t_ - t_all_indexes_detected_ > T_wait_)  // Go to target positions after waiting time.
-    {        
-        if (!waiting_time_flag_)  // If the waiting time has just finished.
+    else if (calib_state_ == WAITING)
+    {
+        if (t_ - t_step_indexes_detected_ > T_wait_)
         {
-            std::cout << std::endl;
+            calib_state_ = GOTO;
             joints_->EnableJointLimitCheck();
 
             // Refresh initial position of the movement after the waiting time.
             for (int i = 0; i < n_; i++)
             {
+                if (step_number_ == step_number_max_ || already_calibrated_)
+                {
+                    // Go to desired initial position
+                    target_positions_[i] = target_positions[i];
+                }
+                else if (calib_order_[i] == step_number_)
+                {
+                    // Go to desired intermediate calibration position
+                    target_positions_[i] = calib_pos_[i];
+                }
+                else
+                {
+                    // Stay at current position
+                    target_positions_[i] = positions[i];
+                }
                 initial_positions_[i] = positions[i];
                 pos_command_[i] = initial_positions_[i];
-                vel_command_[i] = (target_positions[i] - initial_positions_[i]) / T_;
+                vel_command_[i] = (target_positions_[i] - initial_positions_[i]) / T_;
                 kp_command_[i] = Kp_;
                 kd_command_[i] = Kd_;
             }
-            waiting_time_flag_ = true;
         }
-
+    }
+    else if (calib_state_ == GOTO)
+    {
         // Interpolation between initial positions and target positions.
-        double alpha = (t_ - t_all_indexes_detected_ - T_wait_) / T_;
+        double alpha = (t_ - t_step_indexes_detected_ - T_wait_) / T_;
         if (alpha <= 1.0) 
         {
             for (int i = 0; i < n_; i++)
             {
-                pos_command_[i] = initial_positions_[i] * (1.0 - alpha) + target_positions[i] * alpha;
+                pos_command_[i] = initial_positions_[i] * (1.0 - alpha) +
+                                  target_positions_[i] * alpha;
             }
         }
         else  // We have reached the target positions (at least for the command).
         {
-            finished_goto_initial = true;
+            step_number_++;
+            if (step_number_ > step_number_max_ || already_calibrated_)
+            {
+                // Set all command quantities to 0 when the calibration finishes.
+                joints_->SetZeroCommands();
+                return true;
+            }
+            calib_state_ = SEARCHING;
+            t_step_end_ = t_;
+            joints_->DisableJointLimitCheck();
         }
     }
-    // else : Waiting time to be sure index compensation taken into account by all motors.
+    else
+    {
+        joints_->SetZeroCommands();
+        throw std::runtime_error("Undefined calibration state");
+    }
 
     // Set all command quantities.
     joints_->SetTorques(zero_vector_);
@@ -240,24 +270,76 @@ bool JointCalibrator::RunAndGoTo(VectorXd const& target_positions)
 
     t_ += dt_;
 
-    if (finished_goto_initial)  // Set all command quantities to 0 when the calibration finishes.
+    // Set all command quantities to 0 when the calibration finishes.
+    if (step_number_ > step_number_max_)
     {
         joints_->SetZeroCommands();
     }
-    return finished_goto_initial;
+    return false;
+}
+
+/**
+ * @brief Search the index using the desired
+ * search method
+ *
+ * @param i the searching motor number
+ */
+void JointCalibrator::SearchIndex(int i)
+{
+    double des_pos = 0.;
+    double des_vel = 0.;
+    if (search_methods_[i] == ALTERNATIVE)
+    {
+        if ((t_ - t_step_end_) < T_ / 2.)
+        {
+            des_pos = AMPLITUDE * M_PI * 0.5 *
+                      (1. - cos(2. * M_PI * (1. / T_) * (t_ - t_step_end_)));
+            des_vel = AMPLITUDE * M_PI * 0.5 * 2. * M_PI * (1. / T_) *
+                      sin(2. * M_PI * (1. / T_) * (t_ - t_step_end_));
+        }
+        else
+        {
+            des_pos = AMPLITUDE * M_PI *
+                      cos(2. * M_PI * (0.5 / T_) * ((t_ - t_step_end_) - T_ / 2.0));
+            des_vel = AMPLITUDE * M_PI * -2. * M_PI * (0.5 / T_) *
+                      sin(2. * M_PI * (0.5 / T_) * ((t_ - t_step_end_) - T_ / 2.0));
+        }
+    }
+    else if (search_methods_[i] == POSITIVE)
+    {
+        des_pos = 2. * AMPLITUDE * M_PI *
+                  (1. - cos(2. * M_PI * (0.5 / T_) * (t_ - t_step_end_)));
+        des_vel = 2. * AMPLITUDE * M_PI * 2. * M_PI * (0.5 / T_) *
+                  sin(2. * M_PI * (0.5 / T_) * (t_ - t_step_end_));
+    }
+    else
+    {
+        des_pos = -2. * AMPLITUDE * M_PI *
+                  (1. - cos(2. * M_PI * (0.5 / T_) * (t_ - t_step_end_)));
+        des_vel = -2. * AMPLITUDE * M_PI * 2. * M_PI * (0.5 / T_) *
+                  sin(2. * M_PI * (0.5 / T_) * (t_ - t_step_end_));
+    }
+    pos_command_[i] = des_pos / gear_ratios_[i] + initial_positions_[i];
+    vel_command_[i] = des_vel / gear_ratios_[i];
 }
 
 /**
  * @brief Start the calibration waiting time by setting
  * gains to zero and enable index compensation.
  */
-void JointCalibrator::SwitchToWaitingTime()
+void JointCalibrator::SwitchToWaiting()
 {
-    all_indexes_detected_ = true;
-    t_all_indexes_detected_ = t_;
-    kp_command_.fill(0.0);  // Zero gains during waiting time.
-    kd_command_.fill(0.0);
-    joints_->EnableIndexOffsetCompensation();  // Enable index compensation.
+    calib_state_ = WAITING;
+    t_step_indexes_detected_ = t_;
+    for (int i = 0; i < n_; i++)
+    {
+        if (calib_order_[i] == step_number_ || already_calibrated_)
+        {
+            kp_command_[i] = 0.0;  // Zero gains during waiting time.
+            kd_command_[i] = 0.0;
+            joints_->EnableIndexOffsetCompensation(i);  // Enable index compensation.
+        }
+    }
 }
 
 }  // namespace odri_control_interface

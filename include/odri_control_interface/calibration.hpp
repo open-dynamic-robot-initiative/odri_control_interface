@@ -23,6 +23,11 @@
 
 namespace odri_control_interface
 {
+const int SEARCHING = 0;
+const int WAITING = 1;
+const int GOTO = 2;
+const double AMPLITUDE = 1.5;
+
 enum CalibrationMethod
 {
     AUTO,
@@ -40,7 +45,10 @@ protected:
     std::shared_ptr<JointModules> joints_;
     std::vector<CalibrationMethod> search_methods_;
     VectorXd position_offsets_;
+    VectorXi calib_order_;
+    VectorXd calib_pos_;
     VectorXd initial_positions_;
+    VectorXd target_positions_;
     VectorXb found_index_;
     VectorXd gear_ratios_;
     VectorXd pos_command_;
@@ -54,17 +62,22 @@ protected:
     double T_wait_;
     double dt_;
     double t_;
-    bool go_to_zero_position_;
     int n_;
-    bool all_indexes_detected_;
-    double t_all_indexes_detected_;
-    bool waiting_time_flag_;
+    bool already_calibrated_;
+    int calib_state_;
+    int step_number_;
+    int step_number_max_;
+    bool step_indexes_detected_;
+    double t_step_indexes_detected_;
+    double t_step_end_;
 
 public:
 
     JointCalibrator(const std::shared_ptr<JointModules>& joints,
                     const std::vector<CalibrationMethod>& search_methods,
                     RefVectorXd position_offsets,
+                    RefVectorXi calib_order,
+                    RefVectorXd calib_pos,
                     double Kp,
                     double Kd,
                     double T,
@@ -92,10 +105,18 @@ public:
     bool RunAndGoTo(VectorXd const& target_positions);
 
     /**
+     * @brief Search the index using the desired
+     * search method
+     *
+     * @param i the searching motor number
+     */
+    void SearchIndex(int i);
+
+    /**
      * @brief Start the calibration waiting time by setting
      * gains to zero and enable index compensation.
      */
-    void SwitchToWaitingTime();
+    void SwitchToWaiting();
 };
 
 }  // namespace odri_control_interface

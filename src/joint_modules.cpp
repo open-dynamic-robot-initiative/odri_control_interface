@@ -227,6 +227,11 @@ void JointModules::EnableIndexOffsetCompensation()
     }
 }
 
+void JointModules::EnableIndexOffsetCompensation(int i)
+{
+    motors_[i]->set_enable_index_offset_compensation(true);
+}
+
 const VectorXb& JointModules::HasIndexBeenDetected()
 {
     return index_been_detected_;

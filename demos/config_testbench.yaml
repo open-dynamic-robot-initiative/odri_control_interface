@@ -27,6 +27,8 @@ joint_calibrator:
     position_offsets: [
         2.18667, -0.889898
     ]
+    calib_order: [1, 1]
+    calib_pos: [0.78, 0.78]
     Kp: 0.125
     Kd: 0.0025
     T: 2.5
