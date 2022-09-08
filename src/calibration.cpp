@@ -115,6 +115,11 @@ void JointCalibrator::UpdatePositionOffsets(ConstRefVectorXd position_offsets)
     position_offsets_ = position_offsets;
 }
 
+const VectorXd& JointCalibrator::GetPositionOffsets()
+{
+    return position_offsets_;
+}
+
 const double& JointCalibrator::dt()
 {
     return dt_;

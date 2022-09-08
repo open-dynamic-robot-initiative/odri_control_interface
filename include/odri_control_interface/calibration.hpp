@@ -86,6 +86,11 @@ public:
     void UpdatePositionOffsets(ConstRefVectorXd position_offsets);
 
     /**
+     * Return the joint position offsets.
+     */
+    const VectorXd& GetPositionOffsets();
+
+    /**
      * Return the dt used by the joint calibrator.
      */
     const double& dt();
