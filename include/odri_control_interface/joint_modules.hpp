@@ -28,7 +28,7 @@ namespace odri_control_interface
  */
 class JointModules
 {
-public:
+protected:
     std::shared_ptr<MasterBoardInterface> robot_if_;
     std::vector<Motor*> motors_;
 

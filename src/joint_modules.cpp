@@ -28,7 +28,12 @@ JointModules::JointModules(
       lower_joint_limits_(lower_joint_limits),
       upper_joint_limits_(upper_joint_limits),
       max_joint_velocities_(max_joint_velocities),
-      check_joint_limits_(true)
+      check_joint_limits_(true),
+      upper_joint_limits_counter_(0),
+      lower_joint_limits_counter_(0),
+      velocity_joint_limits_counter_(0),
+      motor_drivers_error_counter(0)
+
 {
     n_ = static_cast<int>(motor_numbers.size());
     nd_ = (n_ + 1) / 2;
