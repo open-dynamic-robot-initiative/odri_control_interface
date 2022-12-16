@@ -53,10 +53,8 @@ add_project_dependency(master_board_sdk REQUIRED)
 
 # Set component to fetch from boost Get the python interface for the bindings
 if(BUILD_PYTHON_INTERFACE)
-  findpython(REQUIRED)
-  search_for_boost_python(REQUIRED)
-  add_project_dependency(eigenpy 2.5.0 REQUIRED PKG_CONFIG_REQUIRES
-                         "eigenpy >= 2.5.0")
+  add_project_dependency(eigenpy 2.7.10 REQUIRED PKG_CONFIG_REQUIRES
+                         "eigenpy >= 2.7.10")
 endif(BUILD_PYTHON_INTERFACE)
 
 # ----------------------------------------------------
@@ -67,7 +65,7 @@ endif(BUILD_PYTHON_INTERFACE)
 set(ODRI_CONTROL_INTERFACE_SRC src/joint_modules.cpp src/imu.cpp src/robot.cpp
                                src/calibration.cpp src/utils.cpp)
 add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
-target_link_libraries(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} yaml-cpp)
 target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 target_include_directories(
