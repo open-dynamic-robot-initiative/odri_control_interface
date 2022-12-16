@@ -14,6 +14,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <stdexcept>
+#include <memory>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"

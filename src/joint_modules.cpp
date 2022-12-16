@@ -28,7 +28,12 @@ JointModules::JointModules(
       lower_joint_limits_(lower_joint_limits),
       upper_joint_limits_(upper_joint_limits),
       max_joint_velocities_(max_joint_velocities),
-      check_joint_limits_(true)
+      check_joint_limits_(true),
+      upper_joint_limits_counter_(0),
+      lower_joint_limits_counter_(0),
+      velocity_joint_limits_counter_(0),
+      motor_drivers_error_counter(0)
+
 {
     n_ = static_cast<int>(motor_numbers.size());
     nd_ = (n_ + 1) / 2;
@@ -227,6 +232,11 @@ void JointModules::EnableIndexOffsetCompensation()
     }
 }
 
+void JointModules::EnableIndexOffsetCompensation(int i)
+{
+    motors_[i]->set_enable_index_offset_compensation(true);
+}
+
 const VectorXb& JointModules::HasIndexBeenDetected()
 {
     return index_been_detected_;
@@ -417,6 +427,9 @@ bool JointModules::HasError()
                         break;
                     case UD_SENSOR_STATUS_ERROR_ENCODER2:
                         msg_out_ << "Encoder B error";
+                        break;
+                    case UD_SENSOR_STATUS_CRC_ERROR:
+                        msg_out_ << "CRC error in SPI transaction";
                         break;
                     default:
                         msg_out_ << "Other error (" << robot_if_->motor_drivers[i].error_code << ")";

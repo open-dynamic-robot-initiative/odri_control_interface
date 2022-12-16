@@ -21,8 +21,7 @@ Robot::Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
              const std::shared_ptr<Powerboard>& powerboard,
              const std::shared_ptr<JointCalibrator>& calibrator)
     : robot_if(robot_if), joints(joint_modules), imu(imu),
-      powerboard(powerboard), calibrator(calibrator),
-      saw_error_(false)
+      powerboard(powerboard), calibrator(calibrator), timeout_counter_(0), saw_error_(false)
 {
     last_time_ = std::chrono::system_clock::now();
 }

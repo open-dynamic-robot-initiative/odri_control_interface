@@ -104,7 +104,9 @@ joint_offsets = np.array(
 )
 sdir = oci.CalibrationMethod.positive
 joint_calibrator = oci.JointCalibrator(
-    joints, 12 * [sdir], joint_offsets, 5.0 / 20.0, 0.05 / 20.0, 2.0, 0.001
+    joints, 12 * [sdir], joint_offsets,
+    np.zeros(12, dtype=int), np.zeros(12),
+    5.0 / 20.0, 0.05 / 20.0, 2.0, 0.001
 )
 
 c = 0
