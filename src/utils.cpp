@@ -149,7 +149,7 @@ std::shared_ptr<IMU> IMUFromYaml(std::shared_ptr<MasterBoardInterface> robot_if,
     orientation_vector_vec.resize(4);
     if (orientation_vector.size() != 4)
     {
-        throw std::runtime_error("Rotate vector not of size 3.");
+        throw std::runtime_error("Orientation vector not of size 4.");
     }
     for (int i = 0; i < 4; i++)
     {
