@@ -428,9 +428,11 @@ bool JointModules::HasError()
                     case UD_SENSOR_STATUS_ERROR_ENCODER2:
                         msg_out_ << "Encoder B error";
                         break;
+                    /*
                     case UD_SENSOR_STATUS_CRC_ERROR:
                         msg_out_ << "CRC error in SPI transaction";
                         break;
+                    */
                     default:
                         msg_out_ << "Other error (" << robot_if_->motor_drivers[i].error_code << ")";
                         break;
