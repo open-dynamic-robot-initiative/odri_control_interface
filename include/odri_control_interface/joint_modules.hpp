@@ -66,9 +66,9 @@ protected:
 public:
     JointModules(const std::shared_ptr<MasterBoardInterface>& robot_if,
                  ConstRefVectorXi motor_numbers,
-                 double motor_constants,
-                 double gear_ratios,
-                 double max_currents,
+                 ConstRefVectorXd motor_constants,
+                 ConstRefVectorXd gear_ratios,
+                 ConstRefVectorXd max_currents,
                  ConstRefVectorXb reverse_polarities,
                  ConstRefVectorXd lower_joint_limits,
                  ConstRefVectorXd upper_joint_limits,
@@ -85,7 +85,7 @@ public:
     void SetDesiredVelocities(ConstRefVectorXd desired_velocities);
     void SetPositionGains(ConstRefVectorXd desired_gains);
     void SetVelocityGains(ConstRefVectorXd desired_gains);
-    void SetMaximumCurrents(double max_currents);
+    void SetMaximumCurrents(ConstRefVectorXd max_currents);
 
     /**
      * @brief Disables the position and velocity gains by setting them to zero.
