@@ -92,6 +92,8 @@ JointModules::JointModules(
     SetMaximumCurrents(max_currents);
 }
 
+JointModules::~JointModules() {}
+
 const VectorXd& JointModules::GetGearRatios()
 {
     return gear_ratios_;

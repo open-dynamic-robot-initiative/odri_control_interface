@@ -74,6 +74,7 @@ public:
                  ConstRefVectorXd upper_joint_limits,
                  double max_joint_velocities,
                  double safety_damping);
+    virtual ~JointModules();
 
     void Enable();
 
