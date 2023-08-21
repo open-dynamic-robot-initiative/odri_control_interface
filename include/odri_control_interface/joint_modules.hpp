@@ -13,16 +13,119 @@
 
 #include <unistd.h>
 #include <iostream>
-#include <vector>
 #include <memory>
+#include <vector>
+
+#include <fmt/format.h>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
 
 #include <odri_control_interface/common.hpp>
+#include <odri_control_interface/error.hpp>
 
 namespace odri_control_interface
 {
+class JointPositionLimitError : public Error
+{
+public:
+    const size_t joint_index;
+    const double position;
+    const double lower_limit;
+    const double upper_limit;
+
+    JointPositionLimitError(size_t joint_index,
+                            double position,
+                            double lower_limit,
+                            double upper_limit)
+        : joint_index(joint_index),
+          position(position),
+          lower_limit(lower_limit),
+          upper_limit(upper_limit)
+    {
+    }
+
+    std::string get_message() const override
+    {
+        return fmt::format(
+            "Joint #{} has position {} which exceeds limits ({} <-> {})",
+            joint_index,
+            position,
+            lower_limit,
+            upper_limit);
+    }
+};
+
+class JointVelocityLimitError : public Error
+{
+public:
+    const size_t joint_index;
+    const double velocity;
+    const double limit;
+
+    JointVelocityLimitError(size_t joint_index, double velocity, double limit)
+        : joint_index(joint_index), velocity(velocity), limit(limit)
+    {
+    }
+
+    std::string get_message() const override
+    {
+        return fmt::format("Joint #{} has velocity {} which exceeds limit ({})",
+                           joint_index,
+                           velocity,
+                           limit);
+    }
+};
+
+class MotorDriverError : public Error
+{
+public:
+    const int motor_driver_index;
+    const int error_code;
+
+    MotorDriverError(int motor_driver_index, int error_code)
+        : motor_driver_index(motor_driver_index), error_code(error_code)
+    {
+    }
+
+    std::string get_message() const override
+    {
+        std::string msg;
+        switch (error_code)
+        {
+            case UD_SENSOR_STATUS_ERROR_ENCODER1:
+                msg = "Encoder A error";
+                break;
+            case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
+                msg = "SPI Receiver timeout";
+                break;
+            case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
+                msg = "Critical temperature";
+                break;
+            case UD_SENSOR_STATUS_ERROR_POSCONV:
+                msg = "SpinTAC Positon module";
+                break;
+            case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
+                msg = "Position rollover occured";
+                break;
+            case UD_SENSOR_STATUS_ERROR_ENCODER2:
+                msg = "Encoder B error";
+                break;
+            /*
+            case UD_SENSOR_STATUS_CRC_ERROR:
+                msg = "CRC error in SPI transaction";
+                break;
+            */
+            default:
+                msg = "Other error";
+                break;
+        }
+
+        return fmt::format(
+            "Motor Driver #{}: [{}] {}", motor_driver_index, error_code, msg);
+    }
+};
+
 /**
  * @brief Class abstracting the blmc motors to modules.
  */
@@ -135,6 +238,8 @@ public:
      * @brief Checks for errors and prints them
      */
     bool HasError();
+
+    std::vector<Error::Ptr> GetErrors();
 
     void PrintVector(ConstRefVectorXd vector);
 

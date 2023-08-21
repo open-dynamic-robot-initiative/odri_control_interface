@@ -13,13 +13,15 @@
 
 #include <math.h>
 #include <unistd.h>
-#include <stdexcept>
 #include <memory>
+#include <stdexcept>
+#include <vector>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
 
 #include <odri_control_interface/common.hpp>
+#include <odri_control_interface/error.hpp>
 
 namespace odri_control_interface
 {
@@ -53,6 +55,10 @@ public:
     bool HasError()
     {
         return false;
+    }
+    std::vector<Error::Ptr> GetErrors() const
+    {
+        return {};
     }
 
     void ParseSensorData();

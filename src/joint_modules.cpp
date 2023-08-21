@@ -92,7 +92,9 @@ JointModules::JointModules(
     SetMaximumCurrents(max_currents);
 }
 
-JointModules::~JointModules() {}
+JointModules::~JointModules()
+{
+}
 
 const VectorXd& JointModules::GetGearRatios()
 {
@@ -436,7 +438,9 @@ bool JointModules::HasError()
                         break;
                     */
                     default:
-                        msg_out_ << "Other error (" << robot_if_->motor_drivers[i].error_code << ")";
+                        msg_out_ << "Other error ("
+                                 << robot_if_->motor_drivers[i].error_code
+                                 << ")";
                         break;
                 }
                 msg_out_ << std::endl;
@@ -445,6 +449,55 @@ bool JointModules::HasError()
         }
     }
     return has_error;
+}
+
+std::vector<Error::Ptr> JointModules::GetErrors()
+{
+    std::vector<Error::Ptr> errors;
+
+    if (check_joint_limits_)
+    {
+        // Check for lower and upper joint limits.
+        for (int i = 0; i < n_; i++)
+        {
+            if (positions_(i) < lower_joint_limits_(i) ||
+                positions_(i) > upper_joint_limits_(i))
+            {
+                errors.push_back(std::make_shared<JointPositionLimitError>(
+                    i,
+                    positions_(i),
+                    lower_joint_limits_(i),
+                    upper_joint_limits_(i)));
+            }
+        }
+    }
+
+    // Check for joint velocities limits.
+    // Check the velocity only after the motors report ready to avoid
+    // fast motions during the initialization phase detected as error.
+    if (IsReady())
+    {
+        for (int i = 0; i < n_; i++)
+        {
+            if (std::abs(velocities_[i]) > max_joint_velocities_)
+            {
+                errors.push_back(std::make_shared<JointVelocityLimitError>(
+                    i, velocities_[i], max_joint_velocities_));
+            }
+        }
+    }
+
+    // Check the status of the cards.
+    for (int i = 0; i < nd_; i++)
+    {
+        if (robot_if_->motor_drivers[i].error_code != 0)
+        {
+            errors.push_back(std::make_shared<MotorDriverError>(
+                i, robot_if_->motor_drivers[i].error_code));
+        }
+    }
+
+    return errors;
 }
 
 void JointModules::PrintVector(ConstRefVectorXd vector)
