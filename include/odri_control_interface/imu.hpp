@@ -56,9 +56,9 @@ public:
     {
         return false;
     }
-    std::vector<Error::Ptr> GetErrors() const
+    Error::Ptr GetError() const
     {
-        return {};
+        return nullptr;
     }
 
     void ParseSensorData();

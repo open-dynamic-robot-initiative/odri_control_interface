@@ -29,12 +29,16 @@ namespace odri_control_interface
 class JointPositionLimitError : public Error
 {
 public:
-    const size_t joint_index;
-    const double position;
-    const double lower_limit;
-    const double upper_limit;
+    int joint_index = -1;
+    double position = 0.0;
+    double lower_limit = 0.0;
+    double upper_limit = 0.0;
 
-    JointPositionLimitError(size_t joint_index,
+    JointPositionLimitError()
+    {
+    }
+
+    JointPositionLimitError(int joint_index,
                             double position,
                             double lower_limit,
                             double upper_limit)
@@ -59,11 +63,15 @@ public:
 class JointVelocityLimitError : public Error
 {
 public:
-    const size_t joint_index;
-    const double velocity;
-    const double limit;
+    int joint_index = -1;
+    double velocity = 0.0;
+    double limit = 0.0;
 
-    JointVelocityLimitError(size_t joint_index, double velocity, double limit)
+    JointVelocityLimitError()
+    {
+    }
+
+    JointVelocityLimitError(int joint_index, double velocity, double limit)
         : joint_index(joint_index), velocity(velocity), limit(limit)
     {
     }
@@ -80,8 +88,12 @@ public:
 class MotorDriverError : public Error
 {
 public:
-    const int motor_driver_index;
-    const int error_code;
+    int motor_driver_index = -1;
+    int error_code = -1;
+
+    MotorDriverError()
+    {
+    }
 
     MotorDriverError(int motor_driver_index, int error_code)
         : motor_driver_index(motor_driver_index), error_code(error_code)
@@ -166,6 +178,11 @@ protected:
 
     std::ostream& msg_out_ = std::cout;
 
+    // instances for all error cases (so no dynamic memory allocation is needed)
+    std::shared_ptr<MotorDriverError> motor_driver_error_;
+    std::shared_ptr<JointPositionLimitError> joint_pos_limit_error_;
+    std::shared_ptr<JointVelocityLimitError> joint_vel_limit_error_;
+
 public:
     JointModules(const std::shared_ptr<MasterBoardInterface>& robot_if,
                  ConstRefVectorXi motor_numbers,
@@ -239,7 +256,15 @@ public:
      */
     bool HasError();
 
-    std::vector<Error::Ptr> GetErrors();
+    /**
+     * @brief Get error if there is one.
+     *
+     * If there are multiple errors, only the first one that is detected is
+     * returned.
+     *
+     * @return Error instance or nullptr if no error is detected.
+     */
+    Error::ConstPtr GetError();
 
     void PrintVector(ConstRefVectorXd vector);
 

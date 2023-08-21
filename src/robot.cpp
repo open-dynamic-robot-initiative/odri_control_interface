@@ -9,7 +9,7 @@
  * @brief Robot class orchistrating the devices.
  */
 
-#include <stdexcept>   // for exception, runtime_error, out_of_range
+#include <stdexcept>  // for exception, runtime_error, out_of_range
 
 #include "odri_control_interface/robot.hpp"
 
@@ -19,9 +19,15 @@ Robot::Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
              const std::shared_ptr<JointModules>& joint_modules,
              const std::shared_ptr<IMU>& imu,
              const std::shared_ptr<JointCalibrator>& calibrator)
-    : robot_if(robot_if), joints(joint_modules), imu(imu),
-      calibrator(calibrator), timeout_counter_(0), saw_error_(false)
+    : robot_if(robot_if),
+      joints(joint_modules),
+      imu(imu),
+      calibrator(calibrator),
+      timeout_counter_(0),
+      saw_error_(false)
 {
+    communication_timeout_error_ =
+        std::make_shared<CommunicationTimeoutError>();
     last_time_ = std::chrono::system_clock::now();
 }
 
@@ -183,6 +189,7 @@ void Robot::ReportError(const std::string& error)
 {
     msg_out_ << "ERROR: " << error << std::endl;
     ReportError();
+    *reported_error_ = ReportedError(error);
 }
 
 /**
@@ -192,6 +199,9 @@ void Robot::ReportError(const std::string& error)
 void Robot::ReportError()
 {
     saw_error_ = true;
+    has_reported_error_ = true;
+    // FIXME this is no good implementation
+    *reported_error_ = ReportedError("unknown reported error");
 }
 
 /**
@@ -216,9 +226,12 @@ bool Robot::WaitUntilReady()
                 .count() > 0.001)
         {
             last += std::chrono::milliseconds(1);
-            if (!IsAckMsgReceived()) {
+            if (!IsAckMsgReceived())
+            {
                 SendInit();
-            } else {
+            }
+            else
+            {
                 ParseSensorData();
                 SendCommand();
             }
@@ -229,11 +242,14 @@ bool Robot::WaitUntilReady()
         }
     }
 
-    if (HasError()) {
+    if (HasError())
+    {
         if (robot_if->IsTimeout())
         {
             throw std::runtime_error("Timeout during Robot::WaitUntilReady().");
-        } else {
+        }
+        else
+        {
             throw std::runtime_error("Error during Robot::WaitUntilReady().");
         }
     }
@@ -275,6 +291,34 @@ bool Robot::HasError()
     }
 
     return saw_error_;
+}
+
+Error::ConstPtr Robot::GetError()
+{
+    Error::ConstPtr error;
+
+    if (has_reported_error_)
+    {
+        return reported_error_;
+    }
+
+    if ((error = joints->GetError()))
+    {
+        return error;
+    }
+
+    if (imu && (error = imu->GetError()))
+    {
+        return error;
+    }
+
+    if (robot_if->IsTimeout())
+    {
+        return communication_timeout_error_;
+    }
+
+    // if reached here, there is no error
+    return nullptr;
 }
 
 }  // namespace odri_control_interface

@@ -35,6 +35,11 @@ JointModules::JointModules(
       motor_drivers_error_counter(0)
 
 {
+    // allocate memory for error objects
+    motor_driver_error_ = std::make_shared<MotorDriverError>();
+    joint_pos_limit_error_ = std::make_shared<JointPositionLimitError>();
+    joint_vel_limit_error_ = std::make_shared<JointVelocityLimitError>();
+
     n_ = static_cast<int>(motor_numbers.size());
     nd_ = (n_ + 1) / 2;
 
@@ -451,9 +456,18 @@ bool JointModules::HasError()
     return has_error;
 }
 
-std::vector<Error::Ptr> JointModules::GetErrors()
+Error::ConstPtr JointModules::GetError()
 {
-    std::vector<Error::Ptr> errors;
+    // Check the status of the cards.
+    for (int i = 0; i < nd_; i++)
+    {
+        if (robot_if_->motor_drivers[i].error_code != 0)
+        {
+            *motor_driver_error_ =
+                MotorDriverError(i, robot_if_->motor_drivers[i].error_code);
+            return motor_driver_error_;
+        }
+    }
 
     if (check_joint_limits_)
     {
@@ -463,11 +477,12 @@ std::vector<Error::Ptr> JointModules::GetErrors()
             if (positions_(i) < lower_joint_limits_(i) ||
                 positions_(i) > upper_joint_limits_(i))
             {
-                errors.push_back(std::make_shared<JointPositionLimitError>(
-                    i,
-                    positions_(i),
-                    lower_joint_limits_(i),
-                    upper_joint_limits_(i)));
+                *joint_pos_limit_error_ =
+                    JointPositionLimitError(i,
+                                            positions_(i),
+                                            lower_joint_limits_(i),
+                                            upper_joint_limits_(i));
+                return joint_pos_limit_error_;
             }
         }
     }
@@ -481,23 +496,14 @@ std::vector<Error::Ptr> JointModules::GetErrors()
         {
             if (std::abs(velocities_[i]) > max_joint_velocities_)
             {
-                errors.push_back(std::make_shared<JointVelocityLimitError>(
-                    i, velocities_[i], max_joint_velocities_));
+                *joint_vel_limit_error_ = JointVelocityLimitError(
+                    i, velocities_[i], max_joint_velocities_);
+                return joint_vel_limit_error_;
             }
         }
     }
 
-    // Check the status of the cards.
-    for (int i = 0; i < nd_; i++)
-    {
-        if (robot_if_->motor_drivers[i].error_code != 0)
-        {
-            errors.push_back(std::make_shared<MotorDriverError>(
-                i, robot_if_->motor_drivers[i].error_code));
-        }
-    }
-
-    return errors;
+    return nullptr;
 }
 
 void JointModules::PrintVector(ConstRefVectorXd vector)

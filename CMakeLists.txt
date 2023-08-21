@@ -49,6 +49,7 @@ check_minimal_cxx_standard(11 ENFORCE)
 
 add_project_dependency(yaml-cpp CONFIG REQUIRED)
 add_project_dependency(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
+add_project_dependency(fmt REQUIRED)
 add_project_dependency(master_board_sdk REQUIRED)
 
 # Set component to fetch from boost Get the python interface for the bindings
@@ -68,6 +69,7 @@ add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
 target_link_libraries(${PROJECT_NAME} yaml-cpp)
 target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} fmt::fmt)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                          $<INSTALL_INTERFACE:include>)
