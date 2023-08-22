@@ -275,9 +275,22 @@ bool Robot::IsTimeout()
  */
 bool Robot::HasError()
 {
-    return GetError() != nullptr;
+    saw_error_ |= joints->HasError();
+    if (imu)
+    {
+        saw_error_ |= imu->HasError();
+    }
 
-    // TODO still print error here?
+    if (robot_if->IsTimeout())
+    {
+        if (timeout_counter_++ % 2000 == 0)
+        {
+            msg_out_ << "ERROR: Robot communication timedout." << std::endl;
+        }
+        saw_error_ = true;
+    }
+
+    return saw_error_;
 }
 
 Error::ConstPtr Robot::GetError()
