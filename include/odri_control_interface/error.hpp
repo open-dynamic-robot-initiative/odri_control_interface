@@ -9,6 +9,14 @@
 #include <memory>
 #include <string>
 
+#include <array>
+#include <string_view>
+#include <utility>
+#include <variant>
+#include <vector>
+
+#include <fmt/format.h>
+
 namespace odri_control_interface
 {
 /**
@@ -23,5 +31,68 @@ public:
     //! Get a human-readable error message.
     virtual std::string get_message() const = 0;
 };
+
+// `Message` is based on https://stackoverflow.com/a/76944227/2095383
+// by Aedoro, CC BY-SA 4.0
+
+using MessageParam = std::variant<int, double>;
+
+// template<typename T>
+// concept MessageType = std::is_constructible_v<MessageParam, T>;
+
+// FIXME: rename variables and maybe clean up a bit
+// FIXME: can I get the argument limit working?
+// FIXME: write some doxygen
+// FIXME: actually use it instead of the classes based on Error.  remove the
+//        latter
+template <int MAX_PARAM>
+class Message
+{
+public:
+    template <typename... Args>
+    // TODO limit not working
+    //, std::enable_if_t<(sizeof...(Args) <= MAX_PARAM)>>
+    Message(std::string_view format, Args... args)
+        : m_format(format), m_nr_params(sizeof...(args)), m_params{args...}
+    {
+    }
+
+    auto get_message() const
+    {
+        // constructing an argument list for fmt::format from an array is a bit
+        // of a pain... based on https://stackoverflow.com/a/59744762
+        // NOTE: for newer versions of fmt there are better options, see
+        // https://stackoverflow.com/a/71794255 and maybe
+        // https://stackoverflow.com/a/48877448
+
+        using fmt_ctx = fmt::format_context;
+        std::vector<fmt::basic_format_arg<fmt_ctx>> fmt_args;
+        for (auto const& a : m_params)
+        {
+            if (std::holds_alternative<double>(a))
+            {
+                fmt_args.push_back(
+                    fmt::internal::make_arg<fmt_ctx>(std::get<double>(a)));
+            }
+            else if (std::holds_alternative<int>(a))
+            {
+                fmt_args.push_back(
+                    fmt::internal::make_arg<fmt_ctx>(std::get<int>(a)));
+            }
+        }
+
+        return fmt::vformat(
+            m_format,
+            fmt::basic_format_args<fmt_ctx>(fmt_args.data(), fmt_args.size()));
+    }
+
+private:
+    std::string_view m_format;
+    size_t m_nr_params;
+    std::array<MessageParam, MAX_PARAM> m_params;
+};
+
+// Allow up to three arguments for error messages (increase number if needed)
+using ErrorMessage = Message<3>;
 
 }  // namespace odri_control_interface
