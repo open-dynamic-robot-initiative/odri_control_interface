@@ -43,6 +43,9 @@ compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
 check_minimal_cxx_standard(17 ENFORCE)
 
+# stop of first error (can make debugging much easier)
+add_definitions(-Wfatal-errors)
+
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
