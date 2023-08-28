@@ -34,11 +34,11 @@ public:
 
 // `Message` is based on https://stackoverflow.com/a/76944227/2095383
 // by Aedoro, CC BY-SA 4.0
+// NOTE: below code is adapted to work with C++17.  If this package ever gets
+// updated to C++20, it might be worth revisiting this and put back the
+// concept/requires-part of the answer linked above.
 
 using MessageParam = std::variant<int, double>;
-
-// template<typename T>
-// concept MessageType = std::is_constructible_v<MessageParam, T>;
 
 // FIXME: rename variables and maybe clean up a bit
 // FIXME: can I get the argument limit working?
@@ -49,9 +49,11 @@ template <int MAX_PARAM>
 class Message
 {
 public:
-    template <typename... Args>
-    // TODO limit not working
-    //, std::enable_if_t<(sizeof...(Args) <= MAX_PARAM)>>
+    template <typename... Args,
+             // ensure number or arguments does not exceed MAX_PARAM
+             // https://stackoverflow.com/a/39621288/2095383
+             // NOTE: With C++20, it would be better to use `requires`
+              std::enable_if_t<(sizeof...(Args) <= MAX_PARAM)>* = nullptr>
     Message(std::string_view format, Args... args)
         : m_format(format), m_nr_params(sizeof...(args)), m_params{args...}
     {
