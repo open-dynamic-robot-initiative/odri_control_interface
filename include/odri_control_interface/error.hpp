@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Real-time save error message.
  * @copyright 2020 New York University & Max Planck Gesellschaft.
  * @license BSD-3-Clause
  */
@@ -19,19 +19,6 @@
 
 namespace odri_control_interface
 {
-/**
- * @brief Base class for errors.
- */
-class Error
-{
-public:
-    typedef std::shared_ptr<Error> Ptr;
-    typedef std::shared_ptr<const Error> ConstPtr;
-
-    //! Get a human-readable error message.
-    virtual std::string get_message() const = 0;
-};
-
 // `Message` is based on https://stackoverflow.com/a/76944227/2095383
 // by Aedoro, CC BY-SA 4.0
 // NOTE: below code is adapted to work with C++17.  If this package ever gets
