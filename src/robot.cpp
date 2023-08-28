@@ -26,8 +26,6 @@ Robot::Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
       timeout_counter_(0),
       saw_error_(false)
 {
-    communication_timeout_error_ =
-        std::make_shared<CommunicationTimeoutError>();
     last_time_ = std::chrono::system_clock::now();
 }
 
@@ -187,9 +185,9 @@ bool Robot::RunCalibration(VectorXd const& target_positions)
  */
 void Robot::ReportError(const std::string& error)
 {
+    saw_error_ = true;
     msg_out_ << "ERROR: " << error << std::endl;
-    ReportError();
-    *reported_error_ = ReportedError(error);
+    reported_error_ = ErrorMessage(error);
 }
 
 /**
@@ -198,10 +196,7 @@ void Robot::ReportError(const std::string& error)
  */
 void Robot::ReportError()
 {
-    saw_error_ = true;
-    has_reported_error_ = true;
-    // FIXME this is no good implementation
-    *reported_error_ = ReportedError("unknown reported error");
+    ReportError("Unspecified reported error");
 }
 
 /**
@@ -275,6 +270,8 @@ bool Robot::IsTimeout()
  */
 bool Robot::HasError()
 {
+    // TODO make this deprecated in favour of GetError?
+
     saw_error_ |= joints->HasError();
     if (imu)
     {
@@ -293,11 +290,10 @@ bool Robot::HasError()
     return saw_error_;
 }
 
-Error::ConstPtr Robot::GetError()
+std::optional<ErrorMessage> Robot::GetError()
 {
-    Error::ConstPtr error;
-
-    if (has_reported_error_)
+    std::optional<ErrorMessage> error;
+    if (reported_error_)
     {
         return reported_error_;
     }
@@ -314,11 +310,11 @@ Error::ConstPtr Robot::GetError()
 
     if (robot_if->IsTimeout())
     {
-        return communication_timeout_error_;
+        return ErrorMessage("Robot communication timeout.");
     }
 
     // if reached here, there is no error
-    return nullptr;
+    return std::nullopt;
 }
 
 }  // namespace odri_control_interface

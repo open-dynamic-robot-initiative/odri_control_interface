@@ -35,11 +35,6 @@ JointModules::JointModules(
       motor_drivers_error_counter(0)
 
 {
-    // allocate memory for error objects
-    motor_driver_error_ = std::make_shared<MotorDriverError>();
-    joint_pos_limit_error_ = std::make_shared<JointPositionLimitError>();
-    joint_vel_limit_error_ = std::make_shared<JointVelocityLimitError>();
-
     n_ = static_cast<int>(motor_numbers.size());
     nd_ = (n_ + 1) / 2;
 
@@ -456,16 +451,48 @@ bool JointModules::HasError()
     return has_error;
 }
 
-Error::ConstPtr JointModules::GetError()
+std::optional<ErrorMessage> JointModules::GetError()
 {
     // Check the status of the cards.
     for (int i = 0; i < nd_; i++)
     {
         if (robot_if_->motor_drivers[i].error_code != 0)
         {
-            *motor_driver_error_ =
-                MotorDriverError(i, robot_if_->motor_drivers[i].error_code);
-            return motor_driver_error_;
+            // TODO is this good implementation?
+            std::string_view msg;
+            switch (robot_if_->motor_drivers[i].error_code)
+            {
+                case UD_SENSOR_STATUS_ERROR_ENCODER1:
+                    msg = "Encoder A error";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
+                    msg = "SPI Receiver timeout";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
+                    msg = "Critical temperature";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_POSCONV:
+                    msg = "SpinTAC Positon module";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
+                    msg = "Position rollover occured";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_ENCODER2:
+                    msg = "Encoder B error";
+                    break;
+                /*
+                case UD_SENSOR_STATUS_CRC_ERROR:
+                    msg = "CRC error in SPI transaction";
+                    break;
+                */
+                default:
+                    msg = "Other error";
+                    break;
+            }
+            return ErrorMessage("Motor Driver #{}: [{}] {}",
+                                i,
+                                robot_if_->motor_drivers[i].error_code,
+                                msg);
         }
     }
 
@@ -474,15 +501,23 @@ Error::ConstPtr JointModules::GetError()
         // Check for lower and upper joint limits.
         for (int i = 0; i < n_; i++)
         {
-            if (positions_(i) < lower_joint_limits_(i) ||
-                positions_(i) > upper_joint_limits_(i))
+            if (positions_(i) < lower_joint_limits_(i))
             {
-                *joint_pos_limit_error_ =
-                    JointPositionLimitError(i,
-                                            positions_(i),
-                                            lower_joint_limits_(i),
-                                            upper_joint_limits_(i));
-                return joint_pos_limit_error_;
+                return ErrorMessage(
+                    "Position of joint #{} exceeds lower limit.  Actual: {}.  "
+                    "Limit: {}",
+                    i,
+                    positions_(i),
+                    lower_joint_limits_(i));
+            }
+            if (positions_(i) > upper_joint_limits_(i))
+            {
+                return ErrorMessage(
+                    "Position of joint #{} exceeds upper limit.  Actual: {}.  "
+                    "Limit: {}",
+                    i,
+                    positions_(i),
+                    upper_joint_limits_(i));
             }
         }
     }
@@ -496,14 +531,16 @@ Error::ConstPtr JointModules::GetError()
         {
             if (std::abs(velocities_[i]) > max_joint_velocities_)
             {
-                *joint_vel_limit_error_ = JointVelocityLimitError(
-                    i, velocities_[i], max_joint_velocities_);
-                return joint_vel_limit_error_;
+                return ErrorMessage(
+                    "Joint #{} has velocity {} which exceeds limit ({})",
+                    i,
+                    velocities_[i],
+                    max_joint_velocities_);
             }
         }
     }
 
-    return nullptr;
+    return std::nullopt;
 }
 
 void JointModules::PrintVector(ConstRefVectorXd vector)

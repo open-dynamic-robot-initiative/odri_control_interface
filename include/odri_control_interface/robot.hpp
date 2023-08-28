@@ -12,6 +12,7 @@
 #pragma once
 
 #include <unistd.h>
+#include <optional>
 
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
@@ -22,38 +23,6 @@
 
 namespace odri_control_interface
 {
-class CommunicationTimeoutError : public Error
-{
-public:
-    CommunicationTimeoutError()
-    {
-    }
-
-    std::string get_message() const override
-    {
-        return "Robot communication timeout.";
-    }
-};
-
-class ReportedError : public Error
-{
-public:
-    std::string msg;
-
-    ReportedError()
-    {
-    }
-
-    ReportedError(const std::string& msg) : msg(msg)
-    {
-    }
-
-    std::string get_message() const override
-    {
-        return msg;
-    }
-};
-
 /**
  * @brief Class abstracting the blmc motors to modules.
  */
@@ -71,9 +40,7 @@ protected:
     std::ostream& msg_out_ = std::cout;
     std::chrono::time_point<std::chrono::system_clock> last_time_;
 
-    bool has_reported_error_ = false;
-    CommunicationTimeoutError::Ptr communication_timeout_error_;
-    ReportedError::Ptr reported_error_;
+    std::optional<ErrorMessage> reported_error_;
 
 public:
     Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
@@ -189,9 +156,9 @@ public:
      * If there are multiple errors, only the first one that is detected is
      * returned.
      *
-     * @return Error instance or nullptr if no error is detected.
+     * @return Error message if there is an error.
      */
-    Error::ConstPtr GetError();
+    std::optional<ErrorMessage> GetError();
 
     /**
      * @brief Way to report an external error. Causes the robot to go into

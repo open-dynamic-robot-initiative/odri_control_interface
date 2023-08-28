@@ -14,6 +14,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -56,9 +57,9 @@ public:
     {
         return false;
     }
-    Error::Ptr GetError() const
+    std::optional<ErrorMessage> GetError() const
     {
-        return nullptr;
+        return std::nullopt;
     }
 
     void ParseSensorData();

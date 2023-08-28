@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <fmt/format.h>
@@ -26,40 +27,6 @@
 
 namespace odri_control_interface
 {
-class JointPositionLimitError : public Error
-{
-public:
-    int joint_index = -1;
-    double position = 0.0;
-    double lower_limit = 0.0;
-    double upper_limit = 0.0;
-
-    JointPositionLimitError()
-    {
-    }
-
-    JointPositionLimitError(int joint_index,
-                            double position,
-                            double lower_limit,
-                            double upper_limit)
-        : joint_index(joint_index),
-          position(position),
-          lower_limit(lower_limit),
-          upper_limit(upper_limit)
-    {
-    }
-
-    std::string get_message() const override
-    {
-        return fmt::format(
-            "Joint #{} has position {} which exceeds limits ({} <-> {})",
-            joint_index,
-            position,
-            lower_limit,
-            upper_limit);
-    }
-};
-
 class JointVelocityLimitError : public Error
 {
 public:
@@ -178,11 +145,6 @@ protected:
 
     std::ostream& msg_out_ = std::cout;
 
-    // instances for all error cases (so no dynamic memory allocation is needed)
-    std::shared_ptr<MotorDriverError> motor_driver_error_;
-    std::shared_ptr<JointPositionLimitError> joint_pos_limit_error_;
-    std::shared_ptr<JointVelocityLimitError> joint_vel_limit_error_;
-
 public:
     JointModules(const std::shared_ptr<MasterBoardInterface>& robot_if,
                  ConstRefVectorXi motor_numbers,
@@ -262,9 +224,9 @@ public:
      * If there are multiple errors, only the first one that is detected is
      * returned.
      *
-     * @return Error instance or nullptr if no error is detected.
+     * @return Error message if there is an error.
      */
-    Error::ConstPtr GetError();
+    std::optional<ErrorMessage> GetError();
 
     void PrintVector(ConstRefVectorXd vector);
 
