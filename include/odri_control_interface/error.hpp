@@ -38,10 +38,7 @@ public:
 // updated to C++20, it might be worth revisiting this and put back the
 // concept/requires-part of the answer linked above.
 
-using MessageArgument = std::variant<int, double>;
-
-// FIXME: actually use it instead of the classes based on Error.  remove the
-//        latter
+using MessageArgument = std::variant<int, double, std::string_view>;
 
 /**
  * @brief Generic message class with lazy message construction.
@@ -70,9 +67,9 @@ public:
      *      convertible to MessageArgument are supported.
      */
     template <typename... Args,
-             // ensure number or arguments does not exceed MAX_ARGS
-             // https://stackoverflow.com/a/39621288
-             // NOTE: With C++20, it would be better to use `requires`
+              // ensure number or arguments does not exceed MAX_ARGS
+              // https://stackoverflow.com/a/39621288
+              // NOTE: With C++20, it would be better to use `requires`
               std::enable_if_t<(sizeof...(Args) <= MAX_ARGS)>* = nullptr>
     Message(std::string_view format, Args... args)
         : format_(format), num_args_(sizeof...(args)), args_{args...}
