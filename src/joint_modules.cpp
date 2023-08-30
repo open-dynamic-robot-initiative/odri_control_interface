@@ -499,9 +499,8 @@ std::optional<ErrorMessage> JointModules::GetError()
             if (positions_(i) < lower_joint_limits_(i))
             {
                 return ErrorMessage(
-                    "Position of joint #{} exceeds lower limit.  Actual: "
-                    "{:.3f}.  "
-                    "Limit: {:.3f}",
+                    "Joint #{} is below position limit (actual: {:.3f}, limit: "
+                    "{:.3f})",
                     i,
                     positions_(i),
                     lower_joint_limits_(i));
@@ -509,9 +508,8 @@ std::optional<ErrorMessage> JointModules::GetError()
             if (positions_(i) > upper_joint_limits_(i))
             {
                 return ErrorMessage(
-                    "Position of joint #{} exceeds upper limit.  Actual: "
-                    "{:.3f}.  "
-                    "Limit: {:.3f}",
+                    "Joint #{} is above position limit (actual: {:.3f}, limit: "
+                    "{:.3f})",
                     i,
                     positions_(i),
                     upper_joint_limits_(i));
@@ -529,8 +527,8 @@ std::optional<ErrorMessage> JointModules::GetError()
             if (std::abs(velocities_[i]) > max_joint_velocities_)
             {
                 return ErrorMessage(
-                    "Joint #{} has velocity {:.3f} which exceeds limit "
-                    "({:.3f})",
+                    "Joint {} exceeds velocity limit (actual: {:.3f}, limit: "
+                    "{:.3f})",
                     i,
                     velocities_[i],
                     max_joint_velocities_);
