@@ -472,19 +472,14 @@ std::optional<ErrorMessage> JointModules::GetError()
                     msg = "Critical temperature";
                     break;
                 case UD_SENSOR_STATUS_ERROR_POSCONV:
-                    msg = "SpinTAC Positon module";
+                    msg = "SpinTAC Position module";
                     break;
                 case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
-                    msg = "Position rollover occured";
+                    msg = "Position rollover occurred";
                     break;
                 case UD_SENSOR_STATUS_ERROR_ENCODER2:
                     msg = "Encoder B error";
                     break;
-                /*
-                case UD_SENSOR_STATUS_CRC_ERROR:
-                    msg = "CRC error in SPI transaction";
-                    break;
-                */
                 default:
                     msg = "Other error";
                     break;
