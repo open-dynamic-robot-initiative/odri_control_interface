@@ -336,7 +336,7 @@ bool JointModules::HasError()
     if (check_joint_limits_)
     {
         // Check for lower and upper joint limits.
-        for (int i = 0; i < n_; i++)
+        for (int i = 0; i < num_motors_; i++)
         {
             if (positions_(i) > upper_joint_limits_(i))
             {
@@ -356,7 +356,7 @@ bool JointModules::HasError()
             }
         }
 
-        for (int i = 0; i < n_; i++)
+        for (int i = 0; i < num_motors_; i++)
         {
             if (positions_(i) < lower_joint_limits_(i))
             {
@@ -382,7 +382,7 @@ bool JointModules::HasError()
     // fast motions during the initialization phase detected as error.
     if (IsReady())
     {
-        for (int i = 0; i < n_; i++)
+        for (int i = 0; i < num_motors_; i++)
         {
             if (std::abs(velocities_[i]) > max_joint_velocities_)
             {
@@ -404,7 +404,7 @@ bool JointModules::HasError()
 
     // Check the status of the cards.
     bool print_error = false;
-    for (int i = 0; i < nd_; i++)
+    for (int i = 0; i < num_motor_drivers_; i++)
     {
         if (robot_if_->motor_drivers[i].error_code != 0)
         {
@@ -454,7 +454,7 @@ bool JointModules::HasError()
 std::optional<ErrorMessage> JointModules::GetError() const
 {
     // Check the status of the cards.
-    for (int i = 0; i < nd_; i++)
+    for (int i = 0; i < num_motor_drivers_; i++)
     {
         if (robot_if_->motor_drivers[i].error_code != 0)
         {
