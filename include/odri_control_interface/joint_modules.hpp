@@ -68,6 +68,15 @@ protected:
     std::ostream& msg_out_ = std::cout;
 
 public:
+    //! Error codes used in error messages
+    struct ErrorCodes
+    {
+        constexpr static int MOTOR_DRIVER = 1;
+        constexpr static int JOINT_POSITION_LOWER_LIMIT = 2;
+        constexpr static int JOINT_POSITION_UPPER_LIMIT = 3;
+        constexpr static int JOINT_VELOCITY_LIMIT = 4;
+    };
+
     JointModules(const std::shared_ptr<MasterBoardInterface>& robot_if,
                  ConstRefVectorXi motor_numbers,
                  double motor_constants,
