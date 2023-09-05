@@ -42,9 +42,31 @@ using MessageArgument = std::variant<int, double, std::string_view>;
  * string.
  */
 template <int MAX_ARGS>
-class Message
+class _ErrorMessage
 {
 public:
+    /**
+     * @brief Constructor
+     *
+     * @param error_code Application-specific error code.
+     * @param format Format string with '{}' placeholders (will be processed
+     *      with the fmt library, see there for more information).
+     * @param args Arguments for the format string.  Only types that are
+     *      convertible to MessageArgument are supported.
+     */
+    template <typename... Args,
+              // ensure number or arguments does not exceed MAX_ARGS
+              // https://stackoverflow.com/a/39621288
+              // NOTE: With C++20, it would be better to use `requires`
+              std::enable_if_t<(sizeof...(Args) <= MAX_ARGS)>* = nullptr>
+    _ErrorMessage(int error_code, std::string_view format, Args... args)
+        : error_code_(error_code),
+          format_(format),
+          num_args_(sizeof...(args)),
+          args_{args...}
+    {
+    }
+
     /**
      * @brief Constructor
      *
@@ -58,9 +80,14 @@ public:
               // https://stackoverflow.com/a/39621288
               // NOTE: With C++20, it would be better to use `requires`
               std::enable_if_t<(sizeof...(Args) <= MAX_ARGS)>* = nullptr>
-    Message(std::string_view format, Args... args)
-        : format_(format), num_args_(sizeof...(args)), args_{args...}
+    _ErrorMessage(std::string_view format, Args... args)
+        : _ErrorMessage(0, format, args...)
     {
+    }
+
+    int get_error_code() const
+    {
+        return error_code_;
     }
 
     /**
@@ -98,6 +125,8 @@ public:
     }
 
 private:
+    //! Application-specific error code
+    int error_code_;
     //! Format string for the message (will be filled with args_ using fmt)
     std::string_view format_;
     //! Number of arguments that where passed to the constructor.
@@ -107,6 +136,6 @@ private:
 };
 
 // Allow up to three arguments for error messages (increase number if needed)
-using ErrorMessage = Message<3>;
+using ErrorMessage = _ErrorMessage<3>;
 
 }  // namespace odri_control_interface
