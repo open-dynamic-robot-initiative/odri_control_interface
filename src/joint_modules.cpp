@@ -10,6 +10,63 @@
  */
 
 #include "odri_control_interface/joint_modules.hpp"
+#include <cstddef>
+
+#include <fmt/format.h>
+
+namespace
+{
+// local helper functions
+
+/**
+ * @brief Output comma-separated list of indices which elements match `val`.
+ *
+ * @param vec  Vector of elements.
+ * @param val  Value that is searched for.
+ * @param out  Output stream to which matching indices are written.
+ *
+ */
+template <typename T>
+std::stringstream write_matching_indices(std::ostream& out,
+                                         const std::vector<T>& vec,
+                                         T val)
+{
+    std::string_view sep = "";
+
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        if (vec[i] == val)
+        {
+            out << sep << i;
+            sep = ", ";
+        }
+    }
+}
+
+std::string_view describe_motor_driver_error(int error_code)
+{
+    switch (error_code)
+    {
+        case UD_SENSOR_STATUS_ERROR_NO_ERROR:
+            return "No error";
+        case UD_SENSOR_STATUS_ERROR_ENCODER1:
+            return "Encoder A error";
+        case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
+            return "SPI Receiver timeout";
+        case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
+            return "Critical temperature";
+        case UD_SENSOR_STATUS_ERROR_POSCONV:
+            return "SpinTAC Position module";
+        case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
+            return "Position rollover occurred";
+        case UD_SENSOR_STATUS_ERROR_ENCODER2:
+            return "Encoder B error";
+        default:
+            return "Other error";
+    }
+}
+
+}  // namespace
 
 namespace odri_control_interface
 {
@@ -333,6 +390,13 @@ void JointModules::EnableJointLimitCheck()
 bool JointModules::HasError()
 {
     bool has_error = false;
+    error_data_.reset();
+
+    constexpr int PRINT_RATE = 2000;
+    bool print_position_above_limit_error = false;
+    bool print_position_below_limit_error = false;
+    bool print_velocity_limit_error = false;
+    bool print_motor_board_error = false;
 
     if (check_joint_limits_)
     {
@@ -345,18 +409,7 @@ bool JointModules::HasError()
                 error_data_.joint_position_limit_exceeded[ui] = +1;
 
                 has_error = true;
-                if (upper_joint_limits_counter_++ % 2000 == 0)
-                {
-                    msg_out_ << "ERROR: Above joint limits at joint #" << (i)
-                             << std::endl;
-                    msg_out_ << "  Joints: ";
-                    PrintVector(positions_);
-                    msg_out_ << std::endl;
-                    msg_out_ << "  Limits: ";
-                    PrintVector(upper_joint_limits_);
-                    msg_out_ << std::endl;
-                }
-                break;  // TODO remove break?
+                print_position_above_limit_error = true;
             }
         }
 
@@ -368,23 +421,12 @@ bool JointModules::HasError()
                 error_data_.joint_position_limit_exceeded[ui] = -1;
 
                 has_error = true;
-                if (lower_joint_limits_counter_++ % 2000 == 0)
-                {
-                    msg_out_ << "ERROR: Below joint limits at joint #" << (i)
-                             << std::endl;
-                    msg_out_ << "  Joints: ";
-                    PrintVector(positions_);
-                    msg_out_ << std::endl;
-                    msg_out_ << "  Limits: ";
-                    PrintVector(lower_joint_limits_);
-                    msg_out_ << std::endl;
-                }
-                break;  // TODO remove break?
+                print_position_below_limit_error = true;
             }
         }
     }
 
-    // Check for joint velocities limtis.
+    // Check for joint velocities limits.
     // Check the velocity only after the motors report ready to avoid
     // fast motions during the initialization phase detected as error.
     if (IsReady())
@@ -397,70 +439,92 @@ bool JointModules::HasError()
                 error_data_.joint_velocity_limit_exceeded[ui] = true;
 
                 has_error = true;
-                if (velocity_joint_limits_counter_++ % 2000 == 0)
-                {
-                    msg_out_ << "ERROR: Above joint velocity limits at joint #"
-                             << (i) << std::endl;
-                    msg_out_ << "  Joints: ";
-                    PrintVector(velocities_);
-                    msg_out_ << std::endl;
-                    msg_out_ << "  Limit: " << max_joint_velocities_
-                             << std::endl;
-                }
-                break;
+                print_velocity_limit_error = true;
             }
         }
     }
 
     // Check the status of the cards.
-    bool print_error = false;
     for (size_t i = 0; i < static_cast<size_t>(num_motor_drivers_); i++)
     {
         error_data_.motor_driver_error_codes[i] =
             robot_if_->motor_drivers[i].error_code;
 
-        if (robot_if_->motor_drivers[i].error_code != 0)
+        if (robot_if_->motor_drivers[i].error_code !=
+            UD_SENSOR_STATUS_ERROR_NO_ERROR)
         {
-            if (print_error || motor_drivers_error_counter++ % 2000 == 0)
-            {
-                print_error = true;
-                msg_out_ << "ERROR at motor drivers #" << (i) << ": ";
-                switch (robot_if_->motor_drivers[i].error_code)
-                {
-                    case UD_SENSOR_STATUS_ERROR_ENCODER1:
-                        msg_out_ << "Encoder A error";
-                        break;
-                    case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
-                        msg_out_ << "SPI Receiver timeout";
-                        break;
-                    case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
-                        msg_out_ << "Critical temperature";
-                        break;
-                    case UD_SENSOR_STATUS_ERROR_POSCONV:
-                        msg_out_ << "SpinTAC Positon module";
-                        break;
-                    case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
-                        msg_out_ << "Position rollover occured";
-                        break;
-                    case UD_SENSOR_STATUS_ERROR_ENCODER2:
-                        msg_out_ << "Encoder B error";
-                        break;
-                    /*
-                    case UD_SENSOR_STATUS_CRC_ERROR:
-                        msg_out_ << "CRC error in SPI transaction";
-                        break;
-                    */
-                    default:
-                        msg_out_ << "Other error ("
-                                 << robot_if_->motor_drivers[i].error_code
-                                 << ")";
-                        break;
-                }
-                msg_out_ << std::endl;
-            }
             has_error = true;
+            print_motor_board_error = true;
         }
     }
+
+    // === print error messages ===
+    // TODO: Do we really need the separate counters per error type?  If not, we
+    // could use a single counter and simply use the output from
+    // GetErrorDescription().
+
+    if (print_position_above_limit_error &&
+        upper_joint_limits_counter_++ % PRINT_RATE == 0)
+    {
+        msg_out_ << "ERROR: Above position limits at joint(s) ";
+        write_matching_indices(
+            msg_out_, error_data_.joint_position_limit_exceeded, +1);
+        msg_out_ << std::endl;
+        msg_out_ << "  Joints: ";
+        PrintVector(positions_);
+        msg_out_ << std::endl;
+        msg_out_ << "  Limits: ";
+        PrintVector(upper_joint_limits_);
+        msg_out_ << std::endl;
+    }
+
+    if (print_position_below_limit_error &&
+        lower_joint_limits_counter_++ % PRINT_RATE == 0)
+    {
+        msg_out_ << "ERROR: Below position limits at joint(s) ";
+        write_matching_indices(
+            msg_out_, error_data_.joint_position_limit_exceeded, -1);
+        msg_out_ << std::endl;
+        msg_out_ << "  Joints: ";
+        PrintVector(positions_);
+        msg_out_ << std::endl;
+        msg_out_ << "  Limits: ";
+        PrintVector(lower_joint_limits_);
+        msg_out_ << std::endl;
+    }
+
+    if (print_velocity_limit_error &&
+        velocity_joint_limits_counter_++ % PRINT_RATE == 0)
+    {
+        msg_out_ << "ERROR: Above joint velocity limits at joint(s) ";
+        write_matching_indices(
+            msg_out_, error_data_.joint_velocity_limit_exceeded, true);
+        msg_out_ << std::endl;
+        msg_out_ << "  Joints: ";
+        PrintVector(velocities_);
+        msg_out_ << std::endl;
+        msg_out_ << "  Limit: " << max_joint_velocities_ << std::endl;
+    }
+
+    if (print_motor_board_error &&
+        motor_drivers_error_counter++ % PRINT_RATE == 0)
+    {
+        for (size_t i = 0; i < error_data_.motor_driver_error_codes.size(); i++)
+        {
+            const int error_code = error_data_.motor_driver_error_codes[i];
+
+            if (error_code != UD_SENSOR_STATUS_ERROR_NO_ERROR)
+            {
+                std::string_view error_desc =
+                    describe_motor_driver_error(error_code);
+                msg_out_ << fmt::format("ERROR at motor driver #{}: [{}] {}",
+                                        i,
+                                        error_code,
+                                        error_desc);
+            }
+        }
+    }
+
     return has_error;
 }
 
@@ -471,32 +535,9 @@ std::optional<ErrorMessage> JointModules::GetError() const
     {
         if (robot_if_->motor_drivers[i].error_code != 0)
         {
-            // TODO is this good implementation?
-            std::string_view msg;
-            switch (robot_if_->motor_drivers[i].error_code)
-            {
-                case UD_SENSOR_STATUS_ERROR_ENCODER1:
-                    msg = "Encoder A error";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
-                    msg = "SPI Receiver timeout";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
-                    msg = "Critical temperature";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_POSCONV:
-                    msg = "SpinTAC Position module";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
-                    msg = "Position rollover occurred";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_ENCODER2:
-                    msg = "Encoder B error";
-                    break;
-                default:
-                    msg = "Other error";
-                    break;
-            }
+            std::string_view msg = describe_motor_driver_error(
+                robot_if_->motor_drivers[i].error_code);
+
             return ErrorMessage("Motor Driver #{}: [{}] {}",
                                 i,
                                 robot_if_->motor_drivers[i].error_code,
@@ -563,31 +604,9 @@ std::string JointModules::GetErrorDescription() const
 
         if (error_code != UD_SENSOR_STATUS_ERROR_NO_ERROR)
         {
-            std::string_view error_desc;
-            switch (error_data_.motor_driver_error_codes[i])
-            {
-                case UD_SENSOR_STATUS_ERROR_ENCODER1:
-                    error_desc = "Encoder A error";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
-                    error_desc = "SPI Receiver timeout";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
-                    error_desc = "Critical temperature";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_POSCONV:
-                    error_desc = "SpinTAC Position module";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
-                    error_desc = "Position rollover occurred";
-                    break;
-                case UD_SENSOR_STATUS_ERROR_ENCODER2:
-                    error_desc = "Encoder B error";
-                    break;
-                default:
-                    error_desc = "Other error";
-                    break;
-            }
+            std::string_view error_desc = describe_motor_driver_error(
+                robot_if_->motor_drivers[i].error_code);
+
             error_count++;
             msg += fmt::format("Motor Driver {}: [{}] {}\n",
                                i,

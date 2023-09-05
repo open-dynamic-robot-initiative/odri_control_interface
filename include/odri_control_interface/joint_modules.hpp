@@ -17,8 +17,6 @@
 #include <optional>
 #include <vector>
 
-#include <fmt/format.h>
-
 #include "master_board_sdk/defines.h"
 #include "master_board_sdk/master_board_interface.h"
 
