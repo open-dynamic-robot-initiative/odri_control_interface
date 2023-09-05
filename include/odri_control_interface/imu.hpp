@@ -55,7 +55,7 @@ public:
     // or the maximum angular velocity that should be detected as an error.
     bool HasError()
     {
-        return false;
+        return GetError().has_value();
     }
     std::optional<ErrorMessage> GetError() const
     {
