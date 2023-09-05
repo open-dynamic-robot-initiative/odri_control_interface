@@ -61,6 +61,10 @@ public:
     {
         return std::nullopt;
     }
+    std::string GetErrorDescription() const
+    {
+        return "";
+    }
 
     void ParseSensorData();
 

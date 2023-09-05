@@ -33,6 +33,39 @@ namespace odri_control_interface
 class JointModules
 {
 protected:
+    struct ErrorData
+    {
+        std::vector<int> motor_driver_error_codes;
+
+        std::vector<int> joint_position_limit_exceeded;
+        // Eigen::VectorXd joint_positions;  // TODO redundant?
+
+        std::vector<bool> joint_velocity_limit_exceeded;
+        // Eigen::VectorXd joint_velocities;  // TODO redundant?
+
+        ErrorData(size_t num_motors, size_t num_motor_drivers)
+            : motor_driver_error_codes(num_motor_drivers),
+              joint_position_limit_exceeded(num_motors),
+              joint_velocity_limit_exceeded(num_motors)
+        {
+        }
+
+        void reset()
+        {
+            std::fill(motor_driver_error_codes.begin(),
+                      motor_driver_error_codes.end(),
+                      0);
+
+            std::fill(joint_position_limit_exceeded.begin(),
+                      joint_position_limit_exceeded.end(),
+                      0);
+
+            std::fill(joint_velocity_limit_exceeded.begin(),
+                      joint_velocity_limit_exceeded.end(),
+                      false);
+        }
+    };
+
     std::shared_ptr<MasterBoardInterface> robot_if_;
     std::vector<Motor*> motors_;
 
@@ -66,6 +99,8 @@ protected:
     bool check_joint_limits_;
 
     std::ostream& msg_out_ = std::cout;
+
+    ErrorData error_data_;
 
 public:
     //! Error codes used in error messages
@@ -146,6 +181,9 @@ public:
 
     /**
      * @brief Checks for errors and prints them
+     *
+     * To get a description of the errors call @ref GetErrorDescription *after*
+     * HasError.
      */
     bool HasError();
 
@@ -158,6 +196,15 @@ public:
      * @return Error message if there is an error.
      */
     std::optional<ErrorMessage> GetError() const;
+
+    /**
+     * @brief Get description of the error(s) reported by @ref HasError.
+     *
+     * Call @ref HasError() first, otherwise the output is undefined!
+     *
+     * @return Error message.
+     */
+    std::string GetErrorDescription() const;
 
     void PrintVector(ConstRefVectorXd vector);
 

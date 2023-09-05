@@ -28,16 +28,17 @@ JointModules::JointModules(
       lower_joint_limits_(lower_joint_limits),
       upper_joint_limits_(upper_joint_limits),
       max_joint_velocities_(max_joint_velocities),
+      num_motors_(static_cast<int>(motor_numbers.size())),
+      num_motor_drivers_((num_motors_ + 1) / 2),
       check_joint_limits_(true),
+      error_data_(static_cast<size_t>(num_motors_),
+                  static_cast<size_t>(num_motor_drivers_)),
       upper_joint_limits_counter_(0),
       lower_joint_limits_counter_(0),
       velocity_joint_limits_counter_(0),
       motor_drivers_error_counter(0)
 
 {
-    num_motors_ = static_cast<int>(motor_numbers.size());
-    num_motor_drivers_ = (num_motors_ + 1) / 2;
-
     // Check input arrays for correct sizes.
     if (reverse_polarities.size() != num_motors_)
     {
@@ -340,6 +341,9 @@ bool JointModules::HasError()
         {
             if (positions_(i) > upper_joint_limits_(i))
             {
+                size_t ui = static_cast<size_t>(i);
+                error_data_.joint_position_limit_exceeded[ui] = +1;
+
                 has_error = true;
                 if (upper_joint_limits_counter_++ % 2000 == 0)
                 {
@@ -352,7 +356,7 @@ bool JointModules::HasError()
                     PrintVector(upper_joint_limits_);
                     msg_out_ << std::endl;
                 }
-                break;
+                break;  // TODO remove break?
             }
         }
 
@@ -360,6 +364,9 @@ bool JointModules::HasError()
         {
             if (positions_(i) < lower_joint_limits_(i))
             {
+                size_t ui = static_cast<size_t>(i);
+                error_data_.joint_position_limit_exceeded[ui] = -1;
+
                 has_error = true;
                 if (lower_joint_limits_counter_++ % 2000 == 0)
                 {
@@ -372,7 +379,7 @@ bool JointModules::HasError()
                     PrintVector(lower_joint_limits_);
                     msg_out_ << std::endl;
                 }
-                break;
+                break;  // TODO remove break?
             }
         }
     }
@@ -386,6 +393,9 @@ bool JointModules::HasError()
         {
             if (std::abs(velocities_[i]) > max_joint_velocities_)
             {
+                size_t ui = static_cast<size_t>(i);
+                error_data_.joint_velocity_limit_exceeded[ui] = true;
+
                 has_error = true;
                 if (velocity_joint_limits_counter_++ % 2000 == 0)
                 {
@@ -404,8 +414,11 @@ bool JointModules::HasError()
 
     // Check the status of the cards.
     bool print_error = false;
-    for (int i = 0; i < num_motor_drivers_; i++)
+    for (size_t i = 0; i < static_cast<size_t>(num_motor_drivers_); i++)
     {
+        error_data_.motor_driver_error_codes[i] =
+            robot_if_->motor_drivers[i].error_code;
+
         if (robot_if_->motor_drivers[i].error_code != 0)
         {
             if (print_error || motor_drivers_error_counter++ % 2000 == 0)
@@ -539,6 +552,98 @@ std::optional<ErrorMessage> JointModules::GetError() const
     return std::nullopt;
 }
 
+std::string JointModules::GetErrorDescription() const
+{
+    int error_count = 0;
+    std::string msg = "";
+
+    for (size_t i = 0; i < error_data_.motor_driver_error_codes.size(); i++)
+    {
+        const int error_code = error_data_.motor_driver_error_codes[i];
+
+        if (error_code != UD_SENSOR_STATUS_ERROR_NO_ERROR)
+        {
+            std::string_view error_desc;
+            switch (error_data_.motor_driver_error_codes[i])
+            {
+                case UD_SENSOR_STATUS_ERROR_ENCODER1:
+                    error_desc = "Encoder A error";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT:
+                    error_desc = "SPI Receiver timeout";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_CRIT_TEMP:
+                    error_desc = "Critical temperature";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_POSCONV:
+                    error_desc = "SpinTAC Position module";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_POS_ROLLOVER:
+                    error_desc = "Position rollover occurred";
+                    break;
+                case UD_SENSOR_STATUS_ERROR_ENCODER2:
+                    error_desc = "Encoder B error";
+                    break;
+                default:
+                    error_desc = "Other error";
+                    break;
+            }
+            error_count++;
+            msg += fmt::format("Motor Driver #{}: [{}] {}\n",
+                               i,
+                               error_data_.motor_driver_error_codes[i],
+                               error_desc);
+        }
+    }
+
+    for (size_t i = 0; i < error_data_.joint_position_limit_exceeded.size();
+         i++)
+    {
+        if (error_data_.joint_position_limit_exceeded[i] > 0)
+        {
+            error_count++;
+            msg += fmt::format(
+                "Joint #{} is above position limit (actual: {:.3f}, limit: "
+                "{:.3f})\n",
+                i,
+                positions_(static_cast<int>(i)),
+                upper_joint_limits_(static_cast<int>(i)));
+        }
+        else if (error_data_.joint_position_limit_exceeded[i] < 0)
+        {
+            error_count++;
+            msg += fmt::format(
+                "Joint #{} is below position limit (actual: {:.3f}, limit: "
+                "{:.3f})\n",
+                i,
+                positions_(static_cast<int>(i)),
+                lower_joint_limits_(static_cast<int>(i)));
+        }
+    }
+
+    for (size_t i = 0; i < error_data_.joint_velocity_limit_exceeded.size();
+         i++)
+    {
+        if (error_data_.joint_velocity_limit_exceeded[i])
+        {
+            error_count++;
+            msg += fmt::format(
+                "Joint {} exceeds velocity limit (actual: {:.3f}, limit: "
+                "{:.3f})\n",
+                i,
+                velocities_[static_cast<int>(i)],
+                max_joint_velocities_);
+        }
+    }
+
+    if (error_count > 1)
+    {
+        msg = fmt::format("There are {} errors:\n{}", error_count, msg);
+    }
+
+    return msg;
+}
+
 void JointModules::PrintVector(ConstRefVectorXd vector)
 {
     Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
@@ -547,7 +652,7 @@ void JointModules::PrintVector(ConstRefVectorXd vector)
 
 void JointModules::SetMaximumCurrents(double max_currents)
 {
-    for (int i = 0; i < num_motors_; i++)
+    for (size_t i = 0; i < static_cast<size_t>(num_motors_); i++)
     {
         motors_[i]->set_current_sat(max_currents);
     }

@@ -270,15 +270,16 @@ bool Robot::IsTimeout()
  */
 bool Robot::HasError()
 {
-    // TODO make this deprecated in favour of GetError?
+    error_data_.joints_has_error = joints->HasError();
+    saw_error_ |= error_data_.joints_has_error;
 
-    saw_error_ |= joints->HasError();
     if (imu)
     {
-        saw_error_ |= imu->HasError();
+        error_data_.imu_has_error = imu->HasError();
+        saw_error_ |= error_data_.imu_has_error;
     }
 
-    if (robot_if->IsTimeout())
+    if ((error_data_.has_timeout = robot_if->IsTimeout()))
     {
         if (timeout_counter_++ % 2000 == 0)
         {
@@ -315,6 +316,29 @@ std::optional<ErrorMessage> Robot::GetError()
 
     // if reached here, there is no error
     return std::nullopt;
+}
+
+std::string Robot::GetErrorDescription() const
+{
+    std::string msg = "";
+
+    if (error_data_.imu_has_error)
+    {
+        msg += fmt::format("IMU Error: {}\n", imu->GetErrorDescription());
+    }
+
+    if (error_data_.joints_has_error)
+    {
+        msg += fmt::format("JointModule Error: {}\n",
+                           joints->GetErrorDescription());
+    }
+
+    if (error_data_.has_timeout)
+    {
+        msg += "Robot communication timeout.\n";
+    }
+
+    return msg;
 }
 
 }  // namespace odri_control_interface

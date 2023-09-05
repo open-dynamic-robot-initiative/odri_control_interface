@@ -35,6 +35,12 @@ public:
     std::shared_ptr<JointCalibrator> calibrator;
 
 protected:
+    struct ErrorData {
+        bool joints_has_error = false;
+        bool imu_has_error = false;
+        bool has_timeout = false;
+    } error_data_;
+
     int timeout_counter_;
     bool saw_error_;
     std::ostream& msg_out_ = std::cout;
@@ -147,6 +153,9 @@ public:
     /**
      * @brief Checks all connected devices for errors. Also checks
      *  if there is a timeout.
+     *
+     * To get a description of the errors call @ref GetErrorDescription *after*
+     * HasError.
      */
     bool HasError();
 
@@ -159,6 +168,15 @@ public:
      * @return Error message if there is an error.
      */
     std::optional<ErrorMessage> GetError();
+
+    /**
+     * @brief Get description of the error(s) reported by @ref HasError.
+     *
+     * Call @ref HasError() first, otherwise the output is undefined!
+     *
+     * @return Error message.
+     */
+    std::string GetErrorDescription() const;
 
     /**
      * @brief Way to report an external error. Causes the robot to go into
