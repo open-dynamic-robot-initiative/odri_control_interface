@@ -281,7 +281,7 @@ bool JointModules::SawAllIndices()
 /**
  * @brief Returns true once all motors are enabled and report ready.
  */
-bool JointModules::IsReady()
+bool JointModules::IsReady() const
 {
     bool is_ready_ = true;
 
@@ -451,7 +451,7 @@ bool JointModules::HasError()
     return has_error;
 }
 
-std::optional<ErrorMessage> JointModules::GetError()
+std::optional<ErrorMessage> JointModules::GetError() const
 {
     // Check the status of the cards.
     for (int i = 0; i < nd_; i++)

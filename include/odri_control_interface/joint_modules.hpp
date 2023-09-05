@@ -130,7 +130,7 @@ public:
     /**
      * @brief Returns true once all motors are enabled and report ready.
      */
-    bool IsReady();
+    bool IsReady() const;
 
     const VectorXd& GetPositions();
     const VectorXd& GetVelocities();
@@ -157,7 +157,7 @@ public:
      *
      * @return Error message if there is an error.
      */
-    std::optional<ErrorMessage> GetError();
+    std::optional<ErrorMessage> GetError() const;
 
     void PrintVector(ConstRefVectorXd vector);
 
