@@ -60,8 +60,8 @@ protected:
 
     double max_joint_velocities_;
 
-    int n_;
-    int nd_;
+    int num_motors_;
+    int num_motor_drivers_;
 
     bool check_joint_limits_;
 

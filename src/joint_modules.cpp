@@ -35,55 +35,55 @@ JointModules::JointModules(
       motor_drivers_error_counter(0)
 
 {
-    n_ = static_cast<int>(motor_numbers.size());
-    nd_ = (n_ + 1) / 2;
+    num_motors_ = static_cast<int>(motor_numbers.size());
+    num_motor_drivers_ = (num_motors_ + 1) / 2;
 
     // Check input arrays for correct sizes.
-    if (reverse_polarities.size() != n_)
+    if (reverse_polarities.size() != num_motors_)
     {
         throw std::runtime_error(
             "Motor polarities has different size than motor numbers");
     }
 
-    if (lower_joint_limits.size() != n_)
+    if (lower_joint_limits.size() != num_motors_)
     {
         throw std::runtime_error(
             "Lower joint limits has different size than motor numbers");
     }
 
-    if (upper_joint_limits.size() != n_)
+    if (upper_joint_limits.size() != num_motors_)
     {
         throw std::runtime_error(
             "Upper joint limits has different size than motor numbers");
     }
 
     // Resize and fill the vectors.
-    gear_ratios_.resize(n_);
-    motor_constants_.resize(n_);
-    positions_.resize(n_);
-    velocities_.resize(n_);
-    sent_torques_.resize(n_);
-    measured_torques_.resize(n_);
-    index_been_detected_.resize(n_);
+    gear_ratios_.resize(num_motors_);
+    motor_constants_.resize(num_motors_);
+    positions_.resize(num_motors_);
+    velocities_.resize(num_motors_);
+    sent_torques_.resize(num_motors_);
+    measured_torques_.resize(num_motors_);
+    index_been_detected_.resize(num_motors_);
     index_been_detected_.fill(false);
-    polarities_.resize(n_);
-    ready_.resize(n_);
+    polarities_.resize(num_motors_);
+    ready_.resize(num_motors_);
     ready_.fill(false);
-    enabled_.resize(n_);
+    enabled_.resize(num_motors_);
     enabled_.fill(false);
-    zero_vector_.resize(n_);
+    zero_vector_.resize(num_motors_);
     zero_vector_.fill(0.);
-    safety_damping_.resize(n_);
+    safety_damping_.resize(num_motors_);
     safety_damping_.fill(safety_damping);
-    motor_driver_enabled_.resize(nd_);
+    motor_driver_enabled_.resize(num_motor_drivers_);
     motor_driver_enabled_.fill(false);
-    motor_driver_errors_.resize(nd_);
+    motor_driver_errors_.resize(num_motor_drivers_);
     motor_driver_errors_.fill(0);
 
     gear_ratios_.fill(gear_ratios);
     motor_constants_.fill(motor_constants);
 
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_.push_back(robot_if_->GetMotor(motor_numbers[i]));
         polarities_(i) = reverse_polarities(i) ? -1 : 1;
@@ -103,12 +103,12 @@ const VectorXd& JointModules::GetGearRatios()
 
 int JointModules::GetNumberMotors()
 {
-    return n_;
+    return num_motors_;
 }
 
 void JointModules::ParseSensorData()
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         positions_(i) =
             motors_[i]->get_position() * polarities_(i) / gear_ratios_(i);
@@ -124,7 +124,7 @@ void JointModules::ParseSensorData()
         enabled_(i) = motors_[i]->get_is_enabled();
     }
 
-    for (int i = 0; i < nd_; i++)
+    for (int i = 0; i < num_motor_drivers_; i++)
     {
         motor_driver_enabled_(i) = robot_if_->motor_drivers[i].IsEnabled();
         motor_driver_errors_(i) = robot_if_->motor_drivers[i].GetErrorCode();
@@ -137,7 +137,7 @@ void JointModules::Enable()
     SetZeroCommands();
 
     // Enable all motors and cards.
-    for (int i = 0; i < (n_ + 1) / 2; i++)
+    for (int i = 0; i < (num_motors_ + 1) / 2; i++)
     {
         robot_if_->motor_drivers[i].motor1->Enable();
         robot_if_->motor_drivers[i].motor2->Enable();
@@ -149,7 +149,7 @@ void JointModules::Enable()
 
 void JointModules::SetTorques(ConstRefVectorXd desired_torques)
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_[i]->SetCurrentReference(
             polarities_(i) * desired_torques(i) /
@@ -159,7 +159,7 @@ void JointModules::SetTorques(ConstRefVectorXd desired_torques)
 
 void JointModules::SetDesiredPositions(ConstRefVectorXd desired_positions)
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_[i]->SetPositionReference(polarities_[i] * desired_positions[i] *
                                          gear_ratios_[i]);
@@ -168,7 +168,7 @@ void JointModules::SetDesiredPositions(ConstRefVectorXd desired_positions)
 
 void JointModules::SetDesiredVelocities(ConstRefVectorXd desired_velocities)
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_[i]->SetVelocityReference(
             polarities_[i] * desired_velocities[i] * gear_ratios_[i]);
@@ -177,7 +177,7 @@ void JointModules::SetDesiredVelocities(ConstRefVectorXd desired_velocities)
 
 void JointModules::SetPositionGains(ConstRefVectorXd desired_gains)
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_[i]->set_kp(
             desired_gains[i] /
@@ -187,7 +187,7 @@ void JointModules::SetPositionGains(ConstRefVectorXd desired_gains)
 
 void JointModules::SetVelocityGains(ConstRefVectorXd desired_gains)
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_[i]->set_kd(
             desired_gains[i] /
@@ -217,7 +217,7 @@ void JointModules::RunSafetyController()
 
 void JointModules::SetPositionOffsets(ConstRefVectorXd position_offsets)
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         // REVIEW: Is the following correct?
         motors_[i]->SetPositionOffset(position_offsets(i) * polarities_(i) *
@@ -230,7 +230,7 @@ void JointModules::SetPositionOffsets(ConstRefVectorXd position_offsets)
 
 void JointModules::EnableIndexOffsetCompensation()
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_[i]->set_enable_index_offset_compensation(true);
     }
@@ -268,7 +268,7 @@ const VectorXi& JointModules::GetMotorDriverErrors()
 
 bool JointModules::SawAllIndices()
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         if (!motors_[i]->get_has_index_been_detected())
         {
@@ -285,7 +285,7 @@ bool JointModules::IsReady() const
 {
     bool is_ready_ = true;
 
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         if (!motors_[i]->get_is_enabled() || !motors_[i]->get_is_ready())
         {
@@ -494,7 +494,7 @@ std::optional<ErrorMessage> JointModules::GetError() const
     if (check_joint_limits_)
     {
         // Check for lower and upper joint limits.
-        for (int i = 0; i < n_; i++)
+        for (int i = 0; i < num_motors_; i++)
         {
             if (positions_(i) < lower_joint_limits_(i))
             {
@@ -522,7 +522,7 @@ std::optional<ErrorMessage> JointModules::GetError() const
     // fast motions during the initialization phase detected as error.
     if (IsReady())
     {
-        for (int i = 0; i < n_; i++)
+        for (int i = 0; i < num_motors_; i++)
         {
             if (std::abs(velocities_[i]) > max_joint_velocities_)
             {
@@ -547,7 +547,7 @@ void JointModules::PrintVector(ConstRefVectorXd vector)
 
 void JointModules::SetMaximumCurrents(double max_currents)
 {
-    for (int i = 0; i < n_; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
         motors_[i]->set_current_sat(max_currents);
     }
