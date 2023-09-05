@@ -324,13 +324,12 @@ std::string Robot::GetErrorDescription() const
 
     if (error_data_.imu_has_error)
     {
-        msg += fmt::format("IMU Error: {}\n", imu->GetErrorDescription());
+        msg += imu->GetErrorDescription() + "\n";
     }
 
     if (error_data_.joints_has_error)
     {
-        msg += fmt::format("JointModule Error: {}\n",
-                           joints->GetErrorDescription());
+        msg += joints->GetErrorDescription() + "\n";
     }
 
     if (error_data_.has_timeout)

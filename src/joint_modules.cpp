@@ -589,7 +589,7 @@ std::string JointModules::GetErrorDescription() const
                     break;
             }
             error_count++;
-            msg += fmt::format("Motor Driver #{}: [{}] {}\n",
+            msg += fmt::format("Motor Driver {}: [{}] {}\n",
                                i,
                                error_data_.motor_driver_error_codes[i],
                                error_desc);
@@ -603,8 +603,7 @@ std::string JointModules::GetErrorDescription() const
         {
             error_count++;
             msg += fmt::format(
-                "Joint #{} is above position limit (actual: {:.3f}, limit: "
-                "{:.3f})\n",
+                "Joint {} above position limit ({:.3f}, limit: {:.3f})\n",
                 i,
                 positions_(static_cast<int>(i)),
                 upper_joint_limits_(static_cast<int>(i)));
@@ -613,8 +612,7 @@ std::string JointModules::GetErrorDescription() const
         {
             error_count++;
             msg += fmt::format(
-                "Joint #{} is below position limit (actual: {:.3f}, limit: "
-                "{:.3f})\n",
+                "Joint {} below position limit ({:.3f}, limit: {:.3f})\n",
                 i,
                 positions_(static_cast<int>(i)),
                 lower_joint_limits_(static_cast<int>(i)));
@@ -628,8 +626,7 @@ std::string JointModules::GetErrorDescription() const
         {
             error_count++;
             msg += fmt::format(
-                "Joint {} exceeds velocity limit (actual: {:.3f}, limit: "
-                "{:.3f})\n",
+                "Joint {} exceeds velocity limit ({:.3f}, limit: {:.3f})\n",
                 i,
                 velocities_[static_cast<int>(i)],
                 max_joint_velocities_);
