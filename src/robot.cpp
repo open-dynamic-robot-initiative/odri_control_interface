@@ -322,6 +322,11 @@ std::string Robot::GetErrorDescription() const
 {
     std::string msg = "";
 
+    if (reported_error_)
+    {
+        msg += reported_error_->get_message() + "\n";
+    }
+
     if (error_data_.imu_has_error)
     {
         msg += imu->GetErrorDescription() + "\n";
@@ -335,6 +340,14 @@ std::string Robot::GetErrorDescription() const
     if (error_data_.has_timeout)
     {
         msg += "Robot communication timeout.\n";
+    }
+
+    // check if saw_error_ is true without description.  If this happens,
+    // it's a bug (whatever sets saw_error_ should also store some
+    // information to be checked here)
+    if (msg.empty() && saw_error_)
+    {
+        msg += "Unknown Error.  THIS IS A BUG";
     }
 
     return msg;
