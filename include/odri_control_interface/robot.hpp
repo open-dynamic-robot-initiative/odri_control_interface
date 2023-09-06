@@ -46,7 +46,7 @@ protected:
     std::ostream& msg_out_ = std::cout;
     std::chrono::time_point<std::chrono::system_clock> last_time_;
 
-    std::optional<ErrorMessage> reported_error_;
+    std::optional<std::string> reported_error_;
 
 public:
     Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
@@ -158,16 +158,6 @@ public:
      * HasError.
      */
     bool HasError();
-
-    /**
-     * @brief Get error if there is one.
-     *
-     * If there are multiple errors, only the first one that is detected is
-     * returned.
-     *
-     * @return Error message if there is an error.
-     */
-    std::optional<ErrorMessage> GetError();
 
     /**
      * @brief Get description of the error(s) reported by @ref HasError.

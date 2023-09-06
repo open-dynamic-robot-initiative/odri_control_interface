@@ -21,7 +21,6 @@
 #include "master_board_sdk/master_board_interface.h"
 
 #include <odri_control_interface/common.hpp>
-#include <odri_control_interface/error.hpp>
 
 namespace odri_control_interface
 {
@@ -101,15 +100,6 @@ protected:
     ErrorData error_data_;
 
 public:
-    //! Error codes used in error messages
-    struct ErrorCodes
-    {
-        constexpr static int MOTOR_DRIVER = 1;
-        constexpr static int JOINT_POSITION_LOWER_LIMIT = 2;
-        constexpr static int JOINT_POSITION_UPPER_LIMIT = 3;
-        constexpr static int JOINT_VELOCITY_LIMIT = 4;
-    };
-
     JointModules(const std::shared_ptr<MasterBoardInterface>& robot_if,
                  ConstRefVectorXi motor_numbers,
                  double motor_constants,
@@ -184,16 +174,6 @@ public:
      * HasError.
      */
     bool HasError();
-
-    /**
-     * @brief Get error if there is one.
-     *
-     * If there are multiple errors, only the first one that is detected is
-     * returned.
-     *
-     * @return Error message if there is an error.
-     */
-    std::optional<ErrorMessage> GetError() const;
 
     /**
      * @brief Get description of the error(s) reported by @ref HasError.

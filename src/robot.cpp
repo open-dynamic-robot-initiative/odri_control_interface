@@ -187,7 +187,7 @@ void Robot::ReportError(const std::string& error)
 {
     saw_error_ = true;
     msg_out_ << "ERROR: " << error << std::endl;
-    reported_error_ = ErrorMessage(error);
+    reported_error_ = error;
 }
 
 /**
@@ -291,40 +291,13 @@ bool Robot::HasError()
     return saw_error_;
 }
 
-std::optional<ErrorMessage> Robot::GetError()
-{
-    std::optional<ErrorMessage> error;
-    if (reported_error_)
-    {
-        return reported_error_;
-    }
-
-    if ((error = joints->GetError()))
-    {
-        return error;
-    }
-
-    if (imu && (error = imu->GetError()))
-    {
-        return error;
-    }
-
-    if (robot_if->IsTimeout())
-    {
-        return ErrorMessage("Robot communication timeout.");
-    }
-
-    // if reached here, there is no error
-    return std::nullopt;
-}
-
 std::string Robot::GetErrorDescription() const
 {
     std::string msg = "";
 
     if (reported_error_)
     {
-        msg += reported_error_->get_message() + "\n";
+        msg += *reported_error_ + "\n";
     }
 
     if (error_data_.imu_has_error)

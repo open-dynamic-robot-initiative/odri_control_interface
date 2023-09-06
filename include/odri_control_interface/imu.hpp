@@ -22,7 +22,6 @@
 #include "master_board_sdk/master_board_interface.h"
 
 #include <odri_control_interface/common.hpp>
-#include <odri_control_interface/error.hpp>
 
 namespace odri_control_interface
 {
@@ -55,11 +54,7 @@ public:
     // or the maximum angular velocity that should be detected as an error.
     bool HasError()
     {
-        return GetError().has_value();
-    }
-    std::optional<ErrorMessage> GetError() const
-    {
-        return std::nullopt;
+        return false;
     }
     std::string GetErrorDescription() const
     {
