@@ -283,7 +283,7 @@ bool Robot::HasError()
     {
         if (timeout_counter_++ % 2000 == 0)
         {
-            msg_out_ << "ERROR: Robot communication timedout." << std::endl;
+            msg_out_ << "ERROR: Robot communication timeout." << std::endl;
         }
         saw_error_ = true;
     }
