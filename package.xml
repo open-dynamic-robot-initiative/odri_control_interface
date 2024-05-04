@@ -6,7 +6,7 @@
 <package format="2">
 
     <name>odri_control_interface</name>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <description>
 	Common interface for controlling robots build with the odri master board.
