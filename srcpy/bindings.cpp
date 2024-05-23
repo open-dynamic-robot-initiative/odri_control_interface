@@ -46,9 +46,9 @@ std::shared_ptr<JointCalibrator> joint_calibrator_constructor(
 std::shared_ptr<JointModules> joint_modules_constructor(
     const std::shared_ptr<MasterBoardInterface>& robot_if,
     ConstRefVectorXl motor_numbers,
-    double motor_constants,
-    double gear_ratios,
-    double max_currents,
+    ConstRefVectorXd motor_constants,
+    ConstRefVectorXd gear_ratios,
+    ConstRefVectorXd max_currents,
     ConstRefVectorXb reverse_polarities,
     ConstRefVectorXd lower_joint_limits,
     ConstRefVectorXd upper_joint_limits,

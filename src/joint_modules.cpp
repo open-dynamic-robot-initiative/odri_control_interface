@@ -16,15 +16,17 @@ namespace odri_control_interface
 JointModules::JointModules(
     const std::shared_ptr<MasterBoardInterface>& robot_if,
     ConstRefVectorXi motor_numbers,
-    double motor_constants,
-    double gear_ratios,
-    double max_currents,
+    ConstRefVectorXd motor_constants,
+    ConstRefVectorXd gear_ratios,
+    ConstRefVectorXd max_currents,
     ConstRefVectorXb reverse_polarities,
     ConstRefVectorXd lower_joint_limits,
     ConstRefVectorXd upper_joint_limits,
     double max_joint_velocities,
     double safety_damping)
     : robot_if_(robot_if),
+      gear_ratios_(gear_ratios),
+      motor_constants_(motor_constants),
       lower_joint_limits_(lower_joint_limits),
       upper_joint_limits_(upper_joint_limits),
       max_joint_velocities_(max_joint_velocities),
@@ -39,6 +41,18 @@ JointModules::JointModules(
     nd_ = (n_ + 1) / 2;
 
     // Check input arrays for correct sizes.
+    if (motor_constants.size() != n_)
+    {
+        throw std::runtime_error(
+            "Motor constants has different size than motor numbers");
+    }
+
+    if (gear_ratios.size() != n_)
+    {
+        throw std::runtime_error(
+            "Gear ratios has different size than motor numbers");
+    }
+
     if (reverse_polarities.size() != n_)
     {
         throw std::runtime_error(
@@ -57,9 +71,13 @@ JointModules::JointModules(
             "Upper joint limits has different size than motor numbers");
     }
 
+    if (max_currents.size() != n_)
+    {
+        throw std::runtime_error(
+            "Max currents has different size than motor numbers");
+    }
+
     // Resize and fill the vectors.
-    gear_ratios_.resize(n_);
-    motor_constants_.resize(n_);
     positions_.resize(n_);
     velocities_.resize(n_);
     sent_torques_.resize(n_);
@@ -79,9 +97,6 @@ JointModules::JointModules(
     motor_driver_enabled_.fill(false);
     motor_driver_errors_.resize(nd_);
     motor_driver_errors_.fill(0);
-
-    gear_ratios_.fill(gear_ratios);
-    motor_constants_.fill(motor_constants);
 
     for (int i = 0; i < n_; i++)
     {
@@ -453,11 +468,11 @@ void JointModules::PrintVector(ConstRefVectorXd vector)
     msg_out_ << vector.transpose().format(CleanFmt);
 }
 
-void JointModules::SetMaximumCurrents(double max_currents)
+void JointModules::SetMaximumCurrents(ConstRefVectorXd max_currents)
 {
     for (int i = 0; i < n_; i++)
     {
-        motors_[i]->set_current_sat(max_currents);
+        motors_[i]->set_current_sat(max_currents[i]);
     }
 }
 
