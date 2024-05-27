@@ -19,6 +19,7 @@
 #include <odri_control_interface/calibration.hpp>
 #include <odri_control_interface/imu.hpp>
 #include <odri_control_interface/joint_modules.hpp>
+#include <odri_control_interface/powerboard.hpp>
 
 namespace odri_control_interface
 {
@@ -31,6 +32,7 @@ public:
     std::shared_ptr<MasterBoardInterface> robot_if;
     std::shared_ptr<JointModules> joints;
     std::shared_ptr<IMU> imu;
+    std::shared_ptr<Powerboard> powerboard;
     std::shared_ptr<JointCalibrator> calibrator;
 
 protected:
@@ -43,6 +45,7 @@ public:
     Robot(const std::shared_ptr<MasterBoardInterface>& robot_if,
           const std::shared_ptr<JointModules>& joint_modules,
           const std::shared_ptr<IMU>& imu,
+          const std::shared_ptr<Powerboard>& powerboard,
           const std::shared_ptr<JointCalibrator>& calibrator);
 
     /**
@@ -59,6 +62,11 @@ public:
      * @brief Return the IMU.
      */
     const std::shared_ptr<IMU>& GetIMU();
+
+    /**
+     * @brief Return the powerboard.
+     */
+    const std::shared_ptr<Powerboard>& GetPowerboard();
 
     /**
      * @brief Initializes the connection. Use `SendInit` to initialize the
