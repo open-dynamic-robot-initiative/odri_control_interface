@@ -4,7 +4,7 @@
 # License BSD-3 clause
 #
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 # ----------------------------------------------------
 # --- CXX FLAGS --------------------------------------
@@ -33,14 +33,15 @@ endif()
 option(BUILD_PYTHON_INTERFACE "Build the python binding" ON)
 option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 option(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
-
 include(cmake/base.cmake)
 include(cmake/boost.cmake)
 include(cmake/python.cmake)
 include(cmake/ide.cmake)
+include(cmake/apple.cmake)
 
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
+apply_default_apple_configuration()
 check_minimal_cxx_standard(11 ENFORCE)
 
 # ----------------------------------------------------
@@ -53,8 +54,10 @@ add_project_dependency(master_board_sdk REQUIRED)
 
 # Set component to fetch from boost Get the python interface for the bindings
 if(BUILD_PYTHON_INTERFACE)
+  set(PYTHON_COMPONENTS Interpreter Development.Module)
   add_project_dependency(eigenpy 2.7.10 REQUIRED PKG_CONFIG_REQUIRES
                          "eigenpy >= 2.7.10")
+  set_boost_default_options()
 endif(BUILD_PYTHON_INTERFACE)
 
 # ----------------------------------------------------
@@ -65,7 +68,7 @@ endif(BUILD_PYTHON_INTERFACE)
 set(ODRI_CONTROL_INTERFACE_SRC src/joint_modules.cpp src/imu.cpp src/robot.cpp
                                src/calibration.cpp src/utils.cpp)
 add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
-target_link_libraries(${PROJECT_NAME} yaml-cpp)
+target_link_libraries(${PROJECT_NAME} yaml-cpp::yaml-cpp)
 target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 target_include_directories(
@@ -89,10 +92,19 @@ if(BUILD_PYTHON_INTERFACE)
   set(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB})
   add_library(${PYWRAP} SHARED ${${PYWRAP}_SOURCES} ${${PYWRAP}_HEADERS})
   target_include_directories(${PYWRAP} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIR})
-  target_link_libraries(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy)
-  target_link_boost_python(${PYWRAP})
-  set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
-                                             "${CMAKE_INSTALL_PREFIX}/lib")
+
+  # target_link_libraries(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy)
+  # target_link_boost_python(${PYWRAP})
+  # set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
+  #                                            "${CMAKE_INSTALL_PREFIX}/lib")
+  set_target_properties(${PYWRAP} PROPERTIES SUFFIX ${PYTHON_EXT_SUFFIX})
+  target_link_libraries(${PYWRAP} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+  target_link_boost_python(${PYWRAP} PUBLIC)
+  if(UNIX)
+    get_relative_rpath(${${PYWRAP}_INSTALL_DIR} ${PYWRAP}_INSTALL_RPATH)
+    set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
+                                               "${${PYWRAP}_INSTALL_RPATH}")
+  endif()
   install(TARGETS ${PYWRAP} DESTINATION ${${PYWRAP}_INSTALL_DIR})
 
   # --- Allow to do: make python --- #
