@@ -68,7 +68,11 @@ endif(BUILD_PYTHON_INTERFACE)
 set(ODRI_CONTROL_INTERFACE_SRC src/joint_modules.cpp src/imu.cpp src/robot.cpp
                                src/calibration.cpp src/utils.cpp)
 add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
-target_link_libraries(${PROJECT_NAME} yaml-cpp::yaml-cpp)
+if(TARGET yaml-cpp::yaml-cpp)
+  target_link_libraries(${PROJECT_NAME} yaml-cpp::yaml-cpp)
+else()
+  target_link_libraries(${PROJECT_NAME} yaml-cpp)
+endif()
 target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 target_include_directories(
