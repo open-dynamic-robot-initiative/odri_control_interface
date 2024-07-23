@@ -6,13 +6,19 @@
 
 ### Launching the script
 
-* First, turn on the robot and roughtly place its joints in the configuration you want to consider as zero. 
+* First, source the built project:
+```
+source ~/devel/workspace/install/setup.bash
+```
+
+* Then, turn on the robot and roughtly place its joints in the configuration you want to consider as zero. 
 
 <img src="https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware/blob/master/mechanics/quadruped_robot_12dof_v1/images/solo12_coordinate_systems.png" width="400"><br>*Solo 12 quadruped with its joints in zero positions.*<br>
 
 * You can then launch the calibration script. The robot will slightly move its joints to find the indexes of the coding wheels. The calibration script can be launched as follows:
 ```
-sudo -E python3 robot_calibrator.py -c path_to_yaml_config_file
+cd ~/devel/workspace/src/odri_control_interface/demos/
+sudo -E PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH python robot_calibrator.py -c path_to_yaml_config_file 
 ```
 
 * `path_to_yaml_config_file` is the path to the configuration file of the robot you want to calibrate. It can be for instance `config_solo12.yaml` if your script has been launched from the [demos folder](https://github.com/open-dynamic-robot-initiative/odri_control_interface/tree/main/demos) of this repository.

@@ -1,0 +1,37 @@
+# Inspiré de config_solo12.yaml
+
+robot:
+    interface: enxc412f5d4752f 
+    joint_modules:
+        motor_numbers: [0, 3, 2, 1, 5, 4]
+        motor_constants: 0.025
+        gear_ratios: 9.
+        max_currents: 12.                       #UPDATE with bolt_driver.yaml
+        reverse_polarities: [
+            true, true, true, true, false, false     #UPDATE with bolt_driver.yaml
+        ]
+        lower_joint_limits: [
+            -0.9, -1.7, -3.4, -0.9, -1.7, -3.4   #UPDATE with test on robot
+        ]
+        upper_joint_limits: [
+            0.9, 1.7, +3.4, +0.9, +1.7, +3.4    #UPDATE with test on robot
+        ]
+        max_joint_velocities: 80.
+        safety_damping: 0.3                         #UPDATE with bolt_driver.yaml
+    imu:
+        rotate_vector: [1, 2, 3]
+        orientation_vector: [1, 2, 3, 4]
+joint_calibrator:
+    # Can be either POS, NEG, ALT or AUTO
+    search_methods: [
+      #POS, NEG, POS, NEG, NEG, POS             #UPDATE with bolt_driver.yaml
+      POS, POS, POS, POS, POS, POS
+    ]
+    position_offsets: [ # [ FLHAA, FLHFE, FLKFE, FRHAA, FRHFE, FRKFE ]
+            0.2403, 0.3996, 0.2668, 0.5836, 0.1053, 0.4465
+
+    ]                                             #Calibration cpp codes made
+    Kp: 3.
+    Kd: 0.05
+    T: 2.                                         #UPDATE with bolt_driver.yaml
+    dt: 0.001

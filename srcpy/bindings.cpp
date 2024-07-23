@@ -170,7 +170,15 @@ BOOST_PYTHON_MODULE(libodri_control_interface_pywrap)
         .add_property(
             "gear_ratios",
             make_function(&JointModules::GetGearRatios,
-                          return_value_policy<copy_const_reference>()));
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "lower_joint_limits_",
+            make_function(&JointModules::GetLowerJointLimits,
+                          return_value_policy<copy_const_reference>()))
+        .add_property(
+            "upper_joint_limits",
+            make_function(&JointModules::GetUpperJointLimits,
+                          return_value_policy<copy_const_reference>()));                   
     register_ptr_to_python<std::shared_ptr<JointModules>>();
 
     // JointModules bindings and it's std::shared_ptr.

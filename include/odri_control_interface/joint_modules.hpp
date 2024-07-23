@@ -125,6 +125,8 @@ public:
     const VectorXd& GetMeasuredTorques();
 
     const VectorXd& GetGearRatios();
+    const VectorXd& GetLowerJointLimits();
+    const VectorXd& GetUpperJointLimits();
 
     int GetNumberMotors();
 
