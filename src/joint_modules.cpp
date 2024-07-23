@@ -94,6 +94,16 @@ JointModules::JointModules(
 
 JointModules::~JointModules() {}
 
+const VectorXd& JointModules::GetLowerJointLimits()
+{
+    return lower_joint_limits_;
+}
+
+const VectorXd& JointModules::GetUpperJointLimits()
+{
+    return upper_joint_limits_;
+}
+
 const VectorXd& JointModules::GetGearRatios()
 {
     return gear_ratios_;
