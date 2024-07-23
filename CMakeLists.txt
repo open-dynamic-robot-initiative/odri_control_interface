@@ -4,7 +4,7 @@
 # License BSD-3 clause
 #
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 # ----------------------------------------------------
 # --- CXX FLAGS --------------------------------------
@@ -22,11 +22,34 @@ set(PROJECT_URL
 set(PROJECT_USE_CMAKE_EXPORT TRUE)
 
 # Check if the submodule cmake have been initialized
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
-  message(
-    FATAL_ERROR
-      "\nPlease run the following command first:\ngit submodule update --init\n"
-  )
+set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
+if(EXISTS "${JRL_CMAKE_MODULES}/base.cmake")
+  message(STATUS "JRL cmakemodules found in 'cmake/' git submodule")
+else()
+  find_package(jrl-cmakemodules QUIET CONFIG)
+  if(jrl-cmakemodules_FOUND)
+    get_property(
+      JRL_CMAKE_MODULES
+      TARGET jrl-cmakemodules::jrl-cmakemodules
+      PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "JRL cmakemodules found on system at ${JRL_CMAKE_MODULES}")
+  elseif(${CMAKE_VERSION} VERSION_LESS "3.14.0")
+    message(
+      FATAL_ERROR
+        "\nCan't find jrl-cmakemodules. Please either:\n"
+        "  - use git submodule: 'git submodule update --init'\n"
+        "  - or install https://github.com/jrl-umi3218/jrl-cmakemodules\n"
+        "  - or upgrade your CMake version to >= 3.14 to allow automatic fetching\n"
+    )
+  else()
+    message(STATUS "JRL cmakemodules not found. Let's fetch it.")
+    include(FetchContent)
+    FetchContent_Declare(
+      "jrl-cmakemodules"
+      GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git")
+    FetchContent_MakeAvailable("jrl-cmakemodules")
+    FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
+  endif()
 endif()
 
 # --- OPTIONS ----------------------------------------
@@ -34,13 +57,15 @@ option(BUILD_PYTHON_INTERFACE "Build the python binding" ON)
 option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 option(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
 
-include(cmake/base.cmake)
-include(cmake/boost.cmake)
-include(cmake/python.cmake)
-include(cmake/ide.cmake)
+include("${JRL_CMAKE_MODULES}/base.cmake")
+include("${JRL_CMAKE_MODULES}/boost.cmake")
+include("${JRL_CMAKE_MODULES}/python.cmake")
+include("${JRL_CMAKE_MODULES}/ide.cmake")
+include("${JRL_CMAKE_MODULES}/apple.cmake")
 
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
+apply_default_apple_configuration()
 check_minimal_cxx_standard(11 ENFORCE)
 
 # ----------------------------------------------------
@@ -53,8 +78,10 @@ add_project_dependency(master_board_sdk REQUIRED)
 
 # Set component to fetch from boost Get the python interface for the bindings
 if(BUILD_PYTHON_INTERFACE)
+  set(PYTHON_COMPONENTS Interpreter Development.Module)
   add_project_dependency(eigenpy 2.7.10 REQUIRED PKG_CONFIG_REQUIRES
                          "eigenpy >= 2.7.10")
+  set_boost_default_options()
 endif(BUILD_PYTHON_INTERFACE)
 
 # ----------------------------------------------------
@@ -65,7 +92,11 @@ endif(BUILD_PYTHON_INTERFACE)
 set(ODRI_CONTROL_INTERFACE_SRC src/joint_modules.cpp src/imu.cpp src/robot.cpp
                                src/calibration.cpp src/utils.cpp)
 add_library(${PROJECT_NAME} SHARED ${ODRI_CONTROL_INTERFACE_SRC})
-target_link_libraries(${PROJECT_NAME} yaml-cpp)
+if(TARGET yaml-cpp::yaml-cpp)
+  target_link_libraries(${PROJECT_NAME} yaml-cpp::yaml-cpp)
+else()
+  target_link_libraries(${PROJECT_NAME} yaml-cpp)
+endif()
 target_link_libraries(${PROJECT_NAME} master_board_sdk::master_board_sdk)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 target_include_directories(
@@ -89,10 +120,19 @@ if(BUILD_PYTHON_INTERFACE)
   set(${PYWRAP}_INSTALL_DIR ${PYTHON_SITELIB})
   add_library(${PYWRAP} SHARED ${${PYWRAP}_SOURCES} ${${PYWRAP}_HEADERS})
   target_include_directories(${PYWRAP} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIR})
-  target_link_libraries(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy)
-  target_link_boost_python(${PYWRAP})
-  set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
-                                             "${CMAKE_INSTALL_PREFIX}/lib")
+
+  # target_link_libraries(${PYWRAP} ${PROJECT_NAME} eigenpy::eigenpy)
+  # target_link_boost_python(${PYWRAP})
+  # set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
+  #                                            "${CMAKE_INSTALL_PREFIX}/lib")
+  set_target_properties(${PYWRAP} PROPERTIES SUFFIX ${PYTHON_EXT_SUFFIX})
+  target_link_libraries(${PYWRAP} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+  target_link_boost_python(${PYWRAP} PUBLIC)
+  if(UNIX)
+    get_relative_rpath(${${PYWRAP}_INSTALL_DIR} ${PYWRAP}_INSTALL_RPATH)
+    set_target_properties(${PYWRAP} PROPERTIES INSTALL_RPATH
+                                               "${${PYWRAP}_INSTALL_RPATH}")
+  endif()
   install(TARGETS ${PYWRAP} DESTINATION ${${PYWRAP}_INSTALL_DIR})
 
   # --- Allow to do: make python --- #
