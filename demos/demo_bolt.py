@@ -75,12 +75,9 @@ def main():
 
             # Compute the PD control
             des_pos = np.array([0.3 * np.sin(c / 30 + i * np.pi / 6) for i in range(6)])
-            # des_pos *= np.array([0, 1, 0, 0, 1, 1])
 
             robot.joints.set_position_gains(np.array([4.] * 6))
             robot.joints.set_velocity_gains(np.array([0.2] * 6))
-            # robot.joints.set_position_gains(np.array([0.0] * 6))
-            # robot.joints.set_velocity_gains(np.array([0.0] * 6))
             robot.joints.set_desired_positions(des_pos)
             robot.joints.set_desired_velocities(np.zeros(6))
             robot.joints.set_torques(np.zeros(6))

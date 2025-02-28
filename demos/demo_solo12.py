@@ -1,42 +1,110 @@
 #! /usr/bin/env python
-
-# Run a PD controller to keep the zero position.
-
 import pathlib
-
 import numpy as np
-np.set_printoptions(suppress=True, precision=2)
-
+import multiprocessing as mp
+import time
 import libodri_control_interface_pywrap as oci
+from RobotVisualizer import RobotVisualizer
+import matplotlib.pyplot as plt
 
-# Create the robot object from yaml.
-robot = oci.robot_from_yaml_file("config_solo12.yaml")
+# Define shared data between processes using `multiprocessing`'s shared memory
+shared_positions = mp.Array('d', 12)  # Array for positions (6 doubles)
+shared_imu_attitude = mp.Array('d', 4)  # Array for IMU attitude quaternion (4 doubles)
+stop_flag = mp.Value('b', False)  # Shared boolean flag for stopping processes
+robot_ready = mp.Value('b', False)  # Flag to indicate if the robot is initialized
 
-# Store initial position data.
-des_pos = np.array(
-    [0.0, 0.7, -1.4, -0.0, 0.7, -1.4, 0.0, -0.7, +1.4, -0.0, -0.7, +1.4])
+# Visualization process
+def visualization_loop(shared_positions, shared_imu_attitude, stop_flag, robot_ready):
+    robot_visualizer = RobotVisualizer("/Users/croux/Devel/bolt_croc_ws/src/odri_control_interface/solo_description/solo_description.urdf")
 
-# Initialize the communication, session, joints, wait for motors to be ready
-# and run the joint calibration.
-robot.initialize(des_pos)
+    while not stop_flag.value:
+        if not robot_ready.value:
+            # Fill with zeros until the robot is initialized
+            robot_visualizer.set_joint_positions([0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14], [0] * 12)
+            robot_visualizer.set_base_orientation([0, 0, 0, 1])
+        else:
+            with shared_positions.get_lock():
+                positions = list(shared_positions)
 
-c = 0
-while not robot.is_timeout:
-    robot.parse_sensor_data()
+            with shared_imu_attitude.get_lock():
+                imu_attitude = list(shared_imu_attitude)
 
-    imu_attitude = robot.imu.attitude_euler
-    positions = robot.joints.positions
-    velocities = robot.joints.velocities
+            robot_visualizer.set_joint_positions([0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14], positions)
+            robot_visualizer.set_base_orientation(imu_attitude)
 
-    # Compute the PD control.
-    torques = 3.0 * (des_pos - positions) - 0.05 * velocities
-    robot.joints.set_torques(torques)
+        robot_visualizer.update_visualization()
+        time.sleep(0.01)  # Update rate of 100 Hz
 
-    robot.send_command_and_wait_end_of_cycle(0.001)
-    c += 1
+# Main process (Control Loop)
+def main():
+    global shared_positions, shared_imu_attitude, stop_flag, robot_ready
 
-    if c % 2000 == 0:
-        print("joint pos:   ", positions)
-        print("joint vel:   ", velocities)
-        print("torques:     ", torques)
-        robot.robot_interface.PrintStats()
+    # Start the visualizer process
+    visualization_process = mp.Process(
+        target=visualization_loop,
+        args=(shared_positions, shared_imu_attitude, stop_flag, robot_ready)
+    )
+    visualization_process.start()
+
+    try:
+        # Initialize the robot
+        robot = oci.robot_from_yaml_file("config_solo12.yaml")
+        robot.initialize(np.zeros(12))
+        with robot_ready.get_lock():
+            robot_ready.value = True
+        pos_cmd = []
+        pos_mea = []
+        c = 0
+        
+        while not robot.is_timeout and c < 10000000:
+            # Read data
+            robot.parse_sensor_data()
+            imu_attitude = robot.imu.attitude_quaternion
+            imu_attitude_euler = robot.imu.attitude_euler
+            positions = robot.joints.positions
+            velocities = robot.joints.velocities
+
+            # Update shared data
+            with shared_positions.get_lock():
+                for i in range(12):
+                    shared_positions[i] = positions[i]
+
+            with shared_imu_attitude.get_lock():
+                for i in range(4):
+                    shared_imu_attitude[i] = imu_attitude[i]
+
+            # Compute the PD control
+            des_pos = np.array([0.3 * np.sin(c / 50 + i * np.pi / 6) for i in range(12)])
+            des_pos *= np.array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+            robot.joints.set_position_gains(np.array([4.] * 12))
+            robot.joints.set_velocity_gains(np.array([0.2] * 12))
+            # robot.joints.set_position_gains(np.array([0.0] * 12))
+            # robot.joints.set_velocity_gains(np.array([0.0] * 12))
+            robot.joints.set_desired_positions(des_pos)
+            robot.joints.set_desired_velocities(np.zeros(12))
+            robot.joints.set_torques(np.zeros(12))
+
+            # Send command
+            robot.send_command_and_wait_end_of_cycle(0.001)
+            c += 1
+
+            # Save cmd and measure
+            pos_mea.append(positions)
+            pos_cmd.append(des_pos)
+
+            if c % 100 == 0:
+                pass
+                # print("IMU attitude:   ", imu_attitude_euler * 180 / np.pi)
+                # print(list(robot.joints.positions))
+
+        # Save data after loop ends
+        np.savetxt("old_driver_measures.txt", pos_mea)
+        np.savetxt("old_driver_cmd.txt", pos_cmd)
+
+    finally:
+        stop_flag.value = True  # Signal the visualizer process to stop
+        visualization_process.join()
+
+if __name__ == "__main__":
+    main()
