@@ -158,5 +158,4 @@ macro(create_demo source)
 endmacro(create_demo source)
 
 create_demo(demo_solo12)
-create_demo(demo_bolt)
 create_demo(demo_testbench)
