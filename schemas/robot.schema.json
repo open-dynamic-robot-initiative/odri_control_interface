@@ -166,7 +166,7 @@
     },
     "SearchMethod": {
       "type": "string",
-      "enum": ["POS", "NEG"],
+      "enum": ["POS", "NEG", "ALT", "AUTO"],
       "title": "SearchMethod"
     }
   }
