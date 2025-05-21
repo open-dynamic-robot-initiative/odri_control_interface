@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/FullConfiguration",
+  "definitions": {
+    "FullConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "robot": {
+          "$ref": "#/definitions/Robot"
+        },
+        "joint_calibrator": {
+          "$ref": "#/definitions/JointCalibrator"
+        }
+      },
+      "required": ["joint_calibrator", "robot"],
+      "title": "Full configuration",
+      "description": "Include the robot and joint calibrator configurations"
+    },
+    "JointCalibrator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "search_methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchMethod"
+          }
+        },
+        "position_offsets": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "calib_order": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "calib_pos": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "Kp": {
+          "type": "integer"
+        },
+        "Kd": {
+          "type": "number"
+        },
+        "T": {
+          "type": "integer"
+        },
+        "dt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "Kd",
+        "Kp",
+        "T",
+        "calib_order",
+        "calib_pos",
+        "dt",
+        "position_offsets",
+        "search_methods"
+      ],
+      "title": "JointCalibrator"
+    },
+    "Robot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "interface": {
+          "type": "string"
+        },
+        "joint_modules": {
+          "$ref": "#/definitions/JointModules"
+        },
+        "imu": {
+          "$ref": "#/definitions/Imu"
+        }
+      },
+      "required": ["imu", "interface", "joint_modules"],
+      "title": "Robot"
+    },
+    "Imu": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rotate_vector": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "orientation_vector": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": ["orientation_vector", "rotate_vector"],
+      "title": "Imu"
+    },
+    "JointModules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "motor_numbers": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "motor_constants": {
+          "type": "number"
+        },
+        "gear_ratios": {
+          "type": "integer"
+        },
+        "max_currents": {
+          "type": "integer"
+        },
+        "reverse_polarities": {
+          "type": "array",
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "lower_joint_limits": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "upper_joint_limits": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "max_joint_velocities": {
+          "type": "integer"
+        },
+        "safety_damping": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "gear_ratios",
+        "lower_joint_limits",
+        "max_currents",
+        "max_joint_velocities",
+        "motor_constants",
+        "motor_numbers",
+        "reverse_polarities",
+        "safety_damping",
+        "upper_joint_limits"
+      ],
+      "title": "JointModules"
+    },
+    "SearchMethod": {
+      "type": "string",
+      "enum": ["POS", "NEG"],
+      "title": "SearchMethod"
+    }
+  }
+}
