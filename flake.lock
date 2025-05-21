@@ -1,0 +1,51 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1747744144,
+        "narHash": "sha256-W7lqHp0qZiENCDwUZ5EX/lNhxjMdNapFnbErcbnP11Q=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "2795c506fe8fb7b03c36ccb51f75b6df0ab2553f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "odri-masterboard-sdk": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1747816647,
+        "narHash": "sha256-G0le82G+wRJR+r73Z7bxFsAj/nC4z7V2DrHzh7mSNR4=",
+        "ref": "nix",
+        "rev": "06b9e86069d255465824d4db7b6708914ce9b7c2",
+        "revCount": 569,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/gwennlbh/master-board"
+      },
+      "original": {
+        "ref": "nix",
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/gwennlbh/master-board"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "odri-masterboard-sdk": "odri-masterboard-sdk"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
