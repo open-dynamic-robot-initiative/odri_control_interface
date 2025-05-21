@@ -13,7 +13,7 @@
     { nixpkgs, odri-masterboard-sdk, ... }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      sdk = odri-masterboard-sdk.packages.x86_64-linux.sdk;
+      sdk = odri-masterboard-sdk.packages.x86_64-linux.default;
     in
     {
       packages.x86_64-linux.default =
