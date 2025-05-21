@@ -23,16 +23,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1747834160,
-        "narHash": "sha256-kGuOVVdsljajM9oj3/GxJqH4kFGmDtBobbXr8UzV2MU=",
+        "lastModified": 1747835945,
+        "narHash": "sha256-QZwTtRTJEsEBVWFHtAaZgTYrxGEMWzUNp3hCiHEttqU=",
         "ref": "nix",
-        "rev": "3eeae6ac8e1a336384c30648a969216f65103030",
-        "revCount": 575,
+        "rev": "d5d6105f8db1770cd07fdde300c4c008e36de818",
+        "revCount": 576,
         "type": "git",
         "url": "https://github.com/gwennlbh/master-board"
       },
       "original": {
         "ref": "nix",
+        "rev": "d5d6105f8db1770cd07fdde300c4c008e36de818",
         "type": "git",
         "url": "https://github.com/gwennlbh/master-board"
       }
