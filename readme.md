@@ -34,7 +34,7 @@ colcon build
 #### Using Nix
 
 ```
-nix build .?submodules=1
+nix build
 ```
 
 ### Usage:

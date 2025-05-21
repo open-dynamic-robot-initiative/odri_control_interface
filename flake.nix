@@ -4,7 +4,7 @@
 
     odri-masterboard-sdk = {
       # FIXME update after https://github.com/open-dynamic-robot-initiative/master-board/pull/173
-      url = "git+https://github.com/gwennlbh/master-board?submodules=1&ref=nix";
+      url = "git+https://github.com/gwennlbh/master-board?ref=nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
