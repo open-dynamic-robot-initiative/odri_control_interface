@@ -36,12 +36,13 @@
           [ sdk ]
           ++ (with pkgs; [
             cmake
-            yaml-cpp
             eigen
             python312Packages.eigenpy
             python312Packages.boost
             python312
           ]);
+
+	propagatedBuildInputs = with pkgs; [ yaml-cpp ];
       };
     };
 }
