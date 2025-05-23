@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/gwennlbh/odri_control_interface/jsonschema/schemas/robot.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/open-dynamic-robot-initiative/odri_control_interface/main/schemas/robot.schema.json
 
 robot:
     interface: enp5s0f1
