@@ -1,48 +1,54 @@
 {
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    utils.url = "github:Gepetto/nix-lib";
+  description = "odri-control-interface";
 
-    odri-masterboard-sdk = {
-      # FIXME update after https://github.com/open-dynamic-robot-initiative/master-board/pull/173
-      url = "git+https://github.com/gwennlbh/master-board?ref=nix&rev=d5d6105f8db1770cd07fdde300c4c008e36de818";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+  inputs = {
+    # TODO: drop `/module` after https://github.com/Gepetto/nix/pull/54
+    gepetto.url = "github:gwennlbh/gepetto-nix/odri";
+    flake-parts.follows = "gepetto/flake-parts";
+    nixpkgs.follows = "gepetto/nixpkgs";
+    nix-ros-overlay.follows = "gepetto/nix-ros-overlay";
+    systems.follows = "gepetto/systems";
+    treefmt-nix.follows = "gepetto/treefmt-nix";
+    utils.url = "github:Gepetto/nix-lib";
   };
 
   outputs =
-    {
-      nixpkgs,
-      utils,
-      odri-masterboard-sdk,
-      ...
-    }:
-    let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      sdk = odri-masterboard-sdk.packages.x86_64-linux.default;
-      rosVersion = utils.lib.rosVersion pkgs;
-    in
-    {
-      packages.x86_64-linux.default = pkgs.stdenv.mkDerivation rec {
-        pname = "odri-control";
-        version = rosVersion ./package.xml;
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = import inputs.systems;
+      imports = [ inputs.gepetto.flakeModule ];
+      perSystem =
+        {
+          lib,
+          pkgs,
+          self',
+          ...
+        }:
+        {
+          packages = {
+            default = self'.packages.odri-control-interface;
+            odri-control-interface = pkgs.odri-control-interface.overrideAttrs {
+              version = inputs.utils.lib.rosVersion pkgs ./package.xml;
+              src = lib.fileset.toSource {
+                root = ./.;
+                fileset = lib.fileset.unions [
+                  ./demos
+                  ./include 
+                  ./src
+                  ./srcpy
+                  ./CMakeLists.txt
+                  ./package.xml
+                ];
+              };
+            };
+          };
 
-        src = builtins.path {
-          name = pname;
-          path = ./.;
+          apps = {
+            testbench = {
+              type = "app";
+              program = "${self'.packages.odri-control-interface}/bin/odri_control_interface_demo_testbench";
+            };
+          };
         };
-
-        nativeBuildInputs =
-          [ sdk ]
-          ++ (with pkgs; [
-            cmake
-            eigen
-            python312Packages.eigenpy
-            python312Packages.boost
-            python312
-          ]);
-
-	propagatedBuildInputs = with pkgs; [ yaml-cpp ];
-      };
     };
 }
