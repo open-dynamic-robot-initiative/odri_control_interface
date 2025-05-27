@@ -19,7 +19,6 @@ namespace odri_control_interface
 std::shared_ptr<Robot> RobotFromYamlFile(const std::string& if_name,
                                          const std::string& file_path);
 std::shared_ptr<Robot> RobotFromYamlFile(const std::string& file_path);
-std::shared_ptr<Robot> RobotFromYamlString(const std::string& contents, const std::string& file_path);
 std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(
     const std::string& file_path, std::shared_ptr<JointModules> joints);
 std::shared_ptr<MasterBoardInterface> CreateMasterBoardInterface(

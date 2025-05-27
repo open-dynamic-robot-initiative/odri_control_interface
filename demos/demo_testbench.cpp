@@ -15,7 +15,7 @@ int main()
     nice(-20);  // Give the process a high priority.
 
     // Define the robot from a yaml file.
-    auto robot = RobotFromYamlString(CONFIG_TESTBENCH_YAML, "<builtin demo: testbench>" );
+    auto robot = RobotFromYamlFile(CONFIG_TESTBENCH_YAML);
 
     // Store initial position data.
     Vector2d des_pos(3.1415 * 0.5, - 3.1415 * 0.5);

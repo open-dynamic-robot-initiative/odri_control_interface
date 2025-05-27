@@ -147,16 +147,12 @@ macro(create_demo source)
 
   set(demo_name ${PROJECT_NAME}_${source})
   set(DEMO_ROOT "${PROJECT_SOURCE_DIR}/demos")
-  file(READ "${DEMO_ROOT}/config_solo12.yaml" DEMO_CONFIG_SOLO12)
-  file(READ "${DEMO_ROOT}/config_testbench.yaml" DEMO_CONFIG_TESTBENCH)
-  message(STATUS "Demo config for solo12: ${DEMO_CONFIG_SOLO12}")
-  message(STATUS "Demo config for testbench: ${DEMO_CONFIG_TESTBENCH}")
   add_executable(${demo_name} demos/${source}.cpp)
   target_link_libraries(${demo_name} ${PROJECT_NAME})
   target_compile_definitions(
     ${demo_name}
-    PUBLIC CONFIG_SOLO12_YAML="${DEMO_CONFIG_SOLO12}"
-    PUBLIC CONFIG_TESTBENCH_YAML="${DEMO_CONFIG_TESTBENCH}")
+    PUBLIC CONFIG_SOLO12_YAML="${DEMO_ROOT}/config_solo12.yaml"
+    PUBLIC CONFIG_TESTBENCH_YAML="${DEMO_ROOT}/config_testbench.yaml")
   install(TARGETS ${demo_name} DESTINATION bin)
 
 endmacro(create_demo source)

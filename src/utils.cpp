@@ -252,9 +252,12 @@ std::shared_ptr<JointCalibrator> JointCalibratorFromYaml(
         joint_calibrator["dt"].as<double>());
 }
 
-std::shared_ptr<Robot> RobotFromYamlNode(const YAML::Node& param,
-    const std::string& if_name,
-                                         const std::string& file_path) {
+std::shared_ptr<Robot> RobotFromYamlFile(const std::string& if_name,
+                                         const std::string& file_path)
+{
+    assert_file_exists(file_path);
+    YAML::Node param = YAML::LoadFile(file_path);
+
     // Parse the robot part.
     assert_yaml_parsing(param, file_path, "robot");
     const YAML::Node& robot_node = param["robot"];
@@ -281,34 +284,6 @@ std::shared_ptr<Robot> RobotFromYamlNode(const YAML::Node& param,
     return std::make_shared<Robot>(robot_if, joints, imu, calibrator);
 }
 
-std::shared_ptr<Robot> RobotFromYamlNode(
-    const YAML::Node& param, const std::string& file_path) {
-
-    // Get the robot interface name.
-    assert_yaml_parsing(param, file_path, "robot");
-    assert_yaml_parsing(param["robot"], "robot", "interface");
-    std::string if_name = param["robot"]["interface"].as<std::string>();
-
-    return RobotFromYamlNode(param, if_name, file_path);
-}
-
-std::shared_ptr<Robot> RobotFromYamlFile(const std::string& if_name,
-                                         const std::string& file_path)
-{
-    assert_file_exists(file_path);
-    YAML::Node param = YAML::LoadFile(file_path);
-    return RobotFromYamlNode(param, if_name, file_path);
-}
-
-std::shared_ptr<Robot> RobotFromYamlString(
-    const std::string& file_contents,
-    const std::string& file_path
-) {
-    YAML::Node param = YAML::Load(file_contents);
-    return RobotFromYamlNode(param, file_path);
-}
-
-
 std::shared_ptr<Robot> RobotFromYamlFile(const std::string& file_path)
 {
     assert_file_exists(file_path);
@@ -321,7 +296,6 @@ std::shared_ptr<Robot> RobotFromYamlFile(const std::string& file_path)
 
     return RobotFromYamlFile(if_name, file_path);
 }
-
 
 std::shared_ptr<JointCalibrator> JointCalibratorFromYamlFile(
     const std::string& file_path, std::shared_ptr<JointModules> joints)
