@@ -146,7 +146,9 @@ endif(BUILD_PYTHON_INTERFACE)
 macro(create_demo source)
 
   set(demo_name ${PROJECT_NAME}_${source})
-  set(DEMO_ROOT "${PROJECT_SOURCE_DIR}/demos")
+  string(REPLACE "demo_" "" device "${source}")
+  set(DEMO_ROOT "${CMAKE_INSTALL_PREFIX}/demos")
+  file(COPY "${PROJECT_SOURCE_DIR}/demos/config_${device}.yaml" DESTINATION "${DEMO_ROOT}")
   add_executable(${demo_name} demos/${source}.cpp)
   target_link_libraries(${demo_name} ${PROJECT_NAME})
   target_compile_definitions(

@@ -65,11 +65,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1748432718,
-        "narHash": "sha256-1JDGv9uEda9hfdtxkAOYnZFwcWmgml+Dxj8Orx3etMA=",
+        "lastModified": 1748440781,
+        "narHash": "sha256-+1oXBqVyFPkQ8qp9Bpj/4m74lARDLUYnZeG9c8wwnZw=",
         "owner": "gwennlbh",
         "repo": "gepetto-nix",
-        "rev": "946ecdbc7a8a87e028cfdb344ec472157317360a",
+        "rev": "92f2d8e713d3881cf1e6f8e9470cf6104ac864a0",
         "type": "github"
       },
       "original": {
@@ -180,11 +180,11 @@
     "src-agimus-controller": {
       "flake": false,
       "locked": {
-        "lastModified": 1747904554,
-        "narHash": "sha256-IHA+1KrtMKIiBw3NaO3VuMk6h/JIPgNpb7vvu2FGrjk=",
+        "lastModified": 1748356703,
+        "narHash": "sha256-6zfD0802BtdXI4koWp/ZI8WOI9LXXmMBTPPIU1+MjpA=",
         "owner": "agimus-project",
         "repo": "agimus_controller",
-        "rev": "92797f93c2a80d4e362ac687f1311a149748bb36",
+        "rev": "5e9e2c225c2937d9b72feaf7aae51b4833b27488",
         "type": "github"
       },
       "original": {
@@ -212,11 +212,11 @@
     "src-colmpc": {
       "flake": false,
       "locked": {
-        "lastModified": 1748282597,
-        "narHash": "sha256-m15hIbykq4T27TCbWhlzv6MOvOMcEUoP7J6COaGIEwE=",
+        "lastModified": 1748425695,
+        "narHash": "sha256-Eku/uorPx/ToApoIIGD9LgBT6vrFetm2ZFFmE/iUa+I=",
         "owner": "agimus-project",
         "repo": "colmpc",
-        "rev": "17c82fa0d6db53494da9f9e6af4266c342715dbf",
+        "rev": "b26daa44ba0069bf5849d8ac716d3dd5090fd482",
         "type": "github"
       },
       "original": {
@@ -277,11 +277,11 @@
     "src-odri-control-interface": {
       "flake": false,
       "locked": {
-        "lastModified": 1748350018,
-        "narHash": "sha256-I/+0grgW5FyaiuTaw1hNPKuyW/87idFTM+y9fXyJypg=",
+        "lastModified": 1748433067,
+        "narHash": "sha256-gAwwUU2Upzc3KCRu0JOacw6cv9yMwOKJ/QNxMtxAZQg=",
         "owner": "gwennlbh",
         "repo": "odri_control_interface",
-        "rev": "67604595c7859f920dd89ae5e647f70e53b6190f",
+        "rev": "4f4cc7350bb43d17023fdb405d953c942d0e4c47",
         "type": "github"
       },
       "original": {
@@ -294,15 +294,16 @@
     "src-odri-masterboard-sdk": {
       "flake": false,
       "locked": {
-        "lastModified": 1747757934,
-        "narHash": "sha256-Aace/p6K7r1HWav6b3FH0nUpf1vZxYROCs3P3qvucDo=",
-        "owner": "open-dynamic-robot-initiative",
+        "lastModified": 1748437437,
+        "narHash": "sha256-eWw3gTLq3rWtMzVLffwKODAP3XGO4GwZF7CLzAr1umA=",
+        "owner": "gwennlbh",
         "repo": "master-board",
-        "rev": "9388c843e569d5bd3cd836f442ddfef43c8a7528",
+        "rev": "4521b8627f032fa606ade0024c24b65098e8e7e0",
         "type": "github"
       },
       "original": {
-        "owner": "open-dynamic-robot-initiative",
+        "owner": "gwennlbh",
+        "ref": "nix",
         "repo": "master-board",
         "type": "github"
       }
