@@ -48,6 +48,10 @@
               type = "app";
               program = "${self'.packages.odri-control-interface}/bin/odri_control_interface_demo_testbench";
             };
+            solo12 = {
+              type = "app";
+              program = "${self'.packages.odri-control-interface}/bin/odri_control_interface_demo_solo12";
+            };
           };
         };
     };
