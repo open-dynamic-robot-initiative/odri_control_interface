@@ -33,7 +33,7 @@
                 root = ./.;
                 fileset = lib.fileset.unions [
                   ./demos
-                  ./include 
+                  ./include
                   ./src
                   ./srcpy
                   ./CMakeLists.txt
