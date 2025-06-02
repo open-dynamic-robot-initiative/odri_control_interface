@@ -53,6 +53,19 @@
               program = "${self'.packages.odri-control-interface}/bin/odri_control_interface_demo_solo12";
             };
           };
+          devShells.default = pkgs.mkShell {
+            buildInputs = [
+              self'.packages.odri-control-interface
+              pkgs.odri-masterboard-sdk
+              pkgs.python3Packages.python
+              pkgs.python3Packages.numpy
+            ];
+            shellHook = ''
+              controlSitePackages=`echo ${self'.packages.odri-control-interface}/lib/python*/site-packages | head -n 1`
+              masterboardSitePackages=`echo ${pkgs.odri-masterboard-sdk}/lib/python*/site-packages | head -n 1`
+              export PYTHONPATH="$controlSitePackages:$masterboardSitePackages:$PYTHONPATH"
+            '';
+          };
         };
     };
 }
