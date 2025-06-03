@@ -3,7 +3,7 @@
 
   inputs = {
     # TODO: drop `/module` after https://github.com/Gepetto/nix/pull/54
-    gepetto.url = "github:gwennlbh/gepetto-nix/odri";
+    gepetto.url = "github:gepetto/nix/module";
     flake-parts.follows = "gepetto/flake-parts";
     nixpkgs.follows = "gepetto/nixpkgs";
     nix-ros-overlay.follows = "gepetto/nix-ros-overlay";
@@ -53,7 +53,7 @@
               program = "${self'.packages.odri-control-interface}/bin/odri_control_interface_demo_solo12";
             };
           };
-          devShells.default = pkgs.mkShell {
+          devShells.python = pkgs.mkShell {
             buildInputs = [
               self'.packages.odri-control-interface
               pkgs.odri-masterboard-sdk
