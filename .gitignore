@@ -6,11 +6,3 @@
 *.code-workspace
 result
 .vscode/c_cpp_properties.json
-CMakeFiles
-include/odri/control/interface/*.hh
-CMakeCache.txt
-CMakeDoxyfile.in
-CMakeDoxygenDefaults.cmake
-DartConfiguration.tcl
-config.h
-config.log
