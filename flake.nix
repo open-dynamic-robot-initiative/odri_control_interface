@@ -60,11 +60,10 @@
               pkgs.python3Packages.python
               pkgs.python3Packages.numpy
             ];
-            shellHook = ''
-              controlSitePackages=`echo ${self'.packages.odri-control-interface}/lib/python*/site-packages | head -n 1`
-              masterboardSitePackages=`echo ${pkgs.odri-masterboard-sdk}/lib/python*/site-packages | head -n 1`
-              export PYTHONPATH="$controlSitePackages:$masterboardSitePackages:$PYTHONPATH"
-            '';
+            PYTHONPATH = lib.concatMapStringsSep ":" (p: "${p}/${pkgs.python3.sitePackages}") [
+              self'.packages.odri_control_interface
+              pkgs.odri_master_board_sdk
+            ];
           };
         };
     };
