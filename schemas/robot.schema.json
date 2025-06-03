@@ -1,0 +1,194 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/FullConfiguration",
+  "definitions": {
+    "FullConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "robot": {
+          "$ref": "#/definitions/Robot"
+        },
+        "joint_calibrator": {
+          "$ref": "#/definitions/JointCalibrator"
+        }
+      },
+      "required": ["joint_calibrator", "robot"],
+      "title": "Full configuration",
+      "description": "Include the robot and joint calibrator configurations"
+    },
+    "JointCalibrator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "search_methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchMethod"
+          }
+        },
+        "position_offsets": {
+          "type": "array",
+          "description": "Angular position offset between the position of the index on the coding wheel and the zero position of the actuator.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "calib_order": {
+          "type": "array",
+          "description": "Optional calibration order for the joints. Joints with the lowest values start looking for the indexes first while the others are not moving. Once they have found it, they wait in their associated position in calib_pos field. You can set all values to 0 if you want to calibrate all joints at the same time. With the example values, the HFE and Knee joints of the leg are calibrated first, then the leg fold up. That way there is less risk to hit something while the HAA joints are moving to find their indexes.",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "calib_pos": {
+          "type": "array",
+          "description": "The waiting position for joints after they have found their indexes (used with calib_order).",
+          "items": {
+            "type": "number"
+          }
+        },
+        "Kp": {
+          "description": "The proportional gain of the PD controller used during the calibration process, in Nm/rad.",
+          "type": "number"
+        },
+        "Kd": {
+          "description": "The derivative gain of the PD controller used during the calibration process, in Nm/(rad/s).",
+          "type": "number"
+        },
+        "T": {
+          "description": "The period of the sinus movement used when looking for indexes, in seconds.",
+          "type": "number"
+        },
+        "dt": {
+          "description": "The control time step during the calibration process, in seconds.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "Kd",
+        "Kp",
+        "T",
+        "calib_order",
+        "calib_pos",
+        "dt",
+        "position_offsets",
+        "search_methods"
+      ],
+      "title": "JointCalibrator"
+    },
+    "Robot": {
+      "type": "object",
+      "description": "general information about the robot such as motor ordering, joint limits or orientation of the IMU with respect to the body frame",
+      "additionalProperties": false,
+      "properties": {
+        "interface": {
+          "type": "string",
+          "description": "Name of the interface to communicate with the robot (you can check with ifconfig if you are unsure)."
+        },
+        "joint_modules": {
+          "$ref": "#/definitions/JointModules"
+        },
+        "imu": {
+          "$ref": "#/definitions/Imu"
+        }
+      },
+      "required": ["imu", "interface", "joint_modules"],
+      "title": "Robot"
+    },
+    "Imu": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rotate_vector": {
+          "type": "array",
+          "description": "Mapping from IMU axes to body axes.",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "orientation_vector": {
+          "type": "array",
+          "description": "Mapping from IMU orientation (as a quaternion) to body orientation. Can be useful if the IMU is mounted upside-down on the robot.",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": ["orientation_vector", "rotate_vector"],
+      "title": "Imu"
+    },
+    "JointModules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "motor_numbers": {
+          "type": "array",
+          "description": "Mapping between the hardware order of the motors and their control order",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "motor_constants": {
+          "type": "number",
+          "description": "Torque constant of the motors in Nm/A"
+        },
+        "gear_ratios": {
+          "type": "number",
+          "description": "Gear ratio of the actuator modules"
+        },
+        "max_currents": {
+          "type": "number",
+          "description": "Absolute limit for the current sent to the motors in A"
+        },
+        "reverse_polarities": {
+          "type": "array",
+          "description": "Whether motors have been assembled on the robot in such a way that their hardware positive direction of rotation is actually reversed compared to the control positive direction of rotation.",
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "lower_joint_limits": {
+          "type": "array",
+          "description": "Lower joint limits for the actuators, under which the low-level control automatically switches to a security mode which applies damping on all joints.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "upper_joint_limits": {
+          "type": "array",
+          "description": "Upper joint limits for the actuators, above which the low-level control automatically switches to a security mode which applies damping on all joints.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "max_joint_velocities": {
+          "type": "number",
+          "description": "Absolute limit for the joint velocities, above which the low-level control automatically switches to a security mode which applies damping on all joints."
+        },
+        "safety_damping": {
+          "type": "number",
+          "description": "Value of the damping coefficient for the security mode, in Nm/(rad/s)."
+        }
+      },
+      "required": [
+        "gear_ratios",
+        "lower_joint_limits",
+        "max_currents",
+        "max_joint_velocities",
+        "motor_constants",
+        "motor_numbers",
+        "reverse_polarities",
+        "safety_damping",
+        "upper_joint_limits"
+      ],
+      "title": "JointModules"
+    },
+    "SearchMethod": {
+      "type": "string",
+      "description": "The index search strategy for each motor, can be POS, NEG, ALT, AUTO. If POS, the motor will search the index by going in the positive direction from its starting position until it reaches it. If NEG, it will go in the negative direction. If ALT, the motor will do back-and-forth movements of increasing amplitude around its starting position till the index is reached. AUTO automatically chooses the strategy based on the position offset value.",
+      "enum": ["POS", "NEG", "ALT", "AUTO"],
+      "title": "SearchMethod"
+    }
+  }
+}
