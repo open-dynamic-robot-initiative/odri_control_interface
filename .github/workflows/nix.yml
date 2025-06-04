@@ -4,7 +4,12 @@ on: [push, pull_request]
 
 jobs:
   CI:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+    name: CI (${{ matrix.os }})
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
