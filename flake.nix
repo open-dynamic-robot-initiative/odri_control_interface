@@ -61,8 +61,8 @@
               pkgs.python3Packages.numpy
             ];
             PYTHONPATH = lib.concatMapStringsSep ":" (p: "${p}/${pkgs.python3.sitePackages}") [
-              self'.packages.odri_control_interface
-              pkgs.odri_master_board_sdk
+              self'.packages.odri-control-interface
+              pkgs.odri-masterboard-sdk
             ];
           };
         };
