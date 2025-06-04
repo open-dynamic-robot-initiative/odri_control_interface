@@ -19,4 +19,5 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - run: nix flake check -L
       - name: Check if there are changes
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: NathanielHill/fail-if-changes@v1.1.1
