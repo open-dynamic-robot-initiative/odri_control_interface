@@ -7,7 +7,9 @@ Common interface for controlling robots build with the odri master board.
 
 ### Installation
 
-#### Download the package:
+#### Using treep & colcon
+
+##### Download the package:
 
 We use `treep` to download the required packages. Make sure your ssh key is unlocked. Then
 
@@ -20,7 +22,7 @@ treep --clone master-board
 treep --clone odri_control_interface 
 ```
 
-#### Build the package
+##### Build the package
 
 We use [colcon](https://github.com/machines-in-motion/machines-in-motion.github.io/wiki/use_colcon)
 to build this package:
@@ -28,6 +30,13 @@ to build this package:
 cd mkdir -p ~/devel/workspace
 colcon build
 ```
+
+#### Using Nix
+
+```
+nix build
+```
+
 ### Usage:
 
 #### Demos/Examples

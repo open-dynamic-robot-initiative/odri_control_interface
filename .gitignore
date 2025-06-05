@@ -3,3 +3,6 @@
 *build*
 
 *.user
+*.code-workspace
+result
+.vscode/c_cpp_properties.json
