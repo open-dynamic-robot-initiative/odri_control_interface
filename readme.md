@@ -48,7 +48,7 @@ Since the SDK forges raw ethernet frames, you need to run these scripts as root 
 sudo -HE env PATH=$PATH PYTHONPATH=$PYTHONPATH python demos/demo_testbech_joint_calibrator.py
 ```
 
-Note that running within a network-mounted directory (e.g. using NFS) might result in a "Permission denied" error when trying to make python execute the script as root, even when all users have the `r`ead permission set.
+Note that running within a network-mounted directory (e.g. using NFS) might result in a "Permission denied" error when trying to make python execute the script as root, even when all users have the read permission set.
 
 _(LAAS members: this is the case for your home directory when using office computers)_
 
