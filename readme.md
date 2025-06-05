@@ -34,6 +34,22 @@ colcon build
 
 You find examples in forms of demos under the `demos/` folder. The demos show how to use the python and C++ interface for talking to the library and setting up a robot.
 
+If you're using nix, you can get into a shell with all required packages available, including the C++-backed python packages
+
+```
+nix develop .#python
+```
+
+Since the SDK forges raw ethernet frames, you need to run these scripts as root (run it in a shell that has the dependencies installed and PYTHONPATH set):
+
+```
+sudo -HE env PATH=$PATH PYTHONPATH=$PYTHONPATH python demos/demo_testbech_joint_calibrator.py
+```
+
+Note that running within a network-mounted directory (e.g. using NFS) might result in a "Permission denied" error when trying to make python execute the script as root, even when all users have the `r`ead permission set.
+
+_(LAAS members: this is the case for your home directory when using office computers)_
+
 ### License and Copyrights
 
 License BSD-3-Clause
