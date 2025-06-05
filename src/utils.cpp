@@ -108,18 +108,99 @@ std::shared_ptr<JointModules> JointModulesFromYaml(
         upper_joint_limits_vec(i) = upper_joint_limits[i].as<double>();
     }
 
+    // "motor_constants" can be either a scalar (same value for all motors) or a list
     assert_yaml_parsing(joint_modules_yaml, "joint_modules", "motor_constants");
+    const YAML::Node& motor_constants = joint_modules_yaml["motor_constants"];
+    VectorXd motor_constants_vec;
+    motor_constants_vec.resize(n);
+    switch (motor_constants.Type()) {
+        case YAML::NodeType::Scalar:
+            for (std::size_t i = 0; i < n; i++)
+            {
+                motor_constants_vec(i) = motor_constants.as<double>();
+            }
+            break;
+        case YAML::NodeType::Sequence:
+            if (motor_constants.size() != n)
+            {
+                throw std::runtime_error(
+                    "Motor constants list has different size than motor numbers.");
+            }
+            for (std::size_t i = 0; i < n; i++)
+            {
+                motor_constants_vec(i) = motor_constants[i].as<double>();
+            }
+            break;
+        default:
+            throw std::runtime_error(
+                "Motor constants should be either a scalar or a list.");
+        }
+
+    // "gear_ratios" can be either a scalar (same value for all motors) or a list
     assert_yaml_parsing(joint_modules_yaml, "joint_modules", "gear_ratios");
+    const YAML::Node& gear_ratios = joint_modules_yaml["gear_ratios"];
+    VectorXd gear_ratios_vec;
+    gear_ratios_vec.resize(n);
+    switch (gear_ratios.Type()) {
+        case YAML::NodeType::Scalar:
+            for (std::size_t i = 0; i < n; i++)
+            {
+                gear_ratios_vec(i) = gear_ratios.as<double>();
+            }
+            break;
+        case YAML::NodeType::Sequence:
+            if (gear_ratios.size() != n)
+            {
+                throw std::runtime_error(
+                    "Gear ratio list has different size than motor numbers.");
+            }
+            for (std::size_t i = 0; i < n; i++)
+            {
+                gear_ratios_vec(i) = gear_ratios[i].as<double>();
+            }
+            break;
+        default:
+            throw std::runtime_error(
+                "Gear ratio should be either a scalar or a list.");
+        }
+
+    // "max_currents" can be either a scalar (same value for all motors) or a list
     assert_yaml_parsing(joint_modules_yaml, "joint_modules", "max_currents");
+    const YAML::Node& max_currents = joint_modules_yaml["max_currents"];
+    VectorXd max_currents_vec;
+    max_currents_vec.resize(n);
+    switch (max_currents.Type()) {
+        case YAML::NodeType::Scalar:
+            for (std::size_t i = 0; i < n; i++)
+            {
+                max_currents_vec(i) = max_currents.as<double>();
+            }
+            break;
+        case YAML::NodeType::Sequence:
+            if (max_currents.size() != n)
+            {
+                throw std::runtime_error(
+                    "Max currents list has different size than motor numbers.");
+            }
+            for (std::size_t i = 0; i < n; i++)
+            {
+                max_currents_vec(i) = max_currents[i].as<double>();
+            }
+            break;
+        default:
+            throw std::runtime_error(
+                "Max currents should be either a scalar or a list.");
+        }
+
     assert_yaml_parsing(
         joint_modules_yaml, "joint_modules", "max_joint_velocities");
     assert_yaml_parsing(joint_modules_yaml, "joint_modules", "safety_damping");
     return std::make_shared<JointModules>(
         robot_if,
         motor_numbers_vec,
-        joint_modules_yaml["motor_constants"].as<double>(),
-        joint_modules_yaml["gear_ratios"].as<double>(),
-        joint_modules_yaml["max_currents"].as<double>(),
+        motor_constants_vec,
+        gear_ratios_vec,
+        max_currents_vec,
         rev_polarities_vec,
         lower_joint_limits_vec,
         upper_joint_limits_vec,
