@@ -50,6 +50,12 @@ Note that running within a network-mounted directory (e.g. using NFS) might resu
 
 _(LAAS members: this is the case for your home directory when using office computers)_
 
+C++ demos also need to be run as root. Compilation produces binaries named `odri_control_interface_*`.
+
+Change the Ethernet interface the master board is plugged to by editing the relevant `config_*.yaml` file, then _re-build the binaries_ 
+
+You can get the ethernet interface by runnning `ip a`
+
 ### License and Copyrights
 
 License BSD-3-Clause
