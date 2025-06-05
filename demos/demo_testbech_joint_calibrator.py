@@ -72,19 +72,6 @@ joints = oci.JointModules(
 
 imu = oci.IMU(robot_if)
 
-robot = oci.Robot(robot_if, joints, imu)
-robot.start()
-robot.wait_until_ready()
-
-# As the data is returned by reference, it's enough
-# to get hold of the data one. It will update after
-# each call to `robot.parse_sensor_data`.
-imu_attitude = imu.attitude_euler
-positions = joints.positions
-velocities = joints.velocities
-
-des_pos = np.zeros(12)
-
 # Setup the calibration method
 joint_offsets = np.array(
     [
@@ -100,14 +87,40 @@ joint_offsets = np.array(
         0.0,
         0.0,
         0.0,
-    ]
-)
+    ],
+    dtype=np.float64,
+).reshape(-1, 1)
+
 sdir = oci.CalibrationMethod.positive
+
+zero_offsets = np.zeros(12, dtype=np.int32).reshape(-1, 1)
+some_other_array = np.zeros(12, dtype=np.float64).reshape(-1, 1)
+
 joint_calibrator = oci.JointCalibrator(
-    joints, 12 * [sdir], joint_offsets,
-    np.zeros(12, dtype=int), np.zeros(12),
-    5.0 / 20.0, 0.05 / 20.0, 2.0, 0.001
+    joints,
+    12 * [sdir],
+    joint_offsets,
+    zero_offsets,
+    some_other_array,
+    5.0 / 20.0,
+    0.05 / 20.0,
+    2.0,
+    0.001,
 )
+
+robot = oci.Robot(robot_if, joints, imu, joint_calibrator)
+robot.start()
+robot.wait_until_ready()
+
+# As the data is returned by reference, it's enough
+# to get hold of the data one. It will update after
+# each call to `robot.parse_sensor_data`.
+imu_attitude = imu.attitude_euler
+positions = joints.positions
+velocities = joints.velocities
+
+des_pos = np.zeros(12)
+
 
 c = 0
 dt = 0.001
