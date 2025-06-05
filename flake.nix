@@ -46,11 +46,11 @@
           apps = {
             testbench = {
               type = "app";
-              program = lib.getExe' self'.packages.odri-control-interface "/bin/odri_control_interface_demo_testbench";
+              program = lib.getExe' self'.packages.odri-control-interface "odri_control_interface_demo_testbench";
             };
             solo12 = {
               type = "app";
-              program = lib.getExe' self'.packages.odri-control-interface "/bin/odri_control_interface_demo_solo12";
+              program = lib.getExe' self'.packages.odri-control-interface "odri_control_interface_demo_solo12";
             };
           };
           devShells.python = pkgs.mkShell {
