@@ -34,6 +34,8 @@ colcon build
 
 You find examples in forms of demos under the `demos/` folder. The demos show how to use the python and C++ interface for talking to the library and setting up a robot.
 
+##### Python examples
+
 If you're using nix, you can get into a shell with all required packages available, including the C++-backed python packages
 
 ```
@@ -50,7 +52,9 @@ Note that running within a network-mounted directory (e.g. using NFS) might resu
 
 _(LAAS members: this is the case for your home directory when using office computers)_
 
-C++ demos also need to be run as root. Compilation produces binaries named `odri_control_interface_*`.
+##### C++ examples
+
+C++ demos also need to be run as root. Compilation produces binaries named `odri_control_interface_*`. (nix: you can do `nix run .#testbench` or `nix run .#solo12`)
 
 Change the Ethernet interface the master board is plugged to by editing the relevant `config_*.yaml` file, then _re-build the binaries_ 
 
